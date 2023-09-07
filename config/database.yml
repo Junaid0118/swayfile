@@ -1,0 +1,40 @@
+development:
+  adapter: postgresql
+  pool: 5
+  # these are our new parameters
+  encoding: UTF-8
+  database: starterhouse-development
+  port: 5432
+  host: localhost
+  username: postgres
+  password: postgres
+
+test:
+  # this won't work 
+  adapter: postgresql
+  encoding: unicode
+  database: starterhouse-test
+  pool: 5
+  username: postgres
+  password: postgres
+
+production:
+  adapter: postgresql
+  pool: 5
+  # these are our new parameters
+  encoding: UTF-8
+  database: starterhouse-production
+  username: postgres
+  password: postgres
+
+
+#if you get error, fatal , cant create database postgres
+#do heroku run rake db:schema:load
+#then heroku rake db:migrate
+
+  #heroku pg:transfer --from postgres://aymen:secret@localhost:5432/mydb_development --to postgres://rgtyokuabmdkns:bdd3c34d11f236b1ab12db3888cd7a84884b66003c733dfffc76873d2fc767a5@ec2-54-225-230-243.compute-1.amazonaws.com:5432/dfmmqlb4tjhfca
+
+
+  #heroku pg:push mydb_development HEROKU_POSTGRESQL_MAGENTA --app Whatnow
+
+  #pg_dump -Fc --no-acl --no-owner -h localhost -U aymen mydb_development > mydb_development.dmp

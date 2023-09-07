@@ -1,0 +1,10 @@
+{
+  "config": {
+    "path": {
+      "src": "../lib/src"
+    },
+    "dist": [
+      "../public/assets"
+    ]
+  }
+}
