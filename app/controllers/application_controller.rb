@@ -1,8 +1,10 @@
-class ApplicationController < ActionController::Base
+class ApplicationController < ActionController::Base # rubocop:disable Style/Documentation
   protect_from_forgery with: :exception
 
-  def after_sign_in_path_for(resource)
-	root_path
+  before_action :configure_permitted_parameters, if: :devise_controller?
+
+  def after_sign_in_path_for(_resource)
+	  root_path
   end
 
   def application
@@ -22,5 +24,9 @@ class ApplicationController < ActionController::Base
       ## if you want render 404 page
       ## render :file => File.join(Rails.root, 'public/404'), :formats => [:html], :status => 404, :layout => false
     end
+  end
+
+  def configure_permitted_parameters
+    devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:first_name, :last_name, :email, :password)}
   end
 end
