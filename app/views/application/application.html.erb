@@ -11,6 +11,17 @@
 			<div class="bgi-no-repeat bgi-size-contain bgi-position-x-center bgi-position-y-bottom landing-dark-bg" style="background-image: url(assets/media/svg/illustrations/landing.svg)">
 
 				<%= render "layouts/nav" %>
+				<div class="container">
+					<div class="row justify-content-center">
+						<div class="col-md-6">
+							<% if notice.present? %>
+								<p class="text-center" style="background-color: #4CAF50; color: white; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 5px;"><%= notice %></p>
+							<% elsif alert.present? %>
+								<p class="text-center" style="background-color: #FF5733; color: white; padding: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); border-radius: 5px;"><%= alert %></p>
+							<% end %>
+						</div>
+					</div>
+				</div>
 
 				<!--begin::Landing hero-->
 				<div class="d-flex flex-column flex-center w-100 min-h-350px min-h-lg-500px px-9">
