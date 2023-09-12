@@ -5,4 +5,5 @@ Rails.application.routes.draw do
 	get '/dashboard', to: 'application#dashboard'
 
 	resources :projects, only: :index
+	resources :compaigns, only: :show
 end

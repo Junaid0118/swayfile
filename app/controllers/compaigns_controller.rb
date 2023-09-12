@@ -1,0 +1,2 @@
+class CompaignsController < ApplicationController
+end
