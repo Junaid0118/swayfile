@@ -1,9 +1,17 @@
 Rails.application.routes.draw do
   devise_for :users
-	root "application#application"
+  root "application#application"
 
-	get '/dashboard', to: 'application#dashboard'
+  get '/dashboard', to: 'application#dashboard'
 
-	resources :projects, only: :index
 	resources :compaigns, only: :show
+  resources :projects do
+      member do
+        get 'users'
+        get 'team'
+        get 'files'
+        get 'activity'
+        get 'settings'
+      end
+    end
 end
