@@ -28,7 +28,7 @@
 
 # /public/assets
 .byebug_history
-/public/assets/*
+# /public/assets/*
 /tools/node_modules/*
 
 # Ignore master key for decrypting credentials and more.
