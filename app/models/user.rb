@@ -5,6 +5,8 @@ class User < ApplicationRecord
          :recoverable, :rememberable, :validatable
 
   has_many :documents, dependent: :destroy
+  has_many :teams
+  has_many :projects, through: :teams
 
   def name
     "#{first_name} #{last_name}"
