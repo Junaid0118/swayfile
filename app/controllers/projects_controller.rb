@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ProjectsController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: :create
   before_action :set_project, only: :show
   before_action :set_avatars
 
@@ -32,6 +32,7 @@ class ProjectsController < ApplicationController
 
   def create
     project = build_project
+    byebug
     if project.save
       create_teams(project)
 
