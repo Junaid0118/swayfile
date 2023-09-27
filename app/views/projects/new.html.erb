@@ -1456,69 +1456,34 @@ License: For each use you must have a valid license purchased only from above li
 				<!--begin::Wrapper-->
 				<div class="app-wrapper flex-column flex-row-fluid" id="kt_app_wrapper">
 					<!--begin::Sidebar-->
-					<div id="kt_app_sidebar" class="app-sidebar" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="auto" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
+										<div id="kt_app_sidebar" class="app-sidebar" data-kt-drawer="true" data-kt-drawer-name="app-sidebar" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="auto" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_app_sidebar_mobile_toggle">
 						<!--begin::Sidebar primary-->
 						<div class="app-sidebar-primary">
 							<!--begin::Sidebar navbar-->
 							<div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="5px">
-								<!--begin::Navbar-->
-								<div class="app-navbar flex-column flex-center">
-									<!--begin::Navbar item-->
+							<div class="app-navbar flex-column flex-center">
+								<!--begin::Navbar item-->
+								<% @avatar_urls.each do |avatar_info| %>
 									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/plurk.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
+									<!--begin::Navbar link-->
+									<a href="/projects/<%= avatar_info[:id] %>" class="btn btn-icon btn-default">
+  										<img src="<%= avatar_info[:url] %>" class="mw-25px" alt="" />
+									</a>
+									<!--end::Navbar link-->
 									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default active">
-											<img src="assets/media/svg/brand-logos/instagram-2-1.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/twitter.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/infography.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/beats-electronics.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center py-4">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-accent">
-											<i class="ki-outline ki-plus fs-2"></i>
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
+								<% end %>
+								<!--end::Navbar item-->
+								<!--begin::Navbar item-->
+								<div class="app-navbar-item flex-center py-4">
+									<!--begin::Navbar link-->
+									<a href="/projects/new" class="btn btn-icon btn-accent">
+									<i class="ki-outline ki-plus fs-2"></i>
+									</a>
+									<!--end::Navbar link-->
 								</div>
-								<!--end::Navbar-->
+								<!--end::Navbar item-->
+								</div>
+
 							</div>
 							<!--end::Sidebar navbar-->
 							<!--begin::Footer-->
@@ -2925,7 +2890,7 @@ License: For each use you must have a valid license purchased only from above li
 									</div>
 									<!--end:Menu item-->
 									<!--begin:Menu item-->
-									<div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+									<div data-kt-menu-trigger="click" class="menu-item here show menu-accordion">
 										<!--begin:Menu link-->
 										<span class="menu-link">
 											<span class="menu-icon">
@@ -2938,7 +2903,7 @@ License: For each use you must have a valid license purchased only from above li
 										<!--begin:Menu sub-->
 										<div class="menu-sub menu-sub-accordion">
 											<!--begin:Menu item-->
-											<div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+											<div data-kt-menu-trigger="click" class="menu-item here show menu-accordion">
 												<!--begin:Menu link-->
 												<span class="menu-link">
 													<span class="menu-bullet">
@@ -2953,7 +2918,7 @@ License: For each use you must have a valid license purchased only from above li
 													<!--begin:Menu item-->
 													<div class="menu-item">
 														<!--begin:Menu link-->
-														<a class="menu-link" href="../../demo33/dist/apps/projects/list.html">
+														<a class="menu-link active" href="../../demo33/dist/apps/projects/list.html">
 															<span class="menu-bullet">
 																<span class="bullet bullet-dot"></span>
 															</span>
@@ -4065,7 +4030,7 @@ License: For each use you must have a valid license purchased only from above li
 									</div>
 									<!--end:Menu item-->
 									<!--begin:Menu item-->
-									<div data-kt-menu-trigger="click" class="menu-item here show menu-accordion">
+									<div data-kt-menu-trigger="click" class="menu-item menu-accordion">
 										<!--begin:Menu link-->
 										<span class="menu-link">
 											<span class="menu-icon">
@@ -4264,7 +4229,7 @@ License: For each use you must have a valid license purchased only from above li
 																	<span class="menu-bullet">
 																		<span class="bullet bullet-dot"></span>
 																	</span>
-																	<span class="menu-title">Create Project</span>
+																	<span class="menu-title">Create App</span>
 																</a>
 																<!--end:Menu link-->
 															</div>
@@ -4391,7 +4356,7 @@ License: For each use you must have a valid license purchased only from above li
 											</div>
 											<!--end:Menu item-->
 											<!--begin:Menu item-->
-											<div data-kt-menu-trigger="click" class="menu-item here show menu-accordion">
+											<div data-kt-menu-trigger="click" class="menu-item menu-accordion">
 												<!--begin:Menu link-->
 												<span class="menu-link">
 													<span class="menu-bullet">
@@ -4442,11 +4407,11 @@ License: For each use you must have a valid license purchased only from above li
 													<!--begin:Menu item-->
 													<div class="menu-item">
 														<!--begin:Menu link-->
-														<a class="menu-link active" href="../../demo33/dist/utilities/wizards/create-app.html">
+														<a class="menu-link" href="../../demo33/dist/utilities/wizards/create-app.html">
 															<span class="menu-bullet">
 																<span class="bullet bullet-dot"></span>
 															</span>
-															<span class="menu-title">Create Project</span>
+															<span class="menu-title">Create App</span>
 														</a>
 														<!--end:Menu link-->
 													</div>
@@ -8092,7 +8057,7 @@ License: For each use you must have a valid license purchased only from above li
 															<!--end::Icon-->
 															<!--begin::Info-->
 															<div class="ms-4">
-																<h3 class="dfs-3 fw-bold text-gray-900 mb-1">Drop campaign files here or click to upload.</h3>
+																<h3 class="dfs-3 fw-bold text-gray-900 mb-1">Drop files here or click to upload.</h3>
 																<span class="fw-semibold fs-4 text-muted">Supports SVG / PNG / JPG / JPEG</span>
 															</div>
 															<!--end::Info-->
@@ -8127,7 +8092,7 @@ License: For each use you must have a valid license purchased only from above li
 												<label class="fs-6 fw-semibold mb-2">Invite Teammates</label>
 												<!--end::Label-->
 												<!--begin::Input-->
-												<input type="text" name="project_member" class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project contract party members" data-custom-attribute="project_member"/>
+												<input type="text" class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project contract party members" data-custom-attribute="project_member"/>
 												<!--end::Input-->
 											</div>
 											<!--end::Input group-->
@@ -8184,7 +8149,7 @@ License: For each use you must have a valid license purchased only from above li
 												<label class="fs-6 fw-semibold mb-2">Invite Signatories</label>
 												<!--end::Label-->
 												<!--begin::Input-->
-												<input type="text" name="signatory_member" class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project signatory members"/>
+												<input type="text"  class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project signatory members"/>
 												<!--end::Input-->
 											</div>
 											<!--end::Input group-->

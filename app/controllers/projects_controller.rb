@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
 class ProjectsController < ApplicationController
-  def index
+  before_action :authenticate_user!
+  before_action :set_project, only: :show
+  before_action :set_avatars
+
+  def index 
     render layout: 'projects'
+  end
+
+  def show
   end
 
   def users
@@ -24,11 +31,10 @@ class ProjectsController < ApplicationController
   def new; end
 
   def create
-    byebug
     project = build_project
-
     if project.save
       create_teams(project)
+
       render json: project, status: :created
     else
       render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
@@ -62,7 +68,18 @@ class ProjectsController < ApplicationController
       project_type: params[:project_type],
       description: params[:description],
       status: params[:status],
-      date: params[:date]
+      date: params[:date],
+      avatar: params[:file]
     }
+  end
+
+  def set_project
+    @project = Project.find(params[:id])
+  end
+
+  def set_avatars
+    @avatar_urls =  Project.with_attached_avatar.map do |project|
+      { url: url_for(project.avatar), id: project.id } if project.avatar.attached?
+    end.compact   
   end
 end
