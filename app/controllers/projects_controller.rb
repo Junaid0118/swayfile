@@ -32,7 +32,6 @@ class ProjectsController < ApplicationController
 
   def create
     project = build_project
-    byebug
     if project.save
       create_teams(project)
 
