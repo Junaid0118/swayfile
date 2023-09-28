@@ -1480,8 +1480,8 @@ License: For each use you must have a valid license purchased only from above li
 								<!--begin::Navbar item-->
 								<div class="app-navbar-item flex-center py-4">
 									<!--begin::Navbar link-->
-									<a href="/projects/new" class="btn btn-icon btn-accent">
-									<i class="ki-outline ki-plus fs-2"></i>
+									<a href="#" class="btn btn-icon btn-accent" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app">
+										<i class="ki-outline ki-plus fs-2"></i>
 									</a>
 									<!--end::Navbar link-->
 								</div>
@@ -8141,138 +8141,7 @@ License: For each use you must have a valid license purchased only from above li
 									<!--begin::Inbox App - Compose -->
 									<div class="d-flex flex-column flex-lg-row">
 										<!--begin::Sidebar-->
-										<div class="d-none d-lg-flex flex-column flex-lg-row-auto w-100 w-lg-275px" data-kt-drawer="true" data-kt-drawer-name="inbox-aside" data-kt-drawer-activate="{default: true, lg: false}" data-kt-drawer-overlay="true" data-kt-drawer-width="225px" data-kt-drawer-direction="start" data-kt-drawer-toggle="#kt_inbox_aside_toggle">
-											<!--begin::Sticky aside-->
-											<div class="card card-flush mb-0" data-kt-sticky="false" data-kt-sticky-name="inbox-aside-sticky" data-kt-sticky-offset="{default: false, xl: '100px'}" data-kt-sticky-width="{lg: '275px'}" data-kt-sticky-left="auto" data-kt-sticky-top="100px" data-kt-sticky-animation="false" data-kt-sticky-zindex="95">
-												<!--begin::Aside content-->
-												<div class="card-body">
-													<!--begin::Button-->
-													<a href="../../demo33/dist/apps/inbox/compose.html" class="btn btn-primary fw-bold w-100 mb-8">New Message</a>
-													<!--end::Button-->
-													<!--begin::Menu-->
-													<div class="menu menu-column menu-rounded menu-state-bg menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary mb-10">
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Inbox-->
-															<span class="menu-link active">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-sms fs-2 me-3"></i>
-																</span>
-																<span class="menu-title fw-bold">Inbox</span>
-																<span class="badge badge-light-success">3</span>
-															</span>
-															<!--end::Inbox-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Marked-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-abstract-23 fs-2 me-3"></i>
-																</span>
-																<span class="menu-title fw-bold">Marked</span>
-															</span>
-															<!--end::Marked-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Draft-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-file fs-2 me-3"></i>
-																</span>
-																<span class="menu-title fw-bold">Draft</span>
-																<span class="badge badge-light-warning">5</span>
-															</span>
-															<!--end::Draft-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Sent-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-send fs-2 me-3"></i>
-																</span>
-																<span class="menu-title fw-bold">Sent</span>
-															</span>
-															<!--end::Sent-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item">
-															<!--begin::Trash-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-trash fs-2 me-3"></i>
-																</span>
-																<span class="menu-title fw-bold">Trash</span>
-															</span>
-															<!--end::Trash-->
-														</div>
-														<!--end::Menu item-->
-													</div>
-													<!--end::Menu-->
-													<!--begin::Menu-->
-													<div class="menu menu-column menu-rounded menu-state-bg menu-state-title-primary">
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Custom work-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-abstract-8 fs-5 text-danger me-3 lh-0"></i>
-																</span>
-																<span class="menu-title fw-semibold">Custom Work</span>
-																<span class="badge badge-light-danger">6</span>
-															</span>
-															<!--end::Custom work-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::Partnership-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-abstract-8 fs-5 text-success me-3 lh-0"></i>
-																</span>
-																<span class="menu-title fw-semibold">Partnership</span>
-															</span>
-															<!--end::Partnership-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item mb-3">
-															<!--begin::In progress-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-abstract-8 fs-5 text-info me-3 lh-0"></i>
-																</span>
-																<span class="menu-title fw-semibold">In Progress</span>
-															</span>
-															<!--end::In progress-->
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item">
-															<!--begin::Add label-->
-															<span class="menu-link">
-																<span class="menu-icon">
-																	<i class="ki-outline ki-plus fs-2 me-3 lh-0"></i>
-																</span>
-																<span class="menu-title fw-semibold">Add Label</span>
-															</span>
-															<!--end::Add label-->
-														</div>
-														<!--end::Menu item-->
-													</div>
-													<!--end::Menu-->
-												</div>
-												<!--end::Aside content-->
-											</div>
-											<!--end::Sticky aside-->
-										</div>
+										<%= render "layouts/sidebar" %>
 										<!--end::Sidebar-->
 										<!--begin::Content-->
 										<div class="flex-lg-row-fluid ms-lg-7 ms-xl-10">

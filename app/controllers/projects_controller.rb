@@ -28,8 +28,6 @@ class ProjectsController < ApplicationController
     render layout: 'projects'
   end
 
-  def new; end
-
   def create
     project = build_project
     if project.save
