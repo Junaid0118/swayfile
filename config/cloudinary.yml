@@ -1,0 +1,11 @@
+development: 
+  cloud_name: "dcyq3cxsc"
+  api_key: "215952149461682"
+  api_secret: "Fqzd5TyOFUMnJgP2OgQ_ZPcdunk"
+  secure: true
+
+production:
+  cloud_name: "dcyq3cxsc"
+  api_key: "215952149461682"
+  api_secret: "Fqzd5TyOFUMnJgP2OgQ_ZPcdunk"
+  secure: true

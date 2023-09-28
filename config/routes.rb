@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   get '/dashboard', to: 'application#dashboard'
   get '/get_users', to: 'documents#get_users'
+  get '/project-icons', to: 'projects#projects_icon'
 
 	resources :compaigns, only: :show
   resources :projects do

@@ -1461,64 +1461,29 @@ License: For each use you must have a valid license purchased only from above li
 						<div class="app-sidebar-primary">
 							<!--begin::Sidebar navbar-->
 							<div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="5px">
-								<!--begin::Navbar-->
-								<div class="app-navbar flex-column flex-center">
-									<!--begin::Navbar item-->
+							<div class="app-navbar flex-column flex-center">
+								<!--begin::Navbar item-->
+								<% @avatar_urls.each do |avatar_info| %>
 									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/plurk.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
+									<!--begin::Navbar link-->
+									<a href="/projects/<%= avatar_info[:id] %>" class="btn btn-icon btn-default">
+  										<img src="<%= avatar_info[:url] %>" class="mw-25px" alt="" />
+									</a>
+									<!--end::Navbar link-->
 									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default active">
-											<img src="assets/media/svg/brand-logos/instagram-2-1.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/twitter.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/infography.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center px-1 py-3">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-default">
-											<img src="assets/media/svg/brand-logos/beats-electronics.svg" class="mw-25px" alt="" />
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
-									<!--begin::Navbar item-->
-									<div class="app-navbar-item flex-center py-4">
-										<!--begin::Navbar link-->
-										<a href="#" class="btn btn-icon btn-accent">
-											<i class="ki-outline ki-plus fs-2"></i>
-										</a>
-										<!--end::Navbar link-->
-									</div>
-									<!--end::Navbar item-->
+								<% end %>
+								<!--end::Navbar item-->
+								<!--begin::Navbar item-->
+								<div class="app-navbar-item flex-center py-4">
+									<!--begin::Navbar link-->
+									<a href="/projects/new" class="btn btn-icon btn-accent">
+									<i class="ki-outline ki-plus fs-2"></i>
+									</a>
+									<!--end::Navbar link-->
 								</div>
-								<!--end::Navbar-->
+								<!--end::Navbar item-->
+								</div>
+
 							</div>
 							<!--end::Sidebar navbar-->
 							<!--begin::Footer-->

@@ -14,6 +14,7 @@ gem "sentry-ruby"
 gem "sentry-rails"
 gem 'paper_trail'
 gem 'bootstrap-sass', '~> 3.3.7'
+gem 'cloudinary'
 gem 'jquery-rails'
 gem "font-ionicons-rails"
 gem "font-awesome-rails"
