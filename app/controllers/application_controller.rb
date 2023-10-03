@@ -15,6 +15,22 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     render layout: "dashboard"
   end
 
+  def folders
+    render layout: "file_manager"
+  end
+
+  def file_manager
+    render layout: "file_manager"
+  end
+
+  def settings
+    render layout: "file_manager"
+  end
+
+  def empty_folder
+    render layout: "file_manager"
+  end
+
   protected
   def authenticate_user!
     if user_signed_in?
