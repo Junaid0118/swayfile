@@ -3,6 +3,8 @@
 class Project < ApplicationRecord
   has_one_attached :avatar
 
+  belongs_to :folder, optional: true
+
   has_many :documents, dependent: :destroy
   has_many :teams
   has_many :users, through: :teams

@@ -1438,7 +1438,7 @@ License: For each use you must have a valid license purchased only from above li
 										<!--end::Menu item-->
 										<!--begin::Menu item-->
 										<div class="menu-item px-5">
-											<a href="../../demo33/dist/authentication/layouts/corporate/sign-in.html" class="menu-link px-5">Sign Out</a>
+											<%= link_to "Sign Out", destroy_user_session_path, method: :delete, class: "menu-link px-5" %>
 										</div>
 										<!--end::Menu item-->
 									</div>

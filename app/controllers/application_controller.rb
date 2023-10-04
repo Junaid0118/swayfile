@@ -2,6 +2,8 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   protect_from_forgery with: :null_session
 
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :set_avatars, only: [:empty_folder, :folders, :file_manager]
+  before_action :set_folder, only: :folders
 
   def after_sign_in_path_for(_resource)
 	  root_path
@@ -13,6 +15,30 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def dashboard
     render layout: "dashboard"
+  end
+
+  def folders
+    @folders = @folder.subfolders
+    @projects = @folder.projects
+    render layout: "file_manager"
+  end
+
+  def file_manager
+    @folders = Folder.where(parent_folder_id: nil)
+    @projects = Project.where(folder_id: nil)
+    render layout: "file_manager"
+  end
+
+  def settings
+    render layout: "file_manager"
+  end
+
+  def empty_folder
+    render layout: "file_manager"
+  end
+
+  def after_sign_in_path_for(resource)
+    file_manager_path
   end
 
   protected
@@ -28,5 +54,15 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def configure_permitted_parameters
     devise_parameter_sanitizer.permit(:sign_up) { |u| u.permit(:first_name, :last_name, :email, :password)}
+  end
+
+  def set_avatars
+    @avatar_urls =  Project.with_attached_avatar.map do |project|
+      { url: url_for(project.avatar), id: project.id } if project.avatar.attached?
+    end.compact   
+  end
+
+  def set_folder
+    @folder = Folder.find_by!(slug: params[:slug])
   end
 end

@@ -10,14 +10,49 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_14_165310) do
+ActiveRecord::Schema.define(version: 2023_10_03_162718) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
+  create_table "active_storage_attachments", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "record_type", null: false
+    t.bigint "record_id", null: false
+    t.bigint "blob_id", null: false
+    t.datetime "created_at", null: false
+    t.index ["blob_id"], name: "index_active_storage_attachments_on_blob_id"
+    t.index ["record_type", "record_id", "name", "blob_id"], name: "index_active_storage_attachments_uniqueness", unique: true
+  end
+
+  create_table "active_storage_blobs", force: :cascade do |t|
+    t.string "key", null: false
+    t.string "filename", null: false
+    t.string "content_type"
+    t.text "metadata"
+    t.string "service_name", null: false
+    t.bigint "byte_size", null: false
+    t.string "checksum", null: false
+    t.datetime "created_at", null: false
+    t.index ["key"], name: "index_active_storage_blobs_on_key", unique: true
+  end
+
+  create_table "active_storage_variant_records", force: :cascade do |t|
+    t.bigint "blob_id", null: false
+    t.string "variation_digest", null: false
+    t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
   create_table "compaigns", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "contracts", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_id"], name: "index_contracts_on_project_id"
   end
 
   create_table "documents", force: :cascade do |t|
@@ -29,9 +64,31 @@ ActiveRecord::Schema.define(version: 2023_09_14_165310) do
     t.index ["user_id"], name: "index_documents_on_user_id"
   end
 
+  create_table "file_managers", force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "folders", force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.text "name"
+    t.string "slug"
+    t.integer "parent_folder_id"
+    t.index ["parent_folder_id"], name: "index_folders_on_parent_folder_id"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.string "name"
+    t.string "project_type"
+    t.text "description"
+    t.datetime "date"
+    t.string "notifications"
+    t.string "status"
+    t.bigint "folder_id"
+    t.index ["folder_id"], name: "index_projects_on_folder_id"
   end
 
   create_table "sections", force: :cascade do |t|
@@ -43,6 +100,16 @@ ActiveRecord::Schema.define(version: 2023_09_14_165310) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["document_id"], name: "index_sections_on_document_id"
     t.index ["user_id"], name: "index_sections_on_user_id"
+  end
+
+  create_table "teams", force: :cascade do |t|
+    t.string "role"
+    t.bigint "project_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_id"], name: "index_teams_on_project_id"
+    t.index ["user_id"], name: "index_teams_on_user_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -59,8 +126,14 @@ ActiveRecord::Schema.define(version: 2023_09_14_165310) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "contracts", "projects"
   add_foreign_key "documents", "projects"
   add_foreign_key "documents", "users"
+  add_foreign_key "projects", "folders"
   add_foreign_key "sections", "documents"
   add_foreign_key "sections", "users"
+  add_foreign_key "teams", "projects"
+  add_foreign_key "teams", "users"
 end

@@ -332,7 +332,6 @@ var KTFileManagerList = function () {
 
                 // Activate indicator
                 rowButton.setAttribute("data-kt-indicator", "on");
-
                 // Validate form before submit
                 if (validator) {
                     validator.validate().then(function (status) {
@@ -340,6 +339,27 @@ var KTFileManagerList = function () {
 
                         if (status == 'Valid') {
                             // Simulate process for demo only
+                            const formData = new FormData();
+                            const folderElement = document.getElementById('folder-data');
+                            let folderID = null;
+        
+                            if (folderElement) {
+                                folderID = folderElement.getAttribute('data-folder');
+                                formData.append("folder_id", folderID);
+                            }
+                            formData.append('name', rowInput.value);
+                            $.ajax({
+                                url: '/folders',
+                                type: 'POST',
+                                data: formData, // Use the FormData object as the data
+                                processData: false, // Prevent jQuery from processing the data
+                                contentType: false, // Prevent jQuery from setting the content type
+                                success: function (data) {
+                                },
+                                error: function (data) {
+                                    // Handle error
+                                }
+                            });
                             setTimeout(function () {
                                 // Create folder link
                                 const folderLink = document.createElement('a');
