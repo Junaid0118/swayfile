@@ -103,8 +103,10 @@ var KTCreateApp = function () {
 					const sign_ids = selectedSignotry.map(item => item.value);
 
 					var fileInput = document.getElementById('kt_modal_create_campaign_files_upload');
-					var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
-					formData.append('file', file);
+					if (fileInput) {
+						var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
+						formData.append('file', file);
+					}
 		
 					for (var i = 0; i < form.elements.length; i++) {
 						var fieldName = form.elements[i].name;

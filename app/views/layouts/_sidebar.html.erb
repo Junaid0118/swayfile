@@ -34,6 +34,7 @@
     </div>
     <!--end::Sidebar primary-->
     <!--begin::Sidebar secondary-->
+    <% if false%>
     <div class="app-sidebar-secondary">
         <!--begin::Sidebar menu-->
         <div id="kt_app_sidebar_secondary_wrapper" class="hover-scroll-y" data-kt-scroll="true" data-kt-scroll-activate="{default: true, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#kt_app_sidebar_secondary_menu, #kt_app_sidebar_secondary_tags" data-kt-scroll-offset="5px">
@@ -3320,6 +3321,7 @@
         </div>
         <!--end::Sidebar menu-->
     </div>
+    <% end %>
     <!--end::Sidebar secondary-->
 </div>
 		<div class="modal fade" id="kt_modal_create_app" tabindex="-1" aria-hidden="true">
@@ -3797,3 +3799,21 @@
 			</div>
 			<!--end::Modal dialog-->
 		</div>
+        		<!--begin::Javascript-->
+		<script>var hostUrl = "assets/";</script>
+		<!--begin::Global Javascript Bundle(mandatory for all pages)-->
+		<script src="assets/plugins/global/plugins.bundle.js"></script>
+		<script src="assets/js/scripts.bundle.js"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+		<!--end::Vendors Javascript-->
+		<!--begin::Custom Javascript(used for this page only)-->
+		<script src="assets/js/widgets.bundle.js"></script>
+		<script src="assets/js/custom/widgets.js"></script>
+		<script src="assets/js/custom/apps/chat/chat.js"></script>
+		<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
+		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
+		<script src="assets/js/custom/utilities/modals/create-app.js"></script>
+		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+		<!--end::Custom Javascript-->

@@ -23,9 +23,11 @@
 				</a>
 				<!--end::Logo-->
 				<!--begin::Sidebar toggle-->
+				<% if false %>
 				<button id="kt_app_sidebar_secondary_toggle" class="btn btn-sm btn-icon bg-body btn-color-gray-400 btn-active-color-primary d-none d-lg-flex ms-2" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-secondary-collapse">
 					<i class="ki-outline ki-menu fs-1"></i>
 				</button>
+				<% end %>
 				<!--end::Sidebar toggle-->
 			</div>
 			<!--end::Brand-->
@@ -697,6 +699,7 @@
 						</div>
 						<!--end::Sidebar primary-->
 						<!--begin::Sidebar secondary-->
+						<% if false %>
 						<div class="app-sidebar-secondary">
 							<!--begin::Sidebar menu-->
 							<div id="kt_app_sidebar_secondary_wrapper" class="hover-scroll-y" data-kt-scroll="true" data-kt-scroll-activate="{default: true, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#kt_app_sidebar_secondary_menu, #kt_app_sidebar_secondary_tags" data-kt-scroll-offset="5px">
@@ -3983,6 +3986,7 @@
 							</div>
 							<!--end::Sidebar menu-->
 						</div>
+						<% end %>
 						<!--end::Sidebar secondary-->
 					</div>
 							<!--end::Sidebar navbar-->
@@ -3992,6 +3996,7 @@
 						</div>
 						<!--end::Sidebar primary-->
 						<!--begin::Sidebar secondary-->
+						<% if false%>
 						<div class="app-sidebar-secondary">
 							<!--begin::Sidebar menu-->
 							<div id="kt_app_sidebar_secondary_wrapper" class="hover-scroll-y" data-kt-scroll="true" data-kt-scroll-activate="{default: true, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-wrappers="#kt_app_sidebar_secondary_menu, #kt_app_sidebar_secondary_tags" data-kt-scroll-offset="5px">
@@ -7278,6 +7283,7 @@
 							</div>
 							<!--end::Sidebar menu-->
 						</div>
+						<% end %>
 						<!--end::Sidebar secondary-->
 					</div>
 					<!--end::Sidebar-->
@@ -12457,6 +12463,481 @@
 	</div>
 	<!--end::Modal dialog-->
 </div>
+		<div class="modal fade" id="kt_modal_create_app" tabindex="-1" aria-hidden="true">
+			<!--begin::Modal dialog-->
+			<div class="modal-dialog modal-dialog-centered mw-900px">
+				<!--begin::Modal content-->
+				<div class="modal-content">
+					<!--begin::Modal header-->
+					<div class="modal-header">
+						<!--begin::Modal title-->
+						<h2>Create Project</h2>
+						<!--end::Modal title-->
+						<!--begin::Close-->
+						<div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+							<i class="ki-outline ki-cross fs-1"></i>
+						</div>
+						<!--end::Close-->
+					</div>
+					<!--end::Modal header-->
+					<!--begin::Modal body-->
+					<div class="modal-body py-lg-10 px-lg-10">
+						<!--begin::Stepper-->
+						<div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
+							<!--begin::Aside-->
+							<div class="d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px">
+								<!--begin::Nav-->
+								<div class="stepper-nav ps-lg-10">
+									<!--begin::Step 1-->
+									<div class="stepper-item current" data-kt-stepper-element="nav">
+										<!--begin::Wrapper-->
+										<div class="stepper-wrapper">
+											<!--begin::Icon-->
+											<div class="stepper-icon w-40px h-40px">
+												<i class="ki-outline ki-check stepper-check fs-2"></i>
+												<span class="stepper-number">1</span>
+											</div>
+											<!--end::Icon-->
+											<!--begin::Label-->
+											<div class="stepper-label">
+												<h3 class="stepper-title">Details</h3>
+												<div class="stepper-desc">Project</div>
+											</div>
+											<!--end::Label-->
+										</div>
+										<!--end::Wrapper-->
+										<!--begin::Line-->
+										<div class="stepper-line h-40px"></div>
+										<!--end::Line-->
+									</div>
+									<!--end::Step 1-->
+									<!--begin::Step 2-->
+									<div class="stepper-item" data-kt-stepper-element="nav">
+										<!--begin::Wrapper-->
+										<div class="stepper-wrapper">
+											<!--begin::Icon-->
+											<div class="stepper-icon w-40px h-40px">
+												<i class="ki-outline ki-check stepper-check fs-2"></i>
+												<span class="stepper-number">2</span>
+											</div>
+											<!--begin::Icon-->
+											<!--begin::Label-->
+											<div class="stepper-label">
+												<h3 class="stepper-title">Contract Party</h3>
+												<div class="stepper-desc">Invite your team</div>
+											</div>
+											<!--begin::Label-->
+										</div>
+										<!--end::Wrapper-->
+										<!--begin::Line-->
+										<div class="stepper-line h-40px"></div>
+										<!--end::Line-->
+									</div>
+									<!--end::Step 2-->
+									<!--begin::Step 3-->
+									<div class="stepper-item" data-kt-stepper-element="nav">
+										<!--begin::Wrapper-->
+										<div class="stepper-wrapper">
+											<!--begin::Icon-->
+											<div class="stepper-icon w-40px h-40px">
+												<i class="ki-outline ki-check stepper-check fs-2"></i>
+												<span class="stepper-number">3</span>
+											</div>
+											<!--end::Icon-->
+											<!--begin::Label-->
+											<div class="stepper-label">
+												<h3 class="stepper-title">Signatory Party</h3>
+												<div class="stepper-desc">Invite the signatories</div>
+											</div>
+											<!--end::Label-->
+										</div>
+										<!--end::Wrapper-->
+										<!--begin::Line-->
+										<div class="stepper-line h-40px"></div>
+										<!--end::Line-->
+									</div>
+									<!--end::Step 3-->
+									<!--begin::Step 5-->
+									<div class="stepper-item mark-completed" data-kt-stepper-element="nav">
+										<!--begin::Wrapper-->
+										<div class="stepper-wrapper">
+											<!--begin::Icon-->
+											<div class="stepper-icon w-40px h-40px">
+												<i class="ki-outline ki-check stepper-check fs-2"></i>
+												<span class="stepper-number">5</span>
+											</div>
+											<!--end::Icon-->
+											<!--begin::Label-->
+											<div class="stepper-label">
+												<h3 class="stepper-title">Completed</h3>
+												<div class="stepper-desc">Review and Submit</div>
+											</div>
+											<!--end::Label-->
+										</div>
+										<!--end::Wrapper-->
+									</div>
+									<!--end::Step 5-->
+								</div>
+								<!--end::Nav-->
+							</div>
+							<!--begin::Aside-->
+							<!--begin::Content-->
+							<div class="flex-row-fluid py-lg-5 px-lg-15">
+								<!--begin::Form-->
+								<form class="form" novalidate="novalidate" id="kt_modal_create_app_form">
+									<!--begin::Step 1-->
+									<div class="current" data-kt-stepper-element="content">
+										<div class="w-100">
+											<!--begin::Input group-->
+											<div class="fv-row mb-10">
+												<!--begin::Label-->
+												<label class="d-flex align-items-center fs-5 fw-semibold mb-2">
+													<span class="required">Project Name</span>
+													<span class="ms-1" data-bs-toggle="tooltip" title="Specify your unique app name">
+														<i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+													</span>
+												</label>
+												<!--end::Label-->
+												<!--begin::Input-->
+												<input type="text" class="form-control form-control-lg form-control-solid" name="name" placeholder="" value="" />
+												<!--end::Input-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="fv-row">
+												<!--begin::Label-->
+												<label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+													<span class="required">Branding</span>
+													<span class="ms-1" data-bs-toggle="tooltip" title="Select your app category">
+														<i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+													</span>
+												</label>
+												<!--end::Label-->
+												<!--begin:Options-->
+												<div class="fv-row mb-10">
+													<!--begin::Dropzone-->
+													<div class="dropzone" id="kt_modal_create_campaign_files_upload">
+														<!--begin::Message-->
+														<div class="dz-message needsclick">
+															<!--begin::Icon-->
+															<i class="ki-outline ki-file-up fs-3hx text-primary"></i>
+															<!--end::Icon-->
+															<!--begin::Info-->
+															<div class="ms-4">
+																<h3 class="dfs-3 fw-bold text-gray-900 mb-1">Drop files here or click to upload.</h3>
+																<span class="fw-semibold fs-4 text-muted">Supports SVG / PNG / JPG / JPEG</span>
+															</div>
+															<!--end::Info-->
+														</div>
+													</div>
+													<!--end::Dropzone-->
+												</div>
+												<!--end:Options-->
+											</div>
+											<!--end::Input group-->
+										</div>
+									</div>
+									<!--end::Step 1-->
+									<!--begin::Step 2-->
+									<div data-kt-stepper-element="content">
+										<!--begin::Wrapper-->
+										<div class="w-100">
+											<!--begin::Heading-->
+											<div class="pb-12">
+												<!--begin::Title-->
+												<h1 class="fw-bold text-dark">Build a Team</h1>
+												<!--end::Title-->
+												<!--begin::Description-->
+												<div class="text-muted fw-semibold fs-4">If you need more info, please check
+												<a href="#" class="link-primary">Project Guidelines</a></div>
+												<!--end::Description-->
+											</div>
+											<!--end::Heading-->
+											<!--begin::Input group-->
+											<div class="mb-8">
+												<!--begin::Label-->
+												<label class="fs-6 fw-semibold mb-2">Invite Teammates</label>
+												<!--end::Label-->
+												<!--begin::Input-->
+												<input type="text" class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project contract party members" data-custom-attribute="project_member"/>
+												<!--end::Input-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="mb-8">
+												<!--begin::Label-->
+												<div class="fs-6 fw-semibold mb-2">Team Members</div>
+												<!--end::Label-->
+												<!--begin::Users-->
+												<div class="mh-300px scroll-y me-n7 pe-7" id="team-members-list">
+           											 <!-- Team members will be dynamically generated here -->
+													 <div class="fs-7 text-muted" id="team-members-text">No members are associated with the project</div>
+        										</div>
+												<!--end::Users-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Notice-->
+											<div class="d-flex flex-stack mb-15">
+												<!--begin::Label-->
+												<div class="me-5 fw-semibold">
+													<label class="fs-6">Adding Users by Team Members</label>
+													<div class="fs-7 text-muted">If you need more info, please check budget planning</div>
+												</div>
+												<!--end::Label-->
+												<!--begin::Switch-->
+												<label class="form-check form-switch form-check-custom form-check-solid">
+													<input class="form-check-input" type="checkbox" value="" checked="checked" />
+												</label>
+												<!--end::Switch-->
+											</div>
+											<!--end::Notice-->
+										</div>
+										<!--end::Wrapper-->
+									</div>
+									<!--end::Step 2-->
+									<!--begin::Step 3-->
+									<div data-kt-stepper-element="content">
+										<!--begin::Wrapper-->
+										<div class="w-100">
+											<!--begin::Heading-->
+											<div class="pb-12">
+												<!--begin::Title-->
+												<h1 class="fw-bold text-dark">Build a Team</h1>
+												<!--end::Title-->
+												<!--begin::Description-->
+												<div class="text-muted fw-semibold fs-4">If you need more info, please check
+												<a href="#" class="link-primary">Project Guidelines</a></div>
+												<!--end::Description-->
+											</div>
+											<!--end::Heading-->
+											<!--begin::Input group-->
+											<div class="mb-8">
+												<!--begin::Label-->
+												<label class="fs-6 fw-semibold mb-2">Invite Signatories</label>
+												<!--end::Label-->
+												<!--begin::Input-->
+												<input type="text"  class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add project signatory members"/>
+												<!--end::Input-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="mb-8">
+												<!--begin::Label-->
+												<div class="fs-6 fw-semibold mb-2">Signatory Members</div>
+												<!--end::Label-->
+												<!--begin::Users-->
+												<div class="mh-300px scroll-y me-n7 pe-7" id="sign-members-list">
+           											 <!-- Team members will be dynamically generated here -->
+													 <div class="fs-7 text-muted" id="team-members-text">No members are associated with the project</div>
+        										</div>
+												<!--end::Users-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Notice-->
+											<div class="d-flex flex-stack mb-15">
+												<!--begin::Label-->
+												<div class="me-5 fw-semibold">
+													<label class="fs-6">Adding Users by Team Members</label>
+													<div class="fs-7 text-muted">If you need more info, please check budget planning</div>
+												</div>
+												<!--end::Label-->
+												<!--begin::Switch-->
+												<label class="form-check form-switch form-check-custom form-check-solid">
+													<input class="form-check-input" type="checkbox" value="" checked="checked" />
+												</label>
+												<!--end::Switch-->
+											</div>
+											<!--end::Notice-->
+											<!--begin::Actions-->
+											<!--end::Actions-->
+										</div>
+										<!--end::Wrapper-->
+									</div>
+									<!--end::Step 3-->
+									<!--begin::Step 4-->
+									<div data-kt-stepper-element="content">
+										<div class="w-100">
+											<!--begin::Input group-->
+											<div class="d-flex flex-column mb-7 fv-row">
+												<!--begin::Label-->
+												<label class="d-flex align-items-center fs-6 fw-semibold form-label mb-2">
+													<span class="required">Name On Card</span>
+													<span class="ms-1" data-bs-toggle="tooltip" title="Specify a card holder's name">
+														<i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+													</span>
+												</label>
+												<!--end::Label-->
+												<input type="text" class="form-control form-control-solid" placeholder="" name="card_name" value="Max Doe" />
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="d-flex flex-column mb-7 fv-row">
+												<!--begin::Label-->
+												<label class="required fs-6 fw-semibold form-label mb-2">Card Number</label>
+												<!--end::Label-->
+												<!--begin::Input wrapper-->
+												<div class="position-relative">
+													<!--begin::Input-->
+													<input type="text" class="form-control form-control-solid" placeholder="Enter card number" name="card_number" value="4111 1111 1111 1111" />
+													<!--end::Input-->
+													<!--begin::Card logos-->
+													<div class="position-absolute translate-middle-y top-50 end-0 me-5">
+														<img src="assets/media/svg/card-logos/visa.svg" alt="" class="h-25px" />
+														<img src="assets/media/svg/card-logos/mastercard.svg" alt="" class="h-25px" />
+														<img src="assets/media/svg/card-logos/american-express.svg" alt="" class="h-25px" />
+													</div>
+													<!--end::Card logos-->
+												</div>
+												<!--end::Input wrapper-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="row mb-10">
+												<!--begin::Col-->
+												<div class="col-md-8 fv-row">
+													<!--begin::Label-->
+													<label class="required fs-6 fw-semibold form-label mb-2">Expiration Date</label>
+													<!--end::Label-->
+													<!--begin::Row-->
+													<div class="row fv-row">
+														<!--begin::Col-->
+														<div class="col-6">
+															<select name="card_expiry_month" class="form-select form-select-solid" data-control="select2" data-hide-search="true" data-placeholder="Month">
+																<option></option>
+																<option value="1">1</option>
+																<option value="2">2</option>
+																<option value="3">3</option>
+																<option value="4">4</option>
+																<option value="5">5</option>
+																<option value="6">6</option>
+																<option value="7">7</option>
+																<option value="8">8</option>
+																<option value="9">9</option>
+																<option value="10">10</option>
+																<option value="11">11</option>
+																<option value="12">12</option>
+															</select>
+														</div>
+														<!--end::Col-->
+														<!--begin::Col-->
+														<div class="col-6">
+															<select name="card_expiry_year" class="form-select form-select-solid" data-control="select2" data-hide-search="true" data-placeholder="Year">
+																<option></option>
+																<option value="2023">2023</option>
+																<option value="2024">2024</option>
+																<option value="2025">2025</option>
+																<option value="2026">2026</option>
+																<option value="2027">2027</option>
+																<option value="2028">2028</option>
+																<option value="2029">2029</option>
+																<option value="2030">2030</option>
+																<option value="2031">2031</option>
+																<option value="2032">2032</option>
+																<option value="2033">2033</option>
+															</select>
+														</div>
+														<!--end::Col-->
+													</div>
+													<!--end::Row-->
+												</div>
+												<!--end::Col-->
+												<!--begin::Col-->
+												<div class="col-md-4 fv-row">
+													<!--begin::Label-->
+													<label class="d-flex align-items-center fs-6 fw-semibold form-label mb-2">
+														<span class="required">CVV</span>
+														<span class="ms-1" data-bs-toggle="tooltip" title="Enter a card CVV code">
+															<i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+														</span>
+													</label>
+													<!--end::Label-->
+													<!--begin::Input wrapper-->
+													<div class="position-relative">
+														<!--begin::Input-->
+														<input type="text" class="form-control form-control-solid" minlength="3" maxlength="4" placeholder="CVV" name="card_cvv" />
+														<!--end::Input-->
+														<!--begin::CVV icon-->
+														<div class="position-absolute translate-middle-y top-50 end-0 me-3">
+															<i class="ki-outline ki-credit-cart fs-2hx"></i>
+														</div>
+														<!--end::CVV icon-->
+													</div>
+													<!--end::Input wrapper-->
+												</div>
+												<!--end::Col-->
+											</div>
+											<!--end::Input group-->
+											<!--begin::Input group-->
+											<div class="d-flex flex-stack">
+												<!--begin::Label-->
+												<div class="me-5">
+													<label class="fs-6 fw-semibold form-label">Save Card for further billing?</label>
+													<div class="fs-7 fw-semibold text-muted">If you need more info, please check budget planning</div>
+												</div>
+												<!--end::Label-->
+												<!--begin::Switch-->
+												<label class="form-check form-switch form-check-custom form-check-solid">
+													<input class="form-check-input" type="checkbox" value="1" checked="checked" />
+													<span class="form-check-label fw-semibold text-muted">Save Card</span>
+												</label>
+												<!--end::Switch-->
+											</div>
+											<!--end::Input group-->
+										</div>
+									</div>
+									<!--end::Step 4-->
+									<!--begin::Step 5-->
+									<div data-kt-stepper-element="content">
+										<div class="w-100 text-center">
+											<!--begin::Heading-->
+											<h1 class="fw-bold text-dark mb-3">Release!</h1>
+											<!--end::Heading-->
+											<!--begin::Description-->
+											<div class="text-muted fw-semibold fs-3">Submit your app to kickstart your project.</div>
+											<!--end::Description-->
+											<!--begin::Illustration-->
+											<div class="text-center px-4 py-15">
+												<img src="assets/media/illustrations/sketchy-1/9.png" alt="" class="mw-100 mh-300px" />
+											</div>
+											<!--end::Illustration-->
+										</div>
+									</div>
+									<!--end::Step 5-->
+									<!--begin::Actions-->
+									<div class="d-flex flex-stack pt-10">
+										<!--begin::Wrapper-->
+										<div class="me-2">
+											<button type="button" class="btn btn-lg btn-light-primary me-3" data-kt-stepper-action="previous">
+											<i class="ki-outline ki-arrow-left fs-3 me-1"></i>Back</button>
+										</div>
+										<!--end::Wrapper-->
+										<!--begin::Wrapper-->
+										<div>
+											<button type="button" class="btn btn-lg btn-primary" data-kt-stepper-action="submit">
+												<span class="indicator-label">Submit
+												<i class="ki-outline ki-arrow-right fs-3 ms-2 me-0"></i></span>
+												<span class="indicator-progress">Please wait...
+												<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+											</button>
+											<button type="button" class="btn btn-lg btn-primary" data-kt-stepper-action="next">Continue
+											<i class="ki-outline ki-arrow-right fs-3 ms-1 me-0"></i></button>
+										</div>
+										<!--end::Wrapper-->
+									</div>
+									<!--end::Actions-->
+								</form>
+								<!--end::Form-->
+							</div>
+							<!--end::Content-->
+						</div>
+						<!--end::Stepper-->
+					</div>
+					<!--end::Modal body-->
+				</div>
+				<!--end::Modal content-->
+			</div>
+			<!--end::Modal dialog-->
+		</div>
 <!--end::Modal - Invite Friend-->
 <!--end::Modals-->
 <!--begin::Javascript-->
@@ -12470,6 +12951,22 @@
 <!--end::Vendors Javascript-->
 <!--begin::Custom Javascript(used for this page only)-->
 <script src="assets/js/custom/apps/inbox/reply.js"></script>
+<script src="assets/js/widgets.bundle.js"></script>
+<script src="assets/js/custom/widgets.js"></script>
+<script src="assets/js/custom/apps/chat/chat.js"></script>
+<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
+<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
+<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+<script>var hostUrl = "assets/";</script>
+<!--begin::Global Javascript Bundle(mandatory for all pages)-->
+<script src="assets/plugins/global/plugins.bundle.js"></script>
+<script src="assets/js/scripts.bundle.js"></script>
+<!--end::Global Javascript Bundle-->
+<!--begin::Vendors Javascript(used for this page only)-->
+<script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+<!--end::Vendors Javascript-->
+<!--begin::Custom Javascript(used for this page only)-->
+<script src="assets/js/custom/apps/projects/list/list.js"></script>
 <script src="assets/js/widgets.bundle.js"></script>
 <script src="assets/js/custom/widgets.js"></script>
 <script src="assets/js/custom/apps/chat/chat.js"></script>
