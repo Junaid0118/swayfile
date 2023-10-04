@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_09_27_111440) do
+ActiveRecord::Schema.define(version: 2023_10_03_162718) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -48,6 +48,13 @@ ActiveRecord::Schema.define(version: 2023_09_27_111440) do
     t.datetime "updated_at", precision: 6, null: false
   end
 
+  create_table "contracts", force: :cascade do |t|
+    t.bigint "project_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["project_id"], name: "index_contracts_on_project_id"
+  end
+
   create_table "documents", force: :cascade do |t|
     t.bigint "project_id"
     t.bigint "user_id"
@@ -55,6 +62,20 @@ ActiveRecord::Schema.define(version: 2023_09_27_111440) do
     t.datetime "updated_at", precision: 6, null: false
     t.index ["project_id"], name: "index_documents_on_project_id"
     t.index ["user_id"], name: "index_documents_on_user_id"
+  end
+
+  create_table "file_managers", force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "folders", force: :cascade do |t|
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.text "name"
+    t.string "slug"
+    t.integer "parent_folder_id"
+    t.index ["parent_folder_id"], name: "index_folders_on_parent_folder_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -66,6 +87,8 @@ ActiveRecord::Schema.define(version: 2023_09_27_111440) do
     t.datetime "date"
     t.string "notifications"
     t.string "status"
+    t.bigint "folder_id"
+    t.index ["folder_id"], name: "index_projects_on_folder_id"
   end
 
   create_table "sections", force: :cascade do |t|
@@ -105,8 +128,10 @@ ActiveRecord::Schema.define(version: 2023_09_27_111440) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "contracts", "projects"
   add_foreign_key "documents", "projects"
   add_foreign_key "documents", "users"
+  add_foreign_key "projects", "folders"
   add_foreign_key "sections", "documents"
   add_foreign_key "sections", "users"
   add_foreign_key "teams", "projects"

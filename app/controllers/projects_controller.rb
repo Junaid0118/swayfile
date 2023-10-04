@@ -30,6 +30,7 @@ class ProjectsController < ApplicationController
 
   def create
     project = build_project
+    project.folder_id = params[:folder_id] if params.has_key?(:folder_id)
     if project.save
       create_teams(project)
 
@@ -61,15 +62,19 @@ class ProjectsController < ApplicationController
   end
 
   def project_params
-    {
+    base_params = {
       name: params[:name],
       project_type: params[:project_type],
       description: params[:description],
       status: params[:status],
-      date: params[:date],
-      avatar: params[:file]
+      date: params[:date]
     }
+  
+    base_params[:avatar] = params[:file] unless params[:file] == "undefined"
+  
+    base_params
   end
+  
 
   def set_project
     @project = Project.find(params[:id])

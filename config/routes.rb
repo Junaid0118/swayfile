@@ -20,6 +20,9 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :folders, only: [:create]
+  get 'folders/:slug', to: 'folders#show', as: :folder
+
   get '/folders', to: 'application#folders'
   get '/file_manager', to: 'application#file_manager'
   get '/settings', to: 'application#settings'

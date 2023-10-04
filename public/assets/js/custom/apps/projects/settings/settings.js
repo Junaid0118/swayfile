@@ -7,7 +7,6 @@ var KTProjectSettings = function () {
     var handleForm = function () {
         // Init Datepicker --- For more info, please check Flatpickr's official documentation: https://flatpickr.js.org/
         $("#kt_datepicker_1").flatpickr();
-
         // Form validation
         var validation;
         var _form = document.getElementById('kt_project_settings_form');
@@ -60,20 +59,51 @@ var KTProjectSettings = function () {
 
         submitButton.addEventListener('click', function (e) {
             e.preventDefault();
-
+            var form = document.getElementById('kt_project_settings_form');
             validation.validate().then(function (status) {
                 if (status == 'Valid') {
+                    var params = '';
+                    for (var i = 0; i < form.elements.length; i++) {
+                        var fieldName = form.elements[i].name;
+                        var fieldValue = form.elements[i].value;                    
+                        if (fieldName === 'email' || fieldName === 'phone') {
+                            continue; // Skip this field
+                        }                    
+                        if (fieldName === 'status') {
+                            fieldValue = form.elements[i].checked ? 'Active' : 'Inactive';
+                        }
+                        params += encodeURIComponent(fieldName) + '=' + encodeURIComponent(fieldValue) + '&';
+                    }
 
-                    swal.fire({
-                        text: "Thank you! You've updated your project settings",
-                        icon: "success",
-                        buttonsStyling: false,
-                        confirmButtonText: "Ok, got it!",
-                        customClass: {
-                            confirmButton: "btn fw-bold btn-light-primary"
+                    $.ajax({
+                        url:'/projects?'+params,
+                        type:'POST',
+                        dataType:'json',
+                        success:function(data){
+                            swal.fire({
+                                text: "Thank you! You've updated your project settings",
+                                icon: "success",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {
+                                    confirmButton: "btn fw-bold btn-light-primary"
+                                }
+                            }).then(function () {
+                                window.location.replace("/projects/");
+                            });
+                        },
+                        error:function(data){
+                            swal.fire({
+                                text: "Sorry, looks like there are some errors detected, please try again.",
+                                icon: "error",
+                                buttonsStyling: false,
+                                confirmButtonText: "Ok, got it!",
+                                customClass: {
+                                    confirmButton: "btn fw-bold btn-light-primary"
+                                }
+                            });
                         }
                     });
-
                 } else {
                     swal.fire({
                         text: "Sorry, looks like there are some errors detected, please try again.",
