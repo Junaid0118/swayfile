@@ -17,6 +17,7 @@ Rails.application.routes.draw do
       get 'files'
       get 'activity'
       get 'settings'
+      get 'comments'
     end
   end
 

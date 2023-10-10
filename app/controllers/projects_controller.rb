@@ -28,6 +28,10 @@ class ProjectsController < ApplicationController
     render layout: 'projects'
   end
 
+  def comments
+    render layout: 'projects'
+  end
+
   def create
     project = build_project
     project.folder_id = params[:folder_id] if params.has_key?(:folder_id)

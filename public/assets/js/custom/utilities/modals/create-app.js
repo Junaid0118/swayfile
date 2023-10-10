@@ -103,10 +103,8 @@ var KTCreateApp = function () {
 					const sign_ids = selectedSignotry.map(item => item.value);
 
 					var fileInput = document.getElementById('kt_modal_create_campaign_files_upload');
-					if (fileInput) {
-						var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
-						formData.append('file', file);
-					}
+					var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
+					formData.append('file', file);
 		
 					for (var i = 0; i < form.elements.length; i++) {
 						var fieldName = form.elements[i].name;
@@ -140,6 +138,8 @@ var KTCreateApp = function () {
 
 		
 					// Now, 'formData' contains all the form data you need
+
+					console.log("here:" ,window.location.pathname)
 		
 					$.ajax({
 						url: '/projects',
@@ -148,10 +148,12 @@ var KTCreateApp = function () {
 						processData: false, // Prevent jQuery from processing the data
 						contentType: false, // Prevent jQuery from setting the content type
 						success: function (data) {
-							window.location.replace("/projects/");
+							console.log("success")
+							window.location.replace(window.location.href);
 						},
 						error: function (data) {
-							// Handle error
+							console.log("error")
+							window.location.replace(window.location.href);
 						}
 					});
 		
