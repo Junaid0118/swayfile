@@ -3807,6 +3807,26 @@
 		</div>
         		<!--begin::Javascript-->
 		<script>var hostUrl = "assets/";</script>
+        <!-- Add this script at the end of your HTML, just before the closing </body> tag -->
+        <script>
+            debugger;
+            // Get the current URL path
+            var currentURL = window.location.pathname;
+
+            // Select all project links in the sidebar
+            var projectLinks = document.querySelectorAll('.app-navbar-item a');
+
+            // Loop through the project links
+            projectLinks.forEach(function(link) {
+                var projectId = link.getAttribute('href').match(/\/projects\/(\d+)/)[1]; // Extract the project ID from the href
+
+                // Check if the project ID matches the current URL's ID
+                if (projectId && currentURL.endsWith('/' + projectId)) {
+                    link.parentElement.style.backgroundColor = 'white'; // Set the background color to white
+                }
+            });
+        </script>
+
 		<!--begin::Global Javascript Bundle(mandatory for all pages)-->
 		<script src="assets/plugins/global/plugins.bundle.js"></script>
 		<script src="assets/js/scripts.bundle.js"></script>
@@ -3822,4 +3842,31 @@
 		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
 		<script src="assets/js/custom/utilities/modals/create-app.js"></script>
 		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function() {
+                var currentProjectId = getProjectIdFromURL();
+
+                var navbarItems = document.querySelectorAll(".app-navbar-item");
+
+                navbarItems.forEach(function(navbarItem) {
+                    var projectLink = navbarItem.querySelector("a");
+                    if (projectLink) {
+                        var projectId = projectLink.getAttribute("href").match(/\/projects\/(\d+)/)[1];
+
+                        if (projectId === currentProjectId) {
+                            navbarItem.classList.add("hover-scroll-overlay-y");
+                        }
+                    }
+                });
+            });
+
+            function getProjectIdFromURL() {
+                var url = window.location.pathname;
+                var projectId = url.match(/\/projects\/(\d+)/);
+                console.log(projectId);
+                return projectId ? projectId[1] : null;
+            }
+        </script>
+
+
 		<!--end::Custom Javascript-->

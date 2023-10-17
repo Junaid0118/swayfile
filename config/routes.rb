@@ -2,13 +2,16 @@
 
 Rails.application.routes.draw do
   devise_for :users
-  root "application#application"
+  
+  root "application#file_manager"
 
   get '/dashboard', to: 'application#dashboard'
   get '/get_users', to: 'documents#get_users'
   get '/project-icons', to: 'projects#projects_icon'
+  get '/search_projects', to: 'projects#search_projects'
 
-	resources :compaigns, only: :show
+  resources :compaigns, only: :show
+  
   resources :projects do
     resources :documents, only: :show
     member do
@@ -23,9 +26,11 @@ Rails.application.routes.draw do
 
   resources :folders, only: [:create]
   get 'folders/:slug', to: 'folders#show', as: :folder
+  put 'folders/:slug', to: 'folders#update'
 
   get '/folders', to: 'application#folders'
   get '/file_manager', to: 'application#file_manager'
   get '/settings', to: 'application#settings'
+  get '/profile', to: 'application#profile'
   get '/empty_folder', to: 'application#empty_folder'
 end

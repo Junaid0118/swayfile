@@ -1,0 +1,20 @@
+<!-- _folder_selection_form.html.erb -->
+<%# This partial renders the folder selection form dynamically based on @folders variable %>
+
+<div class="form-group fv-row">
+  <div class='separator separator-dashed my-5'></div>
+
+  <% @all_folders.each do |folder| %>
+    <div class="d-flex">
+      <div class="form-check form-check-custom form-check-solid">
+        <input class="form-check-input me-3" name="move_to_folder" type="radio" value="<%= folder.id %>" id="kt_modal_move_to_folder_<%= folder.id %>" />
+        <label class="form-check-label" for="kt_modal_move_to_folder_<%= folder.id %>">
+          <div class="fw-bold">
+            <i class="ki-outline ki-folder fs-2 text-primary me-2"></i><%= folder.name %>
+          </div>
+        </label>
+      </div>
+    </div>
+    <div class='separator separator-dashed my-5'></div>
+  <% end %>
+</div>

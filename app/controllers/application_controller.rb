@@ -2,8 +2,10 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   protect_from_forgery with: :null_session
 
   before_action :configure_permitted_parameters, if: :devise_controller?
-  before_action :set_avatars, only: [:empty_folder, :folders, :file_manager, :settings]
+  before_action :set_avatars, only: %i[empty_folder folders file_manager]
   before_action :set_folder, only: :folders
+  before_action :set_folders, only: :folders
+  before_action :authenticate_user!, only: :file_manager
 
   def after_sign_in_path_for(_resource)
 	  root_path
@@ -15,6 +17,10 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def dashboard
     render layout: "dashboard"
+  end
+
+  def profile
+    render json: { message: "Profile page" }
   end
 
   def folders
@@ -46,7 +52,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     if user_signed_in?
       super
     else
-      redirect_to new_user_session_path, :notice => 'if you want to add a notice'
+      return redirect_to new_user_session_path, :notice => 'if you want to add a notice'
       ## if you want render 404 page
       ## render :file => File.join(Rails.root, 'public/404'), :formats => [:html], :status => 404, :layout => false
     end
@@ -60,9 +66,16 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     @avatar_urls =  Project.with_attached_avatar.map do |project|
       { url: url_for(project.avatar), id: project.id } if project.avatar.attached?
     end.compact   
+
+    @avatar_urls = @avatar_urls.sort_by! { |project_data| project_data[:created_at] }.reverse
   end
 
   def set_folder
     @folder = Folder.find_by!(slug: params[:slug])
   end
+
+  def set_folders
+    @all_folders = Folder.select(:name, :id)
+  end
+
 end
