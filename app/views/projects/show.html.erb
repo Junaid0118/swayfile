@@ -484,7 +484,27 @@
 									<!--begin::Preferences-->
 									<form data-kt-search-element="advanced-options-form" class="pt-1 d-none">
 										<!--begin::Heading-->
-										<h3 class="fw-semibold text-dark mb-7">Advanced Search</h3>
+										<div class="d-flex flex-stack fw-semibold mb-4">
+											<!--begin::Label-->
+											<span class="text-muted fs-6 me-2">Recently Searched:</span>
+											<!--end::Label-->
+											<!--begin::Toolbar-->
+											<div class="d-flex" data-kt-search-element="toolbar">
+												<!--begin::Preferences toggle-->
+												<div data-kt-search-element="preferences-show" class="btn btn-icon w-20px btn-sm btn-active-color-primary me-2 data-bs-toggle=" title="Show search preferences">
+													<i class="ki-outline ki-setting-2 fs-2"></i>
+												</div>
+												<!--end::Preferences toggle-->
+												<!--begin::Advanced search toggle-->
+												<% if false %>
+													<div data-kt-search-element="advanced-options-form-show" class="btn btn-icon w-20px btn-sm btn-active-color-primary me-n1" data-bs-toggle="tooltip" title="Show more search options">
+														<i class="ki-outline ki-down fs-2"></i>
+													</div>
+												<% end %>
+												<!--end::Advanced search toggle-->
+											</div>
+											<!--end::Toolbar-->
+										</div>
 										<!--end::Heading-->
 										<!--begin::Input group-->
 										<div class="mb-5">
@@ -13565,7 +13585,6 @@
 <script>var hostUrl = "assets/";</script>
 <!--begin::Global Javascript Bundle(mandatory for all pages)-->
 <script src="assets/plugins/global/plugins.bundle.js"></script>
-<script src="assets/js/scripts.bundle.js"></script>
 <!--end::Global Javascript Bundle-->
 <!--begin::Vendors Javascript(used for this page only)-->
 <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
@@ -13581,7 +13600,6 @@
 <script>var hostUrl = "assets/";</script>
 <!--begin::Global Javascript Bundle(mandatory for all pages)-->
 <script src="assets/plugins/global/plugins.bundle.js"></script>
-<script src="assets/js/scripts.bundle.js"></script>
 <!--end::Global Javascript Bundle-->
 <!--begin::Vendors Javascript(used for this page only)-->
 <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>

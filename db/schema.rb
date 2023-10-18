@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_10_03_162718) do
+ActiveRecord::Schema.define(version: 2023_10_17_161905) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -75,7 +75,9 @@ ActiveRecord::Schema.define(version: 2023_10_03_162718) do
     t.text "name"
     t.string "slug"
     t.integer "parent_folder_id"
+    t.bigint "user_id"
     t.index ["parent_folder_id"], name: "index_folders_on_parent_folder_id"
+    t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
   create_table "projects", force: :cascade do |t|
@@ -88,6 +90,8 @@ ActiveRecord::Schema.define(version: 2023_10_03_162718) do
     t.string "notifications"
     t.string "status"
     t.bigint "folder_id"
+    t.bigint "creator_id"
+    t.index ["creator_id"], name: "index_projects_on_creator_id"
     t.index ["folder_id"], name: "index_projects_on_folder_id"
   end
 
@@ -122,6 +126,7 @@ ActiveRecord::Schema.define(version: 2023_10_03_162718) do
     t.datetime "updated_at", precision: 6, null: false
     t.string "first_name"
     t.string "last_name"
+    t.boolean "subscription", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -131,7 +136,9 @@ ActiveRecord::Schema.define(version: 2023_10_03_162718) do
   add_foreign_key "contracts", "projects"
   add_foreign_key "documents", "projects"
   add_foreign_key "documents", "users"
+  add_foreign_key "folders", "users"
   add_foreign_key "projects", "folders"
+  add_foreign_key "projects", "users", column: "creator_id"
   add_foreign_key "sections", "documents"
   add_foreign_key "sections", "users"
   add_foreign_key "teams", "projects"

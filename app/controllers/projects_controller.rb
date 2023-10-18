@@ -9,6 +9,11 @@ class ProjectsController < ApplicationController
     render layout: 'projects'
   end
 
+  def search_projects
+    @projects = Project.where("name LIKE ?", "#{params[:query]}%")
+    render json: @projects.pluck(:name, :id)
+  end
+
   def show
   end
 
@@ -38,9 +43,9 @@ class ProjectsController < ApplicationController
     if project.save
       create_teams(project)
 
-      render json: project, status: :created
+      return render json: project, status: :created
     else
-      render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
+      return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
@@ -51,6 +56,7 @@ class ProjectsController < ApplicationController
   end
 
   def create_teams(project)
+    byebug
     members = params[:members].split(',')
     signatory_ids = params[:sign_ids].split(',')
 
@@ -71,7 +77,7 @@ class ProjectsController < ApplicationController
       project_type: params[:project_type],
       description: params[:description],
       status: params[:status],
-      date: params[:date]
+      date: params[:date],
     }
   
     base_params[:avatar] = params[:file] unless params[:file] == "undefined"
@@ -85,8 +91,11 @@ class ProjectsController < ApplicationController
   end
 
   def set_avatars
-    @avatar_urls =  Project.with_attached_avatar.map do |project|
-      { url: url_for(project.avatar), id: project.id } if project.avatar.attached?
-    end.compact   
+    @avatar_urls = Project.with_attached_avatar.map do |project|
+      { url: url_for(project.avatar), id: project.id, created_at: project.created_at } if project.avatar.attached?
+    end.compact
+  
+    @avatar_urls = @avatar_urls.sort_by! { |project_data| project_data[:created_at] }.reverse
   end
+  
 end
