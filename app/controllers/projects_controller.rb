@@ -40,7 +40,6 @@ class ProjectsController < ApplicationController
   def create
     project = build_project
     project.folder_id = params[:folder_id] if params.has_key?(:folder_id)
-    byebug
     if project.save
       create_teams(project)
 
