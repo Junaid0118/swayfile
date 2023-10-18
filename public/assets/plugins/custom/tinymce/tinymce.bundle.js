@@ -45849,437 +45849,6 @@ tinymce.IconManager.add('default', {
 
     var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var checkRange = function (str, substr, start) {
-      return substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
-    };
-    var contains = function (str, substr) {
-      return str.indexOf(substr) !== -1;
-    };
-    var startsWith = function (str, prefix) {
-      return checkRange(str, prefix, 0);
-    };
-
-    var global = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var link = function () {
-      return /(?:[A-Za-z][A-Za-z\d.+-]{0,14}:\/\/(?:[-.~*+=!&;:'%@?^${}(),\w]+@)?|www\.|[-;:&=+$,.\w]+@)[A-Za-z\d-]+(?:\.[A-Za-z\d-]+)*(?::\d+)?(?:\/(?:[-.~*+=!;:'%@$(),\/\w]*[-~*+=%@$()\/\w])?)?(?:\?(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?(?:#(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?/g;
-    };
-
-    var defaultLinkPattern = new RegExp('^' + link().source + '$', 'i');
-    var getAutoLinkPattern = function (editor) {
-      return editor.getParam('autolink_pattern', defaultLinkPattern);
-    };
-    var getDefaultLinkTarget = function (editor) {
-      return editor.getParam('default_link_target', false);
-    };
-    var getDefaultLinkProtocol = function (editor) {
-      return editor.getParam('link_default_protocol', 'http', 'string');
-    };
-
-    var rangeEqualsBracketOrSpace = function (rangeString) {
-      return /^[(\[{ \u00a0]$/.test(rangeString);
-    };
-    var isTextNode = function (node) {
-      return node.nodeType === 3;
-    };
-    var isElement = function (node) {
-      return node.nodeType === 1;
-    };
-    var handleBracket = function (editor) {
-      return parseCurrentLine(editor, -1);
-    };
-    var handleSpacebar = function (editor) {
-      return parseCurrentLine(editor, 0);
-    };
-    var handleEnter = function (editor) {
-      return parseCurrentLine(editor, -1);
-    };
-    var scopeIndex = function (container, index) {
-      if (index < 0) {
-        index = 0;
-      }
-      if (isTextNode(container)) {
-        var len = container.data.length;
-        if (index > len) {
-          index = len;
-        }
-      }
-      return index;
-    };
-    var setStart = function (rng, container, offset) {
-      if (!isElement(container) || container.hasChildNodes()) {
-        rng.setStart(container, scopeIndex(container, offset));
-      } else {
-        rng.setStartBefore(container);
-      }
-    };
-    var setEnd = function (rng, container, offset) {
-      if (!isElement(container) || container.hasChildNodes()) {
-        rng.setEnd(container, scopeIndex(container, offset));
-      } else {
-        rng.setEndAfter(container);
-      }
-    };
-    var hasProtocol = function (url) {
-      return /^([A-Za-z][A-Za-z\d.+-]*:\/\/)|mailto:/.test(url);
-    };
-    var isPunctuation = function (char) {
-      return /[?!,.;:]/.test(char);
-    };
-    var parseCurrentLine = function (editor, endOffset) {
-      var end, endContainer, bookmark, text, prev, len, rngText;
-      var autoLinkPattern = getAutoLinkPattern(editor);
-      var defaultLinkTarget = getDefaultLinkTarget(editor);
-      if (editor.dom.getParent(editor.selection.getNode(), 'a[href]') !== null) {
-        return;
-      }
-      var rng = editor.selection.getRng().cloneRange();
-      if (rng.startOffset < 5) {
-        prev = rng.endContainer.previousSibling;
-        if (!prev) {
-          if (!rng.endContainer.firstChild || !rng.endContainer.firstChild.nextSibling) {
-            return;
-          }
-          prev = rng.endContainer.firstChild.nextSibling;
-        }
-        len = prev.length;
-        setStart(rng, prev, len);
-        setEnd(rng, prev, len);
-        if (rng.endOffset < 5) {
-          return;
-        }
-        end = rng.endOffset;
-        endContainer = prev;
-      } else {
-        endContainer = rng.endContainer;
-        if (!isTextNode(endContainer) && endContainer.firstChild) {
-          while (!isTextNode(endContainer) && endContainer.firstChild) {
-            endContainer = endContainer.firstChild;
-          }
-          if (isTextNode(endContainer)) {
-            setStart(rng, endContainer, 0);
-            setEnd(rng, endContainer, endContainer.nodeValue.length);
-          }
-        }
-        if (rng.endOffset === 1) {
-          end = 2;
-        } else {
-          end = rng.endOffset - 1 - endOffset;
-        }
-      }
-      var start = end;
-      do {
-        setStart(rng, endContainer, end >= 2 ? end - 2 : 0);
-        setEnd(rng, endContainer, end >= 1 ? end - 1 : 0);
-        end -= 1;
-        rngText = rng.toString();
-      } while (!rangeEqualsBracketOrSpace(rngText) && end - 2 >= 0);
-      if (rangeEqualsBracketOrSpace(rng.toString())) {
-        setStart(rng, endContainer, end);
-        setEnd(rng, endContainer, start);
-        end += 1;
-      } else if (rng.startOffset === 0) {
-        setStart(rng, endContainer, 0);
-        setEnd(rng, endContainer, start);
-      } else {
-        setStart(rng, endContainer, end);
-        setEnd(rng, endContainer, start);
-      }
-      text = rng.toString();
-      if (isPunctuation(text.charAt(text.length - 1))) {
-        setEnd(rng, endContainer, start - 1);
-      }
-      text = rng.toString().trim();
-      var matches = text.match(autoLinkPattern);
-      var protocol = getDefaultLinkProtocol(editor);
-      if (matches) {
-        var url = matches[0];
-        if (startsWith(url, 'www.')) {
-          url = protocol + '://' + url;
-        } else if (contains(url, '@') && !hasProtocol(url)) {
-          url = 'mailto:' + url;
-        }
-        bookmark = editor.selection.getBookmark();
-        editor.selection.setRng(rng);
-        editor.execCommand('createlink', false, url);
-        if (defaultLinkTarget !== false) {
-          editor.dom.setAttrib(editor.selection.getNode(), 'target', defaultLinkTarget);
-        }
-        editor.selection.moveToBookmark(bookmark);
-        editor.nodeChanged();
-      }
-    };
-    var setup = function (editor) {
-      var autoUrlDetectState;
-      editor.on('keydown', function (e) {
-        if (e.keyCode === 13) {
-          return handleEnter(editor);
-        }
-      });
-      if (global.browser.isIE()) {
-        editor.on('focus', function () {
-          if (!autoUrlDetectState) {
-            autoUrlDetectState = true;
-            try {
-              editor.execCommand('AutoUrlDetect', false, true);
-            } catch (ex) {
-            }
-          }
-        });
-        return;
-      }
-      editor.on('keypress', function (e) {
-        if (e.keyCode === 41 || e.keyCode === 93 || e.keyCode === 125) {
-          return handleBracket(editor);
-        }
-      });
-      editor.on('keyup', function (e) {
-        if (e.keyCode === 32) {
-          return handleSpacebar(editor);
-        }
-      });
-    };
-
-    function Plugin () {
-      global$1.add('autolink', function (editor) {
-        setup(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.RangeUtils');
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var allowHtmlInNamedAnchor = function (editor) {
-      return editor.getParam('allow_html_in_named_anchor', false, 'boolean');
-    };
-
-    var namedAnchorSelector = 'a:not([href])';
-    var isEmptyString = function (str) {
-      return !str;
-    };
-    var getIdFromAnchor = function (elm) {
-      var id = elm.getAttribute('id') || elm.getAttribute('name');
-      return id || '';
-    };
-    var isAnchor = function (elm) {
-      return elm && elm.nodeName.toLowerCase() === 'a';
-    };
-    var isNamedAnchor = function (elm) {
-      return isAnchor(elm) && !elm.getAttribute('href') && getIdFromAnchor(elm) !== '';
-    };
-    var isEmptyNamedAnchor = function (elm) {
-      return isNamedAnchor(elm) && !elm.firstChild;
-    };
-
-    var removeEmptyNamedAnchorsInSelection = function (editor) {
-      var dom = editor.dom;
-      global$1(dom).walk(editor.selection.getRng(), function (nodes) {
-        global.each(nodes, function (node) {
-          if (isEmptyNamedAnchor(node)) {
-            dom.remove(node, false);
-          }
-        });
-      });
-    };
-    var isValidId = function (id) {
-      return /^[A-Za-z][A-Za-z0-9\-:._]*$/.test(id);
-    };
-    var getNamedAnchor = function (editor) {
-      return editor.dom.getParent(editor.selection.getStart(), namedAnchorSelector);
-    };
-    var getId = function (editor) {
-      var anchor = getNamedAnchor(editor);
-      if (anchor) {
-        return getIdFromAnchor(anchor);
-      } else {
-        return '';
-      }
-    };
-    var createAnchor = function (editor, id) {
-      editor.undoManager.transact(function () {
-        if (!allowHtmlInNamedAnchor(editor)) {
-          editor.selection.collapse(true);
-        }
-        if (editor.selection.isCollapsed()) {
-          editor.insertContent(editor.dom.createHTML('a', { id: id }));
-        } else {
-          removeEmptyNamedAnchorsInSelection(editor);
-          editor.formatter.remove('namedAnchor', null, null, true);
-          editor.formatter.apply('namedAnchor', { value: id });
-          editor.addVisual();
-        }
-      });
-    };
-    var updateAnchor = function (editor, id, anchorElement) {
-      anchorElement.removeAttribute('name');
-      anchorElement.id = id;
-      editor.addVisual();
-      editor.undoManager.add();
-    };
-    var insert = function (editor, id) {
-      var anchor = getNamedAnchor(editor);
-      if (anchor) {
-        updateAnchor(editor, id, anchor);
-      } else {
-        createAnchor(editor, id);
-      }
-      editor.focus();
-    };
-
-    var insertAnchor = function (editor, newId) {
-      if (!isValidId(newId)) {
-        editor.windowManager.alert('Id should start with a letter, followed only by letters, numbers, dashes, dots, colons or underscores.');
-        return false;
-      } else {
-        insert(editor, newId);
-        return true;
-      }
-    };
-    var open = function (editor) {
-      var currentId = getId(editor);
-      editor.windowManager.open({
-        title: 'Anchor',
-        size: 'normal',
-        body: {
-          type: 'panel',
-          items: [{
-              name: 'id',
-              type: 'input',
-              label: 'ID',
-              placeholder: 'example'
-            }]
-        },
-        buttons: [
-          {
-            type: 'cancel',
-            name: 'cancel',
-            text: 'Cancel'
-          },
-          {
-            type: 'submit',
-            name: 'save',
-            text: 'Save',
-            primary: true
-          }
-        ],
-        initialData: { id: currentId },
-        onSubmit: function (api) {
-          if (insertAnchor(editor, api.getData().id)) {
-            api.close();
-          }
-        }
-      });
-    };
-
-    var register$1 = function (editor) {
-      editor.addCommand('mceAnchor', function () {
-        open(editor);
-      });
-    };
-
-    var isNamedAnchorNode = function (node) {
-      return node && isEmptyString(node.attr('href')) && !isEmptyString(node.attr('id') || node.attr('name'));
-    };
-    var isEmptyNamedAnchorNode = function (node) {
-      return isNamedAnchorNode(node) && !node.firstChild;
-    };
-    var setContentEditable = function (state) {
-      return function (nodes) {
-        for (var i = 0; i < nodes.length; i++) {
-          var node = nodes[i];
-          if (isEmptyNamedAnchorNode(node)) {
-            node.attr('contenteditable', state);
-          }
-        }
-      };
-    };
-    var setup = function (editor) {
-      editor.on('PreInit', function () {
-        editor.parser.addNodeFilter('a', setContentEditable('false'));
-        editor.serializer.addNodeFilter('a', setContentEditable(null));
-      });
-    };
-
-    var registerFormats = function (editor) {
-      editor.formatter.register('namedAnchor', {
-        inline: 'a',
-        selector: namedAnchorSelector,
-        remove: 'all',
-        split: true,
-        deep: true,
-        attributes: { id: '%value' },
-        onmatch: function (node, _fmt, _itemName) {
-          return isNamedAnchor(node);
-        }
-      });
-    };
-
-    var register = function (editor) {
-      editor.ui.registry.addToggleButton('anchor', {
-        icon: 'bookmark',
-        tooltip: 'Anchor',
-        onAction: function () {
-          return editor.execCommand('mceAnchor');
-        },
-        onSetup: function (buttonApi) {
-          return editor.selection.selectorChangedWithUnbind('a:not([href])', buttonApi.setActive).unbind;
-        }
-      });
-      editor.ui.registry.addMenuItem('anchor', {
-        icon: 'bookmark',
-        text: 'Anchor...',
-        onAction: function () {
-          return editor.execCommand('mceAnchor');
-        }
-      });
-    };
-
-    function Plugin () {
-      global$2.add('anchor', function (editor) {
-        setup(editor);
-        register$1(editor);
-        register(editor);
-        editor.on('PreInit', function () {
-          registerFormats(editor);
-        });
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
     var applyListFormat = function (editor, listName, styleValue) {
       var cmd = listName === 'UL' ? 'InsertUnorderedList' : 'InsertOrderedList';
       editor.execCommand(cmd, false, styleValue === false ? null : { 'list-style-type': styleValue });
@@ -46522,6 +46091,835 @@ tinymce.IconManager.add('default', {
         } else {
           console.error('Please use the Lists plugin together with the Advanced List plugin.');
         }
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.RangeUtils');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var allowHtmlInNamedAnchor = function (editor) {
+      return editor.getParam('allow_html_in_named_anchor', false, 'boolean');
+    };
+
+    var namedAnchorSelector = 'a:not([href])';
+    var isEmptyString = function (str) {
+      return !str;
+    };
+    var getIdFromAnchor = function (elm) {
+      var id = elm.getAttribute('id') || elm.getAttribute('name');
+      return id || '';
+    };
+    var isAnchor = function (elm) {
+      return elm && elm.nodeName.toLowerCase() === 'a';
+    };
+    var isNamedAnchor = function (elm) {
+      return isAnchor(elm) && !elm.getAttribute('href') && getIdFromAnchor(elm) !== '';
+    };
+    var isEmptyNamedAnchor = function (elm) {
+      return isNamedAnchor(elm) && !elm.firstChild;
+    };
+
+    var removeEmptyNamedAnchorsInSelection = function (editor) {
+      var dom = editor.dom;
+      global$1(dom).walk(editor.selection.getRng(), function (nodes) {
+        global.each(nodes, function (node) {
+          if (isEmptyNamedAnchor(node)) {
+            dom.remove(node, false);
+          }
+        });
+      });
+    };
+    var isValidId = function (id) {
+      return /^[A-Za-z][A-Za-z0-9\-:._]*$/.test(id);
+    };
+    var getNamedAnchor = function (editor) {
+      return editor.dom.getParent(editor.selection.getStart(), namedAnchorSelector);
+    };
+    var getId = function (editor) {
+      var anchor = getNamedAnchor(editor);
+      if (anchor) {
+        return getIdFromAnchor(anchor);
+      } else {
+        return '';
+      }
+    };
+    var createAnchor = function (editor, id) {
+      editor.undoManager.transact(function () {
+        if (!allowHtmlInNamedAnchor(editor)) {
+          editor.selection.collapse(true);
+        }
+        if (editor.selection.isCollapsed()) {
+          editor.insertContent(editor.dom.createHTML('a', { id: id }));
+        } else {
+          removeEmptyNamedAnchorsInSelection(editor);
+          editor.formatter.remove('namedAnchor', null, null, true);
+          editor.formatter.apply('namedAnchor', { value: id });
+          editor.addVisual();
+        }
+      });
+    };
+    var updateAnchor = function (editor, id, anchorElement) {
+      anchorElement.removeAttribute('name');
+      anchorElement.id = id;
+      editor.addVisual();
+      editor.undoManager.add();
+    };
+    var insert = function (editor, id) {
+      var anchor = getNamedAnchor(editor);
+      if (anchor) {
+        updateAnchor(editor, id, anchor);
+      } else {
+        createAnchor(editor, id);
+      }
+      editor.focus();
+    };
+
+    var insertAnchor = function (editor, newId) {
+      if (!isValidId(newId)) {
+        editor.windowManager.alert('Id should start with a letter, followed only by letters, numbers, dashes, dots, colons or underscores.');
+        return false;
+      } else {
+        insert(editor, newId);
+        return true;
+      }
+    };
+    var open = function (editor) {
+      var currentId = getId(editor);
+      editor.windowManager.open({
+        title: 'Anchor',
+        size: 'normal',
+        body: {
+          type: 'panel',
+          items: [{
+              name: 'id',
+              type: 'input',
+              label: 'ID',
+              placeholder: 'example'
+            }]
+        },
+        buttons: [
+          {
+            type: 'cancel',
+            name: 'cancel',
+            text: 'Cancel'
+          },
+          {
+            type: 'submit',
+            name: 'save',
+            text: 'Save',
+            primary: true
+          }
+        ],
+        initialData: { id: currentId },
+        onSubmit: function (api) {
+          if (insertAnchor(editor, api.getData().id)) {
+            api.close();
+          }
+        }
+      });
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceAnchor', function () {
+        open(editor);
+      });
+    };
+
+    var isNamedAnchorNode = function (node) {
+      return node && isEmptyString(node.attr('href')) && !isEmptyString(node.attr('id') || node.attr('name'));
+    };
+    var isEmptyNamedAnchorNode = function (node) {
+      return isNamedAnchorNode(node) && !node.firstChild;
+    };
+    var setContentEditable = function (state) {
+      return function (nodes) {
+        for (var i = 0; i < nodes.length; i++) {
+          var node = nodes[i];
+          if (isEmptyNamedAnchorNode(node)) {
+            node.attr('contenteditable', state);
+          }
+        }
+      };
+    };
+    var setup = function (editor) {
+      editor.on('PreInit', function () {
+        editor.parser.addNodeFilter('a', setContentEditable('false'));
+        editor.serializer.addNodeFilter('a', setContentEditable(null));
+      });
+    };
+
+    var registerFormats = function (editor) {
+      editor.formatter.register('namedAnchor', {
+        inline: 'a',
+        selector: namedAnchorSelector,
+        remove: 'all',
+        split: true,
+        deep: true,
+        attributes: { id: '%value' },
+        onmatch: function (node, _fmt, _itemName) {
+          return isNamedAnchor(node);
+        }
+      });
+    };
+
+    var register = function (editor) {
+      editor.ui.registry.addToggleButton('anchor', {
+        icon: 'bookmark',
+        tooltip: 'Anchor',
+        onAction: function () {
+          return editor.execCommand('mceAnchor');
+        },
+        onSetup: function (buttonApi) {
+          return editor.selection.selectorChangedWithUnbind('a:not([href])', buttonApi.setActive).unbind;
+        }
+      });
+      editor.ui.registry.addMenuItem('anchor', {
+        icon: 'bookmark',
+        text: 'Anchor...',
+        onAction: function () {
+          return editor.execCommand('mceAnchor');
+        }
+      });
+    };
+
+    function Plugin () {
+      global$2.add('anchor', function (editor) {
+        setup(editor);
+        register$1(editor);
+        register(editor);
+        editor.on('PreInit', function () {
+          registerFormats(editor);
+        });
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var checkRange = function (str, substr, start) {
+      return substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
+    };
+    var contains = function (str, substr) {
+      return str.indexOf(substr) !== -1;
+    };
+    var startsWith = function (str, prefix) {
+      return checkRange(str, prefix, 0);
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var link = function () {
+      return /(?:[A-Za-z][A-Za-z\d.+-]{0,14}:\/\/(?:[-.~*+=!&;:'%@?^${}(),\w]+@)?|www\.|[-;:&=+$,.\w]+@)[A-Za-z\d-]+(?:\.[A-Za-z\d-]+)*(?::\d+)?(?:\/(?:[-.~*+=!;:'%@$(),\/\w]*[-~*+=%@$()\/\w])?)?(?:\?(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?(?:#(?:[-.~*+=!&;:'%@?^${}(),\/\w]+))?/g;
+    };
+
+    var defaultLinkPattern = new RegExp('^' + link().source + '$', 'i');
+    var getAutoLinkPattern = function (editor) {
+      return editor.getParam('autolink_pattern', defaultLinkPattern);
+    };
+    var getDefaultLinkTarget = function (editor) {
+      return editor.getParam('default_link_target', false);
+    };
+    var getDefaultLinkProtocol = function (editor) {
+      return editor.getParam('link_default_protocol', 'http', 'string');
+    };
+
+    var rangeEqualsBracketOrSpace = function (rangeString) {
+      return /^[(\[{ \u00a0]$/.test(rangeString);
+    };
+    var isTextNode = function (node) {
+      return node.nodeType === 3;
+    };
+    var isElement = function (node) {
+      return node.nodeType === 1;
+    };
+    var handleBracket = function (editor) {
+      return parseCurrentLine(editor, -1);
+    };
+    var handleSpacebar = function (editor) {
+      return parseCurrentLine(editor, 0);
+    };
+    var handleEnter = function (editor) {
+      return parseCurrentLine(editor, -1);
+    };
+    var scopeIndex = function (container, index) {
+      if (index < 0) {
+        index = 0;
+      }
+      if (isTextNode(container)) {
+        var len = container.data.length;
+        if (index > len) {
+          index = len;
+        }
+      }
+      return index;
+    };
+    var setStart = function (rng, container, offset) {
+      if (!isElement(container) || container.hasChildNodes()) {
+        rng.setStart(container, scopeIndex(container, offset));
+      } else {
+        rng.setStartBefore(container);
+      }
+    };
+    var setEnd = function (rng, container, offset) {
+      if (!isElement(container) || container.hasChildNodes()) {
+        rng.setEnd(container, scopeIndex(container, offset));
+      } else {
+        rng.setEndAfter(container);
+      }
+    };
+    var hasProtocol = function (url) {
+      return /^([A-Za-z][A-Za-z\d.+-]*:\/\/)|mailto:/.test(url);
+    };
+    var isPunctuation = function (char) {
+      return /[?!,.;:]/.test(char);
+    };
+    var parseCurrentLine = function (editor, endOffset) {
+      var end, endContainer, bookmark, text, prev, len, rngText;
+      var autoLinkPattern = getAutoLinkPattern(editor);
+      var defaultLinkTarget = getDefaultLinkTarget(editor);
+      if (editor.dom.getParent(editor.selection.getNode(), 'a[href]') !== null) {
+        return;
+      }
+      var rng = editor.selection.getRng().cloneRange();
+      if (rng.startOffset < 5) {
+        prev = rng.endContainer.previousSibling;
+        if (!prev) {
+          if (!rng.endContainer.firstChild || !rng.endContainer.firstChild.nextSibling) {
+            return;
+          }
+          prev = rng.endContainer.firstChild.nextSibling;
+        }
+        len = prev.length;
+        setStart(rng, prev, len);
+        setEnd(rng, prev, len);
+        if (rng.endOffset < 5) {
+          return;
+        }
+        end = rng.endOffset;
+        endContainer = prev;
+      } else {
+        endContainer = rng.endContainer;
+        if (!isTextNode(endContainer) && endContainer.firstChild) {
+          while (!isTextNode(endContainer) && endContainer.firstChild) {
+            endContainer = endContainer.firstChild;
+          }
+          if (isTextNode(endContainer)) {
+            setStart(rng, endContainer, 0);
+            setEnd(rng, endContainer, endContainer.nodeValue.length);
+          }
+        }
+        if (rng.endOffset === 1) {
+          end = 2;
+        } else {
+          end = rng.endOffset - 1 - endOffset;
+        }
+      }
+      var start = end;
+      do {
+        setStart(rng, endContainer, end >= 2 ? end - 2 : 0);
+        setEnd(rng, endContainer, end >= 1 ? end - 1 : 0);
+        end -= 1;
+        rngText = rng.toString();
+      } while (!rangeEqualsBracketOrSpace(rngText) && end - 2 >= 0);
+      if (rangeEqualsBracketOrSpace(rng.toString())) {
+        setStart(rng, endContainer, end);
+        setEnd(rng, endContainer, start);
+        end += 1;
+      } else if (rng.startOffset === 0) {
+        setStart(rng, endContainer, 0);
+        setEnd(rng, endContainer, start);
+      } else {
+        setStart(rng, endContainer, end);
+        setEnd(rng, endContainer, start);
+      }
+      text = rng.toString();
+      if (isPunctuation(text.charAt(text.length - 1))) {
+        setEnd(rng, endContainer, start - 1);
+      }
+      text = rng.toString().trim();
+      var matches = text.match(autoLinkPattern);
+      var protocol = getDefaultLinkProtocol(editor);
+      if (matches) {
+        var url = matches[0];
+        if (startsWith(url, 'www.')) {
+          url = protocol + '://' + url;
+        } else if (contains(url, '@') && !hasProtocol(url)) {
+          url = 'mailto:' + url;
+        }
+        bookmark = editor.selection.getBookmark();
+        editor.selection.setRng(rng);
+        editor.execCommand('createlink', false, url);
+        if (defaultLinkTarget !== false) {
+          editor.dom.setAttrib(editor.selection.getNode(), 'target', defaultLinkTarget);
+        }
+        editor.selection.moveToBookmark(bookmark);
+        editor.nodeChanged();
+      }
+    };
+    var setup = function (editor) {
+      var autoUrlDetectState;
+      editor.on('keydown', function (e) {
+        if (e.keyCode === 13) {
+          return handleEnter(editor);
+        }
+      });
+      if (global.browser.isIE()) {
+        editor.on('focus', function () {
+          if (!autoUrlDetectState) {
+            autoUrlDetectState = true;
+            try {
+              editor.execCommand('AutoUrlDetect', false, true);
+            } catch (ex) {
+            }
+          }
+        });
+        return;
+      }
+      editor.on('keypress', function (e) {
+        if (e.keyCode === 41 || e.keyCode === 93 || e.keyCode === 125) {
+          return handleBracket(editor);
+        }
+      });
+      editor.on('keyup', function (e) {
+        if (e.keyCode === 32) {
+          return handleSpacebar(editor);
+        }
+      });
+    };
+
+    function Plugin () {
+      global$1.add('autolink', function (editor) {
+        setup(editor);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
+
+    var hasOwnProperty = Object.hasOwnProperty;
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
+
+    var fireResizeEditor = function (editor) {
+      return editor.fire('ResizeEditor');
+    };
+
+    var getAutoResizeMinHeight = function (editor) {
+      return editor.getParam('min_height', editor.getElement().offsetHeight, 'number');
+    };
+    var getAutoResizeMaxHeight = function (editor) {
+      return editor.getParam('max_height', 0, 'number');
+    };
+    var getAutoResizeOverflowPadding = function (editor) {
+      return editor.getParam('autoresize_overflow_padding', 1, 'number');
+    };
+    var getAutoResizeBottomMargin = function (editor) {
+      return editor.getParam('autoresize_bottom_margin', 50, 'number');
+    };
+    var shouldAutoResizeOnInit = function (editor) {
+      return editor.getParam('autoresize_on_init', true, 'boolean');
+    };
+
+    var isFullscreen = function (editor) {
+      return editor.plugins.fullscreen && editor.plugins.fullscreen.isFullscreen();
+    };
+    var wait = function (editor, oldSize, times, interval, callback) {
+      global.setEditorTimeout(editor, function () {
+        resize(editor, oldSize);
+        if (times--) {
+          wait(editor, oldSize, times, interval, callback);
+        } else if (callback) {
+          callback();
+        }
+      }, interval);
+    };
+    var toggleScrolling = function (editor, state) {
+      var body = editor.getBody();
+      if (body) {
+        body.style.overflowY = state ? '' : 'hidden';
+        if (!state) {
+          body.scrollTop = 0;
+        }
+      }
+    };
+    var parseCssValueToInt = function (dom, elm, name, computed) {
+      var value = parseInt(dom.getStyle(elm, name, computed), 10);
+      return isNaN(value) ? 0 : value;
+    };
+    var shouldScrollIntoView = function (trigger) {
+      if ((trigger === null || trigger === void 0 ? void 0 : trigger.type.toLowerCase()) === 'setcontent') {
+        var setContentEvent = trigger;
+        return setContentEvent.selection === true || setContentEvent.paste === true;
+      } else {
+        return false;
+      }
+    };
+    var resize = function (editor, oldSize, trigger) {
+      var dom = editor.dom;
+      var doc = editor.getDoc();
+      if (!doc) {
+        return;
+      }
+      if (isFullscreen(editor)) {
+        toggleScrolling(editor, true);
+        return;
+      }
+      var docEle = doc.documentElement;
+      var resizeBottomMargin = getAutoResizeBottomMargin(editor);
+      var resizeHeight = getAutoResizeMinHeight(editor);
+      var marginTop = parseCssValueToInt(dom, docEle, 'margin-top', true);
+      var marginBottom = parseCssValueToInt(dom, docEle, 'margin-bottom', true);
+      var contentHeight = docEle.offsetHeight + marginTop + marginBottom + resizeBottomMargin;
+      if (contentHeight < 0) {
+        contentHeight = 0;
+      }
+      var containerHeight = editor.getContainer().offsetHeight;
+      var contentAreaHeight = editor.getContentAreaContainer().offsetHeight;
+      var chromeHeight = containerHeight - contentAreaHeight;
+      if (contentHeight + chromeHeight > getAutoResizeMinHeight(editor)) {
+        resizeHeight = contentHeight + chromeHeight;
+      }
+      var maxHeight = getAutoResizeMaxHeight(editor);
+      if (maxHeight && resizeHeight > maxHeight) {
+        resizeHeight = maxHeight;
+        toggleScrolling(editor, true);
+      } else {
+        toggleScrolling(editor, false);
+      }
+      if (resizeHeight !== oldSize.get()) {
+        var deltaSize = resizeHeight - oldSize.get();
+        dom.setStyle(editor.getContainer(), 'height', resizeHeight + 'px');
+        oldSize.set(resizeHeight);
+        fireResizeEditor(editor);
+        if (global$1.browser.isSafari() && global$1.mac) {
+          var win = editor.getWin();
+          win.scrollTo(win.pageXOffset, win.pageYOffset);
+        }
+        if (editor.hasFocus() && shouldScrollIntoView(trigger)) {
+          editor.selection.scrollIntoView();
+        }
+        if (global$1.webkit && deltaSize < 0) {
+          resize(editor, oldSize, trigger);
+        }
+      }
+    };
+    var setup = function (editor, oldSize) {
+      editor.on('init', function () {
+        var overflowPadding = getAutoResizeOverflowPadding(editor);
+        var dom = editor.dom;
+        dom.setStyles(editor.getDoc().documentElement, { height: 'auto' });
+        dom.setStyles(editor.getBody(), {
+          'paddingLeft': overflowPadding,
+          'paddingRight': overflowPadding,
+          'min-height': 0
+        });
+      });
+      editor.on('NodeChange SetContent keyup FullscreenStateChanged ResizeContent', function (e) {
+        resize(editor, oldSize, e);
+      });
+      if (shouldAutoResizeOnInit(editor)) {
+        editor.on('init', function () {
+          wait(editor, oldSize, 20, 100, function () {
+            wait(editor, oldSize, 5, 1000);
+          });
+        });
+      }
+    };
+
+    var register = function (editor, oldSize) {
+      editor.addCommand('mceAutoResize', function () {
+        resize(editor, oldSize);
+      });
+    };
+
+    function Plugin () {
+      global$2.add('autoresize', function (editor) {
+        if (!has(editor.settings, 'resize')) {
+          editor.settings.resize = false;
+        }
+        if (!editor.inline) {
+          var oldSize = Cell(0);
+          register(editor, oldSize);
+          setup(editor, oldSize);
+        }
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var eq = function (t) {
+      return function (a) {
+        return t === a;
+      };
+    };
+    var isUndefined = eq(undefined);
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var fireRestoreDraft = function (editor) {
+      return editor.fire('RestoreDraft');
+    };
+    var fireStoreDraft = function (editor) {
+      return editor.fire('StoreDraft');
+    };
+    var fireRemoveDraft = function (editor) {
+      return editor.fire('RemoveDraft');
+    };
+
+    var parse = function (timeString, defaultTime) {
+      var multiples = {
+        s: 1000,
+        m: 60000
+      };
+      var toParse = timeString || defaultTime;
+      var parsedTime = /^(\d+)([ms]?)$/.exec('' + toParse);
+      return (parsedTime[2] ? multiples[parsedTime[2]] : 1) * parseInt(toParse, 10);
+    };
+
+    var shouldAskBeforeUnload = function (editor) {
+      return editor.getParam('autosave_ask_before_unload', true);
+    };
+    var getAutoSavePrefix = function (editor) {
+      var location = document.location;
+      return editor.getParam('autosave_prefix', 'tinymce-autosave-{path}{query}{hash}-{id}-').replace(/{path}/g, location.pathname).replace(/{query}/g, location.search).replace(/{hash}/g, location.hash).replace(/{id}/g, editor.id);
+    };
+    var shouldRestoreWhenEmpty = function (editor) {
+      return editor.getParam('autosave_restore_when_empty', false);
+    };
+    var getAutoSaveInterval = function (editor) {
+      return parse(editor.getParam('autosave_interval'), '30s');
+    };
+    var getAutoSaveRetention = function (editor) {
+      return parse(editor.getParam('autosave_retention'), '20m');
+    };
+
+    var isEmpty = function (editor, html) {
+      if (isUndefined(html)) {
+        return editor.dom.isEmpty(editor.getBody());
+      } else {
+        var trimmedHtml = global$1.trim(html);
+        if (trimmedHtml === '') {
+          return true;
+        } else {
+          var fragment = new DOMParser().parseFromString(trimmedHtml, 'text/html');
+          return editor.dom.isEmpty(fragment);
+        }
+      }
+    };
+    var hasDraft = function (editor) {
+      var time = parseInt(global$2.getItem(getAutoSavePrefix(editor) + 'time'), 10) || 0;
+      if (new Date().getTime() - time > getAutoSaveRetention(editor)) {
+        removeDraft(editor, false);
+        return false;
+      }
+      return true;
+    };
+    var removeDraft = function (editor, fire) {
+      var prefix = getAutoSavePrefix(editor);
+      global$2.removeItem(prefix + 'draft');
+      global$2.removeItem(prefix + 'time');
+      if (fire !== false) {
+        fireRemoveDraft(editor);
+      }
+    };
+    var storeDraft = function (editor) {
+      var prefix = getAutoSavePrefix(editor);
+      if (!isEmpty(editor) && editor.isDirty()) {
+        global$2.setItem(prefix + 'draft', editor.getContent({
+          format: 'raw',
+          no_events: true
+        }));
+        global$2.setItem(prefix + 'time', new Date().getTime().toString());
+        fireStoreDraft(editor);
+      }
+    };
+    var restoreDraft = function (editor) {
+      var prefix = getAutoSavePrefix(editor);
+      if (hasDraft(editor)) {
+        editor.setContent(global$2.getItem(prefix + 'draft'), { format: 'raw' });
+        fireRestoreDraft(editor);
+      }
+    };
+    var startStoreDraft = function (editor) {
+      var interval = getAutoSaveInterval(editor);
+      global$3.setEditorInterval(editor, function () {
+        storeDraft(editor);
+      }, interval);
+    };
+    var restoreLastDraft = function (editor) {
+      editor.undoManager.transact(function () {
+        restoreDraft(editor);
+        removeDraft(editor);
+      });
+      editor.focus();
+    };
+
+    var get = function (editor) {
+      return {
+        hasDraft: function () {
+          return hasDraft(editor);
+        },
+        storeDraft: function () {
+          return storeDraft(editor);
+        },
+        restoreDraft: function () {
+          return restoreDraft(editor);
+        },
+        removeDraft: function (fire) {
+          return removeDraft(editor, fire);
+        },
+        isEmpty: function (html) {
+          return isEmpty(editor, html);
+        }
+      };
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
+
+    var setup = function (editor) {
+      editor.editorManager.on('BeforeUnload', function (e) {
+        var msg;
+        global$1.each(global.get(), function (editor) {
+          if (editor.plugins.autosave) {
+            editor.plugins.autosave.storeDraft();
+          }
+          if (!msg && editor.isDirty() && shouldAskBeforeUnload(editor)) {
+            msg = editor.translate('You have unsaved changes are you sure you want to navigate away?');
+          }
+        });
+        if (msg) {
+          e.preventDefault();
+          e.returnValue = msg;
+        }
+      });
+    };
+
+    var makeSetupHandler = function (editor) {
+      return function (api) {
+        api.setDisabled(!hasDraft(editor));
+        var editorEventCallback = function () {
+          return api.setDisabled(!hasDraft(editor));
+        };
+        editor.on('StoreDraft RestoreDraft RemoveDraft', editorEventCallback);
+        return function () {
+          return editor.off('StoreDraft RestoreDraft RemoveDraft', editorEventCallback);
+        };
+      };
+    };
+    var register = function (editor) {
+      startStoreDraft(editor);
+      editor.ui.registry.addButton('restoredraft', {
+        tooltip: 'Restore last draft',
+        icon: 'restore-draft',
+        onAction: function () {
+          restoreLastDraft(editor);
+        },
+        onSetup: makeSetupHandler(editor)
+      });
+      editor.ui.registry.addMenuItem('restoredraft', {
+        text: 'Restore last draft',
+        icon: 'restore-draft',
+        onAction: function () {
+          restoreLastDraft(editor);
+        },
+        onSetup: makeSetupHandler(editor)
+      });
+    };
+
+    function Plugin () {
+      global$4.add('autosave', function (editor) {
+        setup(editor);
+        register(editor);
+        editor.on('init', function () {
+          if (shouldRestoreWhenEmpty(editor) && editor.dom.isEmpty(editor.getBody())) {
+            restoreDraft(editor);
+          }
+        });
+        return get(editor);
       });
     }
 
@@ -48337,862 +48735,80 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
-        return value;
-      };
-      var set = function (v) {
-        value = v;
-      };
-      return {
-        get: get,
-        set: set
-      };
-    };
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
-    var hasOwnProperty = Object.hasOwnProperty;
-    var has = function (obj, key) {
-      return hasOwnProperty.call(obj, key);
-    };
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
-
-    var fireResizeEditor = function (editor) {
-      return editor.fire('ResizeEditor');
-    };
-
-    var getAutoResizeMinHeight = function (editor) {
-      return editor.getParam('min_height', editor.getElement().offsetHeight, 'number');
-    };
-    var getAutoResizeMaxHeight = function (editor) {
-      return editor.getParam('max_height', 0, 'number');
-    };
-    var getAutoResizeOverflowPadding = function (editor) {
-      return editor.getParam('autoresize_overflow_padding', 1, 'number');
-    };
-    var getAutoResizeBottomMargin = function (editor) {
-      return editor.getParam('autoresize_bottom_margin', 50, 'number');
-    };
-    var shouldAutoResizeOnInit = function (editor) {
-      return editor.getParam('autoresize_on_init', true, 'boolean');
-    };
-
-    var isFullscreen = function (editor) {
-      return editor.plugins.fullscreen && editor.plugins.fullscreen.isFullscreen();
-    };
-    var wait = function (editor, oldSize, times, interval, callback) {
-      global.setEditorTimeout(editor, function () {
-        resize(editor, oldSize);
-        if (times--) {
-          wait(editor, oldSize, times, interval, callback);
-        } else if (callback) {
-          callback();
-        }
-      }, interval);
-    };
-    var toggleScrolling = function (editor, state) {
-      var body = editor.getBody();
-      if (body) {
-        body.style.overflowY = state ? '' : 'hidden';
-        if (!state) {
-          body.scrollTop = 0;
-        }
-      }
-    };
-    var parseCssValueToInt = function (dom, elm, name, computed) {
-      var value = parseInt(dom.getStyle(elm, name, computed), 10);
-      return isNaN(value) ? 0 : value;
-    };
-    var shouldScrollIntoView = function (trigger) {
-      if ((trigger === null || trigger === void 0 ? void 0 : trigger.type.toLowerCase()) === 'setcontent') {
-        var setContentEvent = trigger;
-        return setContentEvent.selection === true || setContentEvent.paste === true;
-      } else {
-        return false;
-      }
-    };
-    var resize = function (editor, oldSize, trigger) {
-      var dom = editor.dom;
-      var doc = editor.getDoc();
-      if (!doc) {
-        return;
-      }
-      if (isFullscreen(editor)) {
-        toggleScrolling(editor, true);
-        return;
-      }
-      var docEle = doc.documentElement;
-      var resizeBottomMargin = getAutoResizeBottomMargin(editor);
-      var resizeHeight = getAutoResizeMinHeight(editor);
-      var marginTop = parseCssValueToInt(dom, docEle, 'margin-top', true);
-      var marginBottom = parseCssValueToInt(dom, docEle, 'margin-bottom', true);
-      var contentHeight = docEle.offsetHeight + marginTop + marginBottom + resizeBottomMargin;
-      if (contentHeight < 0) {
-        contentHeight = 0;
-      }
-      var containerHeight = editor.getContainer().offsetHeight;
-      var contentAreaHeight = editor.getContentAreaContainer().offsetHeight;
-      var chromeHeight = containerHeight - contentAreaHeight;
-      if (contentHeight + chromeHeight > getAutoResizeMinHeight(editor)) {
-        resizeHeight = contentHeight + chromeHeight;
-      }
-      var maxHeight = getAutoResizeMaxHeight(editor);
-      if (maxHeight && resizeHeight > maxHeight) {
-        resizeHeight = maxHeight;
-        toggleScrolling(editor, true);
-      } else {
-        toggleScrolling(editor, false);
-      }
-      if (resizeHeight !== oldSize.get()) {
-        var deltaSize = resizeHeight - oldSize.get();
-        dom.setStyle(editor.getContainer(), 'height', resizeHeight + 'px');
-        oldSize.set(resizeHeight);
-        fireResizeEditor(editor);
-        if (global$1.browser.isSafari() && global$1.mac) {
-          var win = editor.getWin();
-          win.scrollTo(win.pageXOffset, win.pageYOffset);
-        }
-        if (editor.hasFocus() && shouldScrollIntoView(trigger)) {
-          editor.selection.scrollIntoView();
-        }
-        if (global$1.webkit && deltaSize < 0) {
-          resize(editor, oldSize, trigger);
-        }
-      }
-    };
-    var setup = function (editor, oldSize) {
-      editor.on('init', function () {
-        var overflowPadding = getAutoResizeOverflowPadding(editor);
-        var dom = editor.dom;
-        dom.setStyles(editor.getDoc().documentElement, { height: 'auto' });
-        dom.setStyles(editor.getBody(), {
-          'paddingLeft': overflowPadding,
-          'paddingRight': overflowPadding,
-          'min-height': 0
-        });
-      });
-      editor.on('NodeChange SetContent keyup FullscreenStateChanged ResizeContent', function (e) {
-        resize(editor, oldSize, e);
-      });
-      if (shouldAutoResizeOnInit(editor)) {
-        editor.on('init', function () {
-          wait(editor, oldSize, 20, 100, function () {
-            wait(editor, oldSize, 5, 1000);
-          });
-        });
-      }
-    };
-
-    var register = function (editor, oldSize) {
-      editor.addCommand('mceAutoResize', function () {
-        resize(editor, oldSize);
-      });
-    };
-
-    function Plugin () {
-      global$2.add('autoresize', function (editor) {
-        if (!has(editor.settings, 'resize')) {
-          editor.settings.resize = false;
-        }
-        if (!editor.inline) {
-          var oldSize = Cell(0);
-          register(editor, oldSize);
-          setup(editor, oldSize);
-        }
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var eq = function (t) {
-      return function (a) {
-        return t === a;
-      };
-    };
-    var isUndefined = eq(undefined);
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Delay');
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.LocalStorage');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var fireRestoreDraft = function (editor) {
-      return editor.fire('RestoreDraft');
-    };
-    var fireStoreDraft = function (editor) {
-      return editor.fire('StoreDraft');
-    };
-    var fireRemoveDraft = function (editor) {
-      return editor.fire('RemoveDraft');
-    };
-
-    var parse = function (timeString, defaultTime) {
-      var multiples = {
-        s: 1000,
-        m: 60000
-      };
-      var toParse = timeString || defaultTime;
-      var parsedTime = /^(\d+)([ms]?)$/.exec('' + toParse);
-      return (parsedTime[2] ? multiples[parsedTime[2]] : 1) * parseInt(toParse, 10);
-    };
-
-    var shouldAskBeforeUnload = function (editor) {
-      return editor.getParam('autosave_ask_before_unload', true);
-    };
-    var getAutoSavePrefix = function (editor) {
-      var location = document.location;
-      return editor.getParam('autosave_prefix', 'tinymce-autosave-{path}{query}{hash}-{id}-').replace(/{path}/g, location.pathname).replace(/{query}/g, location.search).replace(/{hash}/g, location.hash).replace(/{id}/g, editor.id);
-    };
-    var shouldRestoreWhenEmpty = function (editor) {
-      return editor.getParam('autosave_restore_when_empty', false);
-    };
-    var getAutoSaveInterval = function (editor) {
-      return parse(editor.getParam('autosave_interval'), '30s');
-    };
-    var getAutoSaveRetention = function (editor) {
-      return parse(editor.getParam('autosave_retention'), '20m');
-    };
-
-    var isEmpty = function (editor, html) {
-      if (isUndefined(html)) {
-        return editor.dom.isEmpty(editor.getBody());
-      } else {
-        var trimmedHtml = global$1.trim(html);
-        if (trimmedHtml === '') {
-          return true;
-        } else {
-          var fragment = new DOMParser().parseFromString(trimmedHtml, 'text/html');
-          return editor.dom.isEmpty(fragment);
-        }
-      }
-    };
-    var hasDraft = function (editor) {
-      var time = parseInt(global$2.getItem(getAutoSavePrefix(editor) + 'time'), 10) || 0;
-      if (new Date().getTime() - time > getAutoSaveRetention(editor)) {
-        removeDraft(editor, false);
-        return false;
-      }
-      return true;
-    };
-    var removeDraft = function (editor, fire) {
-      var prefix = getAutoSavePrefix(editor);
-      global$2.removeItem(prefix + 'draft');
-      global$2.removeItem(prefix + 'time');
-      if (fire !== false) {
-        fireRemoveDraft(editor);
-      }
-    };
-    var storeDraft = function (editor) {
-      var prefix = getAutoSavePrefix(editor);
-      if (!isEmpty(editor) && editor.isDirty()) {
-        global$2.setItem(prefix + 'draft', editor.getContent({
-          format: 'raw',
-          no_events: true
-        }));
-        global$2.setItem(prefix + 'time', new Date().getTime().toString());
-        fireStoreDraft(editor);
-      }
-    };
-    var restoreDraft = function (editor) {
-      var prefix = getAutoSavePrefix(editor);
-      if (hasDraft(editor)) {
-        editor.setContent(global$2.getItem(prefix + 'draft'), { format: 'raw' });
-        fireRestoreDraft(editor);
-      }
-    };
-    var startStoreDraft = function (editor) {
-      var interval = getAutoSaveInterval(editor);
-      global$3.setEditorInterval(editor, function () {
-        storeDraft(editor);
-      }, interval);
-    };
-    var restoreLastDraft = function (editor) {
-      editor.undoManager.transact(function () {
-        restoreDraft(editor);
-        removeDraft(editor);
-      });
+    var setContent = function (editor, html) {
       editor.focus();
+      editor.undoManager.transact(function () {
+        editor.setContent(html);
+      });
+      editor.selection.setCursorLocation();
+      editor.nodeChanged();
+    };
+    var getContent = function (editor) {
+      return editor.getContent({ source_view: true });
     };
 
-    var get = function (editor) {
-      return {
-        hasDraft: function () {
-          return hasDraft(editor);
+    var open = function (editor) {
+      var editorContent = getContent(editor);
+      editor.windowManager.open({
+        title: 'Source Code',
+        size: 'large',
+        body: {
+          type: 'panel',
+          items: [{
+              type: 'textarea',
+              name: 'code'
+            }]
         },
-        storeDraft: function () {
-          return storeDraft(editor);
-        },
-        restoreDraft: function () {
-          return restoreDraft(editor);
-        },
-        removeDraft: function (fire) {
-          return removeDraft(editor, fire);
-        },
-        isEmpty: function (html) {
-          return isEmpty(editor, html);
-        }
-      };
-    };
-
-    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
-
-    var setup = function (editor) {
-      editor.editorManager.on('BeforeUnload', function (e) {
-        var msg;
-        global$1.each(global.get(), function (editor) {
-          if (editor.plugins.autosave) {
-            editor.plugins.autosave.storeDraft();
+        buttons: [
+          {
+            type: 'cancel',
+            name: 'cancel',
+            text: 'Cancel'
+          },
+          {
+            type: 'submit',
+            name: 'save',
+            text: 'Save',
+            primary: true
           }
-          if (!msg && editor.isDirty() && shouldAskBeforeUnload(editor)) {
-            msg = editor.translate('You have unsaved changes are you sure you want to navigate away?');
-          }
-        });
-        if (msg) {
-          e.preventDefault();
-          e.returnValue = msg;
+        ],
+        initialData: { code: editorContent },
+        onSubmit: function (api) {
+          setContent(editor, api.getData().code);
+          api.close();
         }
       });
-    };
-
-    var makeSetupHandler = function (editor) {
-      return function (api) {
-        api.setDisabled(!hasDraft(editor));
-        var editorEventCallback = function () {
-          return api.setDisabled(!hasDraft(editor));
-        };
-        editor.on('StoreDraft RestoreDraft RemoveDraft', editorEventCallback);
-        return function () {
-          return editor.off('StoreDraft RestoreDraft RemoveDraft', editorEventCallback);
-        };
-      };
-    };
-    var register = function (editor) {
-      startStoreDraft(editor);
-      editor.ui.registry.addButton('restoredraft', {
-        tooltip: 'Restore last draft',
-        icon: 'restore-draft',
-        onAction: function () {
-          restoreLastDraft(editor);
-        },
-        onSetup: makeSetupHandler(editor)
-      });
-      editor.ui.registry.addMenuItem('restoredraft', {
-        text: 'Restore last draft',
-        icon: 'restore-draft',
-        onAction: function () {
-          restoreLastDraft(editor);
-        },
-        onSetup: makeSetupHandler(editor)
-      });
-    };
-
-    function Plugin () {
-      global$4.add('autosave', function (editor) {
-        setup(editor);
-        register(editor);
-        editor.on('init', function () {
-          if (shouldRestoreWhenEmpty(editor) && editor.dom.isEmpty(editor.getBody())) {
-            restoreDraft(editor);
-          }
-        });
-        return get(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    function Plugin () {
-      global.add('colorpicker', function () {
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType$1 = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isSimpleType = function (type) {
-      return function (value) {
-        return typeof value === type;
-      };
-    };
-    var isString = isType$1('string');
-    var isBoolean = isSimpleType('boolean');
-    var isNullable = function (a) {
-      return a === null || a === undefined;
-    };
-    var isNonNullable = function (a) {
-      return !isNullable(a);
-    };
-    var isFunction = isSimpleType('function');
-    var isNumber = isSimpleType('number');
-
-    var noop = function () {
-    };
-    var compose1 = function (fbc, fab) {
-      return function (a) {
-        return fbc(fab(a));
-      };
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var each = function (xs, f) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var filter = function (xs, pred) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          r.push(x);
-        }
-      }
-      return r;
-    };
-
-    var DOCUMENT = 9;
-    var DOCUMENT_FRAGMENT = 11;
-    var ELEMENT = 1;
-    var TEXT = 3;
-
-    var fromHtml = function (html, scope) {
-      var doc = scope || document;
-      var div = doc.createElement('div');
-      div.innerHTML = html;
-      if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        console.error('HTML does not have a single root node', html);
-        throw new Error('HTML must have a single root node');
-      }
-      return fromDom(div.childNodes[0]);
-    };
-    var fromTag = function (tag, scope) {
-      var doc = scope || document;
-      var node = doc.createElement(tag);
-      return fromDom(node);
-    };
-    var fromText = function (text, scope) {
-      var doc = scope || document;
-      var node = doc.createTextNode(text);
-      return fromDom(node);
-    };
-    var fromDom = function (node) {
-      if (node === null || node === undefined) {
-        throw new Error('Node cannot be null or undefined');
-      }
-      return { dom: node };
-    };
-    var fromPoint = function (docElm, x, y) {
-      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
-    };
-    var SugarElement = {
-      fromHtml: fromHtml,
-      fromTag: fromTag,
-      fromText: fromText,
-      fromDom: fromDom,
-      fromPoint: fromPoint
-    };
-
-    var is = function (element, selector) {
-      var dom = element.dom;
-      if (dom.nodeType !== ELEMENT) {
-        return false;
-      } else {
-        var elem = dom;
-        if (elem.matches !== undefined) {
-          return elem.matches(selector);
-        } else if (elem.msMatchesSelector !== undefined) {
-          return elem.msMatchesSelector(selector);
-        } else if (elem.webkitMatchesSelector !== undefined) {
-          return elem.webkitMatchesSelector(selector);
-        } else if (elem.mozMatchesSelector !== undefined) {
-          return elem.mozMatchesSelector(selector);
-        } else {
-          throw new Error('Browser lacks native selectors');
-        }
-      }
-    };
-
-    typeof window !== 'undefined' ? window : Function('return this;')();
-
-    var name = function (element) {
-      var r = element.dom.nodeName;
-      return r.toLowerCase();
-    };
-    var type = function (element) {
-      return element.dom.nodeType;
-    };
-    var isType = function (t) {
-      return function (element) {
-        return type(element) === t;
-      };
-    };
-    var isElement = isType(ELEMENT);
-    var isText = isType(TEXT);
-    var isDocument = isType(DOCUMENT);
-    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
-    var isTag = function (tag) {
-      return function (e) {
-        return isElement(e) && name(e) === tag;
-      };
-    };
-
-    var owner = function (element) {
-      return SugarElement.fromDom(element.dom.ownerDocument);
-    };
-    var documentOrOwner = function (dos) {
-      return isDocument(dos) ? dos : owner(dos);
-    };
-    var parent = function (element) {
-      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
-    };
-    var children$2 = function (element) {
-      return map(element.dom.childNodes, SugarElement.fromDom);
-    };
-
-    var rawSet = function (dom, key, value) {
-      if (isString(value) || isBoolean(value) || isNumber(value)) {
-        dom.setAttribute(key, value + '');
-      } else {
-        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
-        throw new Error('Attribute value was not simple');
-      }
-    };
-    var set = function (element, key, value) {
-      rawSet(element.dom, key, value);
-    };
-    var remove = function (element, key) {
-      element.dom.removeAttribute(key);
-    };
-
-    var isShadowRoot = function (dos) {
-      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
-    };
-    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
-    var getRootNode = supported ? function (e) {
-      return SugarElement.fromDom(e.dom.getRootNode());
-    } : documentOrOwner;
-    var getShadowRoot = function (e) {
-      var r = getRootNode(e);
-      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
-    };
-    var getShadowHost = function (e) {
-      return SugarElement.fromDom(e.dom.host);
-    };
-
-    var inBody = function (element) {
-      var dom = isText(element) ? element.dom.parentNode : element.dom;
-      if (dom === undefined || dom === null || dom.ownerDocument === null) {
-        return false;
-      }
-      var doc = dom.ownerDocument;
-      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
-        return doc.body.contains(dom);
-      }, compose1(inBody, getShadowHost));
-    };
-
-    var ancestor$1 = function (scope, predicate, isRoot) {
-      var element = scope.dom;
-      var stop = isFunction(isRoot) ? isRoot : never;
-      while (element.parentNode) {
-        element = element.parentNode;
-        var el = SugarElement.fromDom(element);
-        if (predicate(el)) {
-          return Optional.some(el);
-        } else if (stop(el)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-
-    var ancestor = function (scope, selector, isRoot) {
-      return ancestor$1(scope, function (e) {
-        return is(e, selector);
-      }, isRoot);
-    };
-
-    var isSupported = function (dom) {
-      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
-    };
-
-    var get = function (element, property) {
-      var dom = element.dom;
-      var styles = window.getComputedStyle(dom);
-      var r = styles.getPropertyValue(property);
-      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
-    };
-    var getUnsafeProperty = function (dom, property) {
-      return isSupported(dom) ? dom.style.getPropertyValue(property) : '';
-    };
-
-    var getDirection = function (element) {
-      return get(element, 'direction') === 'rtl' ? 'rtl' : 'ltr';
-    };
-
-    var children$1 = function (scope, predicate) {
-      return filter(children$2(scope), predicate);
-    };
-
-    var children = function (scope, selector) {
-      return children$1(scope, function (e) {
-        return is(e, selector);
-      });
-    };
-
-    var getParentElement = function (element) {
-      return parent(element).filter(isElement);
-    };
-    var getNormalizedBlock = function (element, isListItem) {
-      var normalizedElement = isListItem ? ancestor(element, 'ol,ul') : Optional.some(element);
-      return normalizedElement.getOr(element);
-    };
-    var isListItem = isTag('li');
-    var setDir = function (editor, dir) {
-      var selectedBlocks = editor.selection.getSelectedBlocks();
-      if (selectedBlocks.length > 0) {
-        each(selectedBlocks, function (block) {
-          var blockElement = SugarElement.fromDom(block);
-          var isBlockElementListItem = isListItem(blockElement);
-          var normalizedBlock = getNormalizedBlock(blockElement, isBlockElementListItem);
-          var normalizedBlockParent = getParentElement(normalizedBlock);
-          normalizedBlockParent.each(function (parent) {
-            var parentDirection = getDirection(parent);
-            if (parentDirection !== dir) {
-              set(normalizedBlock, 'dir', dir);
-            } else if (getDirection(normalizedBlock) !== dir) {
-              remove(normalizedBlock, 'dir');
-            }
-            if (isBlockElementListItem) {
-              var listItems = children(normalizedBlock, 'li[dir]');
-              each(listItems, function (listItem) {
-                return remove(listItem, 'dir');
-              });
-            }
-          });
-        });
-        editor.nodeChanged();
-      }
     };
 
     var register$1 = function (editor) {
-      editor.addCommand('mceDirectionLTR', function () {
-        setDir(editor, 'ltr');
-      });
-      editor.addCommand('mceDirectionRTL', function () {
-        setDir(editor, 'rtl');
+      editor.addCommand('mceCodeEditor', function () {
+        open(editor);
       });
     };
 
-    var getNodeChangeHandler = function (editor, dir) {
-      return function (api) {
-        var nodeChangeHandler = function (e) {
-          var element = SugarElement.fromDom(e.element);
-          api.setActive(getDirection(element) === dir);
-        };
-        editor.on('NodeChange', nodeChangeHandler);
-        return function () {
-          return editor.off('NodeChange', nodeChangeHandler);
-        };
-      };
-    };
     var register = function (editor) {
-      editor.ui.registry.addToggleButton('ltr', {
-        tooltip: 'Left to right',
-        icon: 'ltr',
-        onAction: function () {
-          return editor.execCommand('mceDirectionLTR');
-        },
-        onSetup: getNodeChangeHandler(editor, 'ltr')
+      var onAction = function () {
+        return editor.execCommand('mceCodeEditor');
+      };
+      editor.ui.registry.addButton('code', {
+        icon: 'sourcecode',
+        tooltip: 'Source code',
+        onAction: onAction
       });
-      editor.ui.registry.addToggleButton('rtl', {
-        tooltip: 'Right to left',
-        icon: 'rtl',
-        onAction: function () {
-          return editor.execCommand('mceDirectionRTL');
-        },
-        onSetup: getNodeChangeHandler(editor, 'rtl')
+      editor.ui.registry.addMenuItem('code', {
+        icon: 'sourcecode',
+        text: 'Source code',
+        onAction: onAction
       });
     };
 
     function Plugin () {
-      global.add('directionality', function (editor) {
+      global.add('code', function (editor) {
         register$1(editor);
         register(editor);
+        return {};
       });
     }
 
@@ -51674,533 +51290,486 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    function Plugin () {
+      global.add('colorpicker', function () {
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    function Plugin () {
+      global.add('contextmenu', function () {
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType$1 = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType$1('string');
+    var isBoolean = isSimpleType('boolean');
+    var isNullable = function (a) {
+      return a === null || a === undefined;
+    };
+    var isNonNullable = function (a) {
+      return !isNullable(a);
+    };
+    var isFunction = isSimpleType('function');
+    var isNumber = isSimpleType('number');
+
+    var noop = function () {
+    };
+    var compose1 = function (fbc, fab) {
+      return function (a) {
+        return fbc(fab(a));
+      };
+    };
+    var constant = function (value) {
+      return function () {
         return value;
       };
-      var set = function (v) {
-        value = v;
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
       };
-      return {
-        get: get,
-        set: set
-      };
-    };
-
-    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
-        }
-        return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.html.DomParser');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.html.Node');
-
-    var global = tinymce.util.Tools.resolve('tinymce.html.Serializer');
-
-    var shouldHideInSourceView = function (editor) {
-      return editor.getParam('fullpage_hide_in_source_view');
-    };
-    var getDefaultXmlPi = function (editor) {
-      return editor.getParam('fullpage_default_xml_pi');
-    };
-    var getDefaultEncoding = function (editor) {
-      return editor.getParam('fullpage_default_encoding');
-    };
-    var getDefaultFontFamily = function (editor) {
-      return editor.getParam('fullpage_default_font_family');
-    };
-    var getDefaultFontSize = function (editor) {
-      return editor.getParam('fullpage_default_font_size');
-    };
-    var getDefaultTextColor = function (editor) {
-      return editor.getParam('fullpage_default_text_color');
-    };
-    var getDefaultTitle = function (editor) {
-      return editor.getParam('fullpage_default_title');
-    };
-    var getDefaultDocType = function (editor) {
-      return editor.getParam('fullpage_default_doctype', '<!DOCTYPE html>');
-    };
-    var getProtect = function (editor) {
-      return editor.getParam('protect');
-    };
-
-    var parseHeader = function (editor, head) {
-      return global$2({
-        validate: false,
-        root_name: '#document'
-      }, editor.schema).parse(head, { format: 'xhtml' });
-    };
-    var htmlToData = function (editor, head) {
-      var headerFragment = parseHeader(editor, head);
-      var data = {};
-      var elm, matches;
-      var getAttr = function (elm, name) {
-        var value = elm.attr(name);
-        return value || '';
-      };
-      data.fontface = getDefaultFontFamily(editor);
-      data.fontsize = getDefaultFontSize(editor);
-      elm = headerFragment.firstChild;
-      if (elm.type === 7) {
-        data.xml_pi = true;
-        matches = /encoding="([^"]+)"/.exec(elm.value);
-        if (matches) {
-          data.docencoding = matches[1];
-        }
-      }
-      elm = headerFragment.getAll('#doctype')[0];
-      if (elm) {
-        data.doctype = '<!DOCTYPE' + elm.value + '>';
-      }
-      elm = headerFragment.getAll('title')[0];
-      if (elm && elm.firstChild) {
-        data.title = elm.firstChild.value;
-      }
-      global$3.each(headerFragment.getAll('meta'), function (meta) {
-        var name = meta.attr('name');
-        var httpEquiv = meta.attr('http-equiv');
-        var matches;
-        if (name) {
-          data[name.toLowerCase()] = meta.attr('content');
-        } else if (httpEquiv === 'Content-Type') {
-          matches = /charset\s*=\s*(.*)\s*/gi.exec(meta.attr('content'));
-          if (matches) {
-            data.docencoding = matches[1];
-          }
-        }
-      });
-      elm = headerFragment.getAll('html')[0];
-      if (elm) {
-        data.langcode = getAttr(elm, 'lang') || getAttr(elm, 'xml:lang');
-      }
-      data.stylesheets = [];
-      global$3.each(headerFragment.getAll('link'), function (link) {
-        if (link.attr('rel') === 'stylesheet') {
-          data.stylesheets.push(link.attr('href'));
-        }
-      });
-      elm = headerFragment.getAll('body')[0];
-      if (elm) {
-        data.langdir = getAttr(elm, 'dir');
-        data.style = getAttr(elm, 'style');
-        data.visited_color = getAttr(elm, 'vlink');
-        data.link_color = getAttr(elm, 'link');
-        data.active_color = getAttr(elm, 'alink');
-      }
-      return data;
-    };
-    var dataToHtml = function (editor, data, head) {
-      var headElement, elm;
-      var dom = editor.dom;
-      var setAttr = function (elm, name, value) {
-        elm.attr(name, value ? value : undefined);
-      };
-      var addHeadNode = function (node) {
-        if (headElement.firstChild) {
-          headElement.insert(node, headElement.firstChild);
-        } else {
-          headElement.append(node);
-        }
-      };
-      var headerFragment = parseHeader(editor, head);
-      headElement = headerFragment.getAll('head')[0];
-      if (!headElement) {
-        elm = headerFragment.getAll('html')[0];
-        headElement = new global$1('head', 1);
-        if (elm.firstChild) {
-          elm.insert(headElement, elm.firstChild, true);
-        } else {
-          elm.append(headElement);
-        }
-      }
-      elm = headerFragment.firstChild;
-      if (data.xml_pi) {
-        var value = 'version="1.0"';
-        if (data.docencoding) {
-          value += ' encoding="' + data.docencoding + '"';
-        }
-        if (elm.type !== 7) {
-          elm = new global$1('xml', 7);
-          headerFragment.insert(elm, headerFragment.firstChild, true);
-        }
-        elm.value = value;
-      } else if (elm && elm.type === 7) {
-        elm.remove();
-      }
-      elm = headerFragment.getAll('#doctype')[0];
-      if (data.doctype) {
-        if (!elm) {
-          elm = new global$1('#doctype', 10);
-          if (data.xml_pi) {
-            headerFragment.insert(elm, headerFragment.firstChild);
-          } else {
-            addHeadNode(elm);
-          }
-        }
-        elm.value = data.doctype.substring(9, data.doctype.length - 1);
-      } else if (elm) {
-        elm.remove();
-      }
-      elm = null;
-      global$3.each(headerFragment.getAll('meta'), function (meta) {
-        if (meta.attr('http-equiv') === 'Content-Type') {
-          elm = meta;
-        }
-      });
-      if (data.docencoding) {
-        if (!elm) {
-          elm = new global$1('meta', 1);
-          elm.attr('http-equiv', 'Content-Type');
-          elm.shortEnded = true;
-          addHeadNode(elm);
-        }
-        elm.attr('content', 'text/html; charset=' + data.docencoding);
-      } else if (elm) {
-        elm.remove();
-      }
-      elm = headerFragment.getAll('title')[0];
-      if (data.title) {
-        if (!elm) {
-          elm = new global$1('title', 1);
-          addHeadNode(elm);
-        } else {
-          elm.empty();
-        }
-        elm.append(new global$1('#text', 3)).value = data.title;
-      } else if (elm) {
-        elm.remove();
-      }
-      global$3.each('keywords,description,author,copyright,robots'.split(','), function (name) {
-        var nodes = headerFragment.getAll('meta');
-        var i, meta;
-        var value = data[name];
-        for (i = 0; i < nodes.length; i++) {
-          meta = nodes[i];
-          if (meta.attr('name') === name) {
-            if (value) {
-              meta.attr('content', value);
-            } else {
-              meta.remove();
-            }
-            return;
-          }
-        }
-        if (value) {
-          elm = new global$1('meta', 1);
-          elm.attr('name', name);
-          elm.attr('content', value);
-          elm.shortEnded = true;
-          addHeadNode(elm);
-        }
-      });
-      var currentStyleSheetsMap = {};
-      global$3.each(headerFragment.getAll('link'), function (stylesheet) {
-        if (stylesheet.attr('rel') === 'stylesheet') {
-          currentStyleSheetsMap[stylesheet.attr('href')] = stylesheet;
-        }
-      });
-      global$3.each(data.stylesheets, function (stylesheet) {
-        if (!currentStyleSheetsMap[stylesheet]) {
-          elm = new global$1('link', 1);
-          elm.attr({
-            rel: 'stylesheet',
-            text: 'text/css',
-            href: stylesheet
-          });
-          elm.shortEnded = true;
-          addHeadNode(elm);
-        }
-        delete currentStyleSheetsMap[stylesheet];
-      });
-      global$3.each(currentStyleSheetsMap, function (stylesheet) {
-        stylesheet.remove();
-      });
-      elm = headerFragment.getAll('body')[0];
-      if (elm) {
-        setAttr(elm, 'dir', data.langdir);
-        setAttr(elm, 'style', data.style);
-        setAttr(elm, 'vlink', data.visited_color);
-        setAttr(elm, 'link', data.link_color);
-        setAttr(elm, 'alink', data.active_color);
-        dom.setAttribs(editor.getBody(), {
-          style: data.style,
-          dir: data.dir,
-          vLink: data.visited_color,
-          link: data.link_color,
-          aLink: data.active_color
-        });
-      }
-      elm = headerFragment.getAll('html')[0];
-      if (elm) {
-        setAttr(elm, 'lang', data.langcode);
-        setAttr(elm, 'xml:lang', data.langcode);
-      }
-      if (!headElement.firstChild) {
-        headElement.remove();
-      }
-      var html = global({
-        validate: false,
-        indent: true,
-        indent_before: 'head,html,body,meta,title,script,link,style',
-        indent_after: 'head,html,body,meta,title,script,link,style'
-      }).serialize(headerFragment);
-      return html.substring(0, html.indexOf('</body>'));
-    };
-
-    var open = function (editor, headState) {
-      var data = htmlToData(editor, headState.get());
-      var defaultData = {
-        title: '',
-        keywords: '',
-        description: '',
-        robots: '',
-        author: '',
-        docencoding: ''
-      };
-      var initialData = __assign(__assign({}, defaultData), data);
-      editor.windowManager.open({
-        title: 'Metadata and Document Properties',
-        size: 'normal',
-        body: {
-          type: 'panel',
-          items: [
-            {
-              name: 'title',
-              type: 'input',
-              label: 'Title'
-            },
-            {
-              name: 'keywords',
-              type: 'input',
-              label: 'Keywords'
-            },
-            {
-              name: 'description',
-              type: 'input',
-              label: 'Description'
-            },
-            {
-              name: 'robots',
-              type: 'input',
-              label: 'Robots'
-            },
-            {
-              name: 'author',
-              type: 'input',
-              label: 'Author'
-            },
-            {
-              name: 'docencoding',
-              type: 'input',
-              label: 'Encoding'
-            }
-          ]
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
         },
-        buttons: [
-          {
-            type: 'cancel',
-            name: 'cancel',
-            text: 'Cancel'
-          },
-          {
-            type: 'submit',
-            name: 'save',
-            text: 'Save',
-            primary: true
-          }
-        ],
-        initialData: initialData,
-        onSubmit: function (api) {
-          var nuData = api.getData();
-          var headHtml = dataToHtml(editor, global$3.extend(data, nuData), headState.get());
-          headState.set(headHtml);
-          api.close();
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
         }
-      });
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
     };
 
-    var register$1 = function (editor, headState) {
-      editor.addCommand('mceFullPageProperties', function () {
-        open(editor, headState);
-      });
-    };
-
-    var protectHtml = function (protect, html) {
-      global$3.each(protect, function (pattern) {
-        html = html.replace(pattern, function (str) {
-          return '<!--mce:protected ' + escape(str) + '-->';
-        });
-      });
-      return html;
-    };
-    var unprotectHtml = function (html) {
-      return html.replace(/<!--mce:protected ([\s\S]*?)-->/g, function (a, m) {
-        return unescape(m);
-      });
-    };
-
-    var each = global$3.each;
-    var low = function (s) {
-      return s.replace(/<\/?[A-Z]+/g, function (a) {
-        return a.toLowerCase();
-      });
-    };
-    var handleSetContent = function (editor, headState, footState, evt) {
-      var startPos, endPos, content, styles = '';
-      var dom = editor.dom;
-      if (evt.selection) {
-        return;
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
       }
-      content = protectHtml(getProtect(editor), evt.content);
-      if (evt.format === 'raw' && headState.get()) {
-        return;
+      return r;
+    };
+    var each = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
       }
-      if (evt.source_view && shouldHideInSourceView(editor)) {
-        return;
-      }
-      if (content.length === 0 && !evt.source_view) {
-        content = global$3.trim(headState.get()) + '\n' + global$3.trim(content) + '\n' + global$3.trim(footState.get());
-      }
-      content = content.replace(/<(\/?)BODY/gi, '<$1body');
-      startPos = content.indexOf('<body');
-      if (startPos !== -1) {
-        startPos = content.indexOf('>', startPos);
-        headState.set(low(content.substring(0, startPos + 1)));
-        endPos = content.indexOf('</body', startPos);
-        if (endPos === -1) {
-          endPos = content.length;
+    };
+    var filter = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
         }
-        evt.content = global$3.trim(content.substring(startPos + 1, endPos));
-        footState.set(low(content.substring(endPos)));
+      }
+      return r;
+    };
+
+    var DOCUMENT = 9;
+    var DOCUMENT_FRAGMENT = 11;
+    var ELEMENT = 1;
+    var TEXT = 3;
+
+    var fromHtml = function (html, scope) {
+      var doc = scope || document;
+      var div = doc.createElement('div');
+      div.innerHTML = html;
+      if (!div.hasChildNodes() || div.childNodes.length > 1) {
+        console.error('HTML does not have a single root node', html);
+        throw new Error('HTML must have a single root node');
+      }
+      return fromDom(div.childNodes[0]);
+    };
+    var fromTag = function (tag, scope) {
+      var doc = scope || document;
+      var node = doc.createElement(tag);
+      return fromDom(node);
+    };
+    var fromText = function (text, scope) {
+      var doc = scope || document;
+      var node = doc.createTextNode(text);
+      return fromDom(node);
+    };
+    var fromDom = function (node) {
+      if (node === null || node === undefined) {
+        throw new Error('Node cannot be null or undefined');
+      }
+      return { dom: node };
+    };
+    var fromPoint = function (docElm, x, y) {
+      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
+    };
+    var SugarElement = {
+      fromHtml: fromHtml,
+      fromTag: fromTag,
+      fromText: fromText,
+      fromDom: fromDom,
+      fromPoint: fromPoint
+    };
+
+    var is = function (element, selector) {
+      var dom = element.dom;
+      if (dom.nodeType !== ELEMENT) {
+        return false;
       } else {
-        headState.set(getDefaultHeader(editor));
-        footState.set('\n</body>\n</html>');
-      }
-      var headerFragment = parseHeader(editor, headState.get());
-      each(headerFragment.getAll('style'), function (node) {
-        if (node.firstChild) {
-          styles += node.firstChild.value;
+        var elem = dom;
+        if (elem.matches !== undefined) {
+          return elem.matches(selector);
+        } else if (elem.msMatchesSelector !== undefined) {
+          return elem.msMatchesSelector(selector);
+        } else if (elem.webkitMatchesSelector !== undefined) {
+          return elem.webkitMatchesSelector(selector);
+        } else if (elem.mozMatchesSelector !== undefined) {
+          return elem.mozMatchesSelector(selector);
+        } else {
+          throw new Error('Browser lacks native selectors');
         }
-      });
-      var bodyElm = headerFragment.getAll('body')[0];
-      if (bodyElm) {
-        dom.setAttribs(editor.getBody(), {
-          style: bodyElm.attr('style') || '',
-          dir: bodyElm.attr('dir') || '',
-          vLink: bodyElm.attr('vlink') || '',
-          link: bodyElm.attr('link') || '',
-          aLink: bodyElm.attr('alink') || ''
-        });
-      }
-      dom.remove('fullpage_styles');
-      var headElm = editor.getDoc().getElementsByTagName('head')[0];
-      if (styles) {
-        var styleElm = dom.add(headElm, 'style', { id: 'fullpage_styles' });
-        styleElm.appendChild(document.createTextNode(styles));
-      }
-      var currentStyleSheetsMap = {};
-      global$3.each(headElm.getElementsByTagName('link'), function (stylesheet) {
-        if (stylesheet.rel === 'stylesheet' && stylesheet.getAttribute('data-mce-fullpage')) {
-          currentStyleSheetsMap[stylesheet.href] = stylesheet;
-        }
-      });
-      global$3.each(headerFragment.getAll('link'), function (stylesheet) {
-        var href = stylesheet.attr('href');
-        if (!href) {
-          return true;
-        }
-        if (!currentStyleSheetsMap[href] && stylesheet.attr('rel') === 'stylesheet') {
-          dom.add(headElm, 'link', {
-            'rel': 'stylesheet',
-            'text': 'text/css',
-            href: href,
-            'data-mce-fullpage': '1'
-          });
-        }
-        delete currentStyleSheetsMap[href];
-      });
-      global$3.each(currentStyleSheetsMap, function (stylesheet) {
-        stylesheet.parentNode.removeChild(stylesheet);
-      });
-    };
-    var getDefaultHeader = function (editor) {
-      var header = '', value, styles = '';
-      if (getDefaultXmlPi(editor)) {
-        var piEncoding = getDefaultEncoding(editor);
-        header += '<?xml version="1.0" encoding="' + (piEncoding ? piEncoding : 'ISO-8859-1') + '" ?>\n';
-      }
-      header += getDefaultDocType(editor);
-      header += '\n<html>\n<head>\n';
-      if (value = getDefaultTitle(editor)) {
-        header += '<title>' + value + '</title>\n';
-      }
-      if (value = getDefaultEncoding(editor)) {
-        header += '<meta http-equiv="Content-Type" content="text/html; charset=' + value + '" />\n';
-      }
-      if (value = getDefaultFontFamily(editor)) {
-        styles += 'font-family: ' + value + ';';
-      }
-      if (value = getDefaultFontSize(editor)) {
-        styles += 'font-size: ' + value + ';';
-      }
-      if (value = getDefaultTextColor(editor)) {
-        styles += 'color: ' + value + ';';
-      }
-      header += '</head>\n<body' + (styles ? ' style="' + styles + '"' : '') + '>\n';
-      return header;
-    };
-    var handleGetContent = function (editor, head, foot, evt) {
-      if (evt.format === 'html' && !evt.selection && (!evt.source_view || !shouldHideInSourceView(editor))) {
-        evt.content = unprotectHtml(global$3.trim(head) + '\n' + global$3.trim(evt.content) + '\n' + global$3.trim(foot));
       }
     };
-    var setup = function (editor, headState, footState) {
-      editor.on('BeforeSetContent', function (evt) {
-        handleSetContent(editor, headState, footState, evt);
-      });
-      editor.on('GetContent', function (evt) {
-        handleGetContent(editor, headState.get(), footState.get(), evt);
+
+    typeof window !== 'undefined' ? window : Function('return this;')();
+
+    var name = function (element) {
+      var r = element.dom.nodeName;
+      return r.toLowerCase();
+    };
+    var type = function (element) {
+      return element.dom.nodeType;
+    };
+    var isType = function (t) {
+      return function (element) {
+        return type(element) === t;
+      };
+    };
+    var isElement = isType(ELEMENT);
+    var isText = isType(TEXT);
+    var isDocument = isType(DOCUMENT);
+    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
+    var isTag = function (tag) {
+      return function (e) {
+        return isElement(e) && name(e) === tag;
+      };
+    };
+
+    var owner = function (element) {
+      return SugarElement.fromDom(element.dom.ownerDocument);
+    };
+    var documentOrOwner = function (dos) {
+      return isDocument(dos) ? dos : owner(dos);
+    };
+    var parent = function (element) {
+      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
+    };
+    var children$2 = function (element) {
+      return map(element.dom.childNodes, SugarElement.fromDom);
+    };
+
+    var rawSet = function (dom, key, value) {
+      if (isString(value) || isBoolean(value) || isNumber(value)) {
+        dom.setAttribute(key, value + '');
+      } else {
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        throw new Error('Attribute value was not simple');
+      }
+    };
+    var set = function (element, key, value) {
+      rawSet(element.dom, key, value);
+    };
+    var remove = function (element, key) {
+      element.dom.removeAttribute(key);
+    };
+
+    var isShadowRoot = function (dos) {
+      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
+    };
+    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
+    var getRootNode = supported ? function (e) {
+      return SugarElement.fromDom(e.dom.getRootNode());
+    } : documentOrOwner;
+    var getShadowRoot = function (e) {
+      var r = getRootNode(e);
+      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
+    };
+    var getShadowHost = function (e) {
+      return SugarElement.fromDom(e.dom.host);
+    };
+
+    var inBody = function (element) {
+      var dom = isText(element) ? element.dom.parentNode : element.dom;
+      if (dom === undefined || dom === null || dom.ownerDocument === null) {
+        return false;
+      }
+      var doc = dom.ownerDocument;
+      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
+        return doc.body.contains(dom);
+      }, compose1(inBody, getShadowHost));
+    };
+
+    var ancestor$1 = function (scope, predicate, isRoot) {
+      var element = scope.dom;
+      var stop = isFunction(isRoot) ? isRoot : never;
+      while (element.parentNode) {
+        element = element.parentNode;
+        var el = SugarElement.fromDom(element);
+        if (predicate(el)) {
+          return Optional.some(el);
+        } else if (stop(el)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+
+    var ancestor = function (scope, selector, isRoot) {
+      return ancestor$1(scope, function (e) {
+        return is(e, selector);
+      }, isRoot);
+    };
+
+    var isSupported = function (dom) {
+      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
+    };
+
+    var get = function (element, property) {
+      var dom = element.dom;
+      var styles = window.getComputedStyle(dom);
+      var r = styles.getPropertyValue(property);
+      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
+    };
+    var getUnsafeProperty = function (dom, property) {
+      return isSupported(dom) ? dom.style.getPropertyValue(property) : '';
+    };
+
+    var getDirection = function (element) {
+      return get(element, 'direction') === 'rtl' ? 'rtl' : 'ltr';
+    };
+
+    var children$1 = function (scope, predicate) {
+      return filter(children$2(scope), predicate);
+    };
+
+    var children = function (scope, selector) {
+      return children$1(scope, function (e) {
+        return is(e, selector);
       });
     };
 
-    var register = function (editor) {
-      editor.ui.registry.addButton('fullpage', {
-        tooltip: 'Metadata and document properties',
-        icon: 'document-properties',
-        onAction: function () {
-          editor.execCommand('mceFullPageProperties');
-        }
+    var getParentElement = function (element) {
+      return parent(element).filter(isElement);
+    };
+    var getNormalizedBlock = function (element, isListItem) {
+      var normalizedElement = isListItem ? ancestor(element, 'ol,ul') : Optional.some(element);
+      return normalizedElement.getOr(element);
+    };
+    var isListItem = isTag('li');
+    var setDir = function (editor, dir) {
+      var selectedBlocks = editor.selection.getSelectedBlocks();
+      if (selectedBlocks.length > 0) {
+        each(selectedBlocks, function (block) {
+          var blockElement = SugarElement.fromDom(block);
+          var isBlockElementListItem = isListItem(blockElement);
+          var normalizedBlock = getNormalizedBlock(blockElement, isBlockElementListItem);
+          var normalizedBlockParent = getParentElement(normalizedBlock);
+          normalizedBlockParent.each(function (parent) {
+            var parentDirection = getDirection(parent);
+            if (parentDirection !== dir) {
+              set(normalizedBlock, 'dir', dir);
+            } else if (getDirection(normalizedBlock) !== dir) {
+              remove(normalizedBlock, 'dir');
+            }
+            if (isBlockElementListItem) {
+              var listItems = children(normalizedBlock, 'li[dir]');
+              each(listItems, function (listItem) {
+                return remove(listItem, 'dir');
+              });
+            }
+          });
+        });
+        editor.nodeChanged();
+      }
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceDirectionLTR', function () {
+        setDir(editor, 'ltr');
       });
-      editor.ui.registry.addMenuItem('fullpage', {
-        text: 'Metadata and document properties',
-        icon: 'document-properties',
+      editor.addCommand('mceDirectionRTL', function () {
+        setDir(editor, 'rtl');
+      });
+    };
+
+    var getNodeChangeHandler = function (editor, dir) {
+      return function (api) {
+        var nodeChangeHandler = function (e) {
+          var element = SugarElement.fromDom(e.element);
+          api.setActive(getDirection(element) === dir);
+        };
+        editor.on('NodeChange', nodeChangeHandler);
+        return function () {
+          return editor.off('NodeChange', nodeChangeHandler);
+        };
+      };
+    };
+    var register = function (editor) {
+      editor.ui.registry.addToggleButton('ltr', {
+        tooltip: 'Left to right',
+        icon: 'ltr',
         onAction: function () {
-          editor.execCommand('mceFullPageProperties');
-        }
+          return editor.execCommand('mceDirectionLTR');
+        },
+        onSetup: getNodeChangeHandler(editor, 'ltr')
+      });
+      editor.ui.registry.addToggleButton('rtl', {
+        tooltip: 'Right to left',
+        icon: 'rtl',
+        onAction: function () {
+          return editor.execCommand('mceDirectionRTL');
+        },
+        onSetup: getNodeChangeHandler(editor, 'rtl')
       });
     };
 
     function Plugin () {
-      global$4.add('fullpage', function (editor) {
-        var headState = Cell(''), footState = Cell('');
-        register$1(editor, headState);
+      global.add('directionality', function (editor) {
+        register$1(editor);
         register(editor);
-        setup(editor, headState, footState);
       });
     }
 
@@ -52856,31 +52425,342 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
 
-    var setContent = function (editor, html) {
-      editor.focus();
-      editor.undoManager.transact(function () {
-        editor.setContent(html);
+    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s)
+            if (Object.prototype.hasOwnProperty.call(s, p))
+              t[p] = s[p];
+        }
+        return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.html.DomParser');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.html.Node');
+
+    var global = tinymce.util.Tools.resolve('tinymce.html.Serializer');
+
+    var shouldHideInSourceView = function (editor) {
+      return editor.getParam('fullpage_hide_in_source_view');
+    };
+    var getDefaultXmlPi = function (editor) {
+      return editor.getParam('fullpage_default_xml_pi');
+    };
+    var getDefaultEncoding = function (editor) {
+      return editor.getParam('fullpage_default_encoding');
+    };
+    var getDefaultFontFamily = function (editor) {
+      return editor.getParam('fullpage_default_font_family');
+    };
+    var getDefaultFontSize = function (editor) {
+      return editor.getParam('fullpage_default_font_size');
+    };
+    var getDefaultTextColor = function (editor) {
+      return editor.getParam('fullpage_default_text_color');
+    };
+    var getDefaultTitle = function (editor) {
+      return editor.getParam('fullpage_default_title');
+    };
+    var getDefaultDocType = function (editor) {
+      return editor.getParam('fullpage_default_doctype', '<!DOCTYPE html>');
+    };
+    var getProtect = function (editor) {
+      return editor.getParam('protect');
+    };
+
+    var parseHeader = function (editor, head) {
+      return global$2({
+        validate: false,
+        root_name: '#document'
+      }, editor.schema).parse(head, { format: 'xhtml' });
+    };
+    var htmlToData = function (editor, head) {
+      var headerFragment = parseHeader(editor, head);
+      var data = {};
+      var elm, matches;
+      var getAttr = function (elm, name) {
+        var value = elm.attr(name);
+        return value || '';
+      };
+      data.fontface = getDefaultFontFamily(editor);
+      data.fontsize = getDefaultFontSize(editor);
+      elm = headerFragment.firstChild;
+      if (elm.type === 7) {
+        data.xml_pi = true;
+        matches = /encoding="([^"]+)"/.exec(elm.value);
+        if (matches) {
+          data.docencoding = matches[1];
+        }
+      }
+      elm = headerFragment.getAll('#doctype')[0];
+      if (elm) {
+        data.doctype = '<!DOCTYPE' + elm.value + '>';
+      }
+      elm = headerFragment.getAll('title')[0];
+      if (elm && elm.firstChild) {
+        data.title = elm.firstChild.value;
+      }
+      global$3.each(headerFragment.getAll('meta'), function (meta) {
+        var name = meta.attr('name');
+        var httpEquiv = meta.attr('http-equiv');
+        var matches;
+        if (name) {
+          data[name.toLowerCase()] = meta.attr('content');
+        } else if (httpEquiv === 'Content-Type') {
+          matches = /charset\s*=\s*(.*)\s*/gi.exec(meta.attr('content'));
+          if (matches) {
+            data.docencoding = matches[1];
+          }
+        }
       });
-      editor.selection.setCursorLocation();
-      editor.nodeChanged();
+      elm = headerFragment.getAll('html')[0];
+      if (elm) {
+        data.langcode = getAttr(elm, 'lang') || getAttr(elm, 'xml:lang');
+      }
+      data.stylesheets = [];
+      global$3.each(headerFragment.getAll('link'), function (link) {
+        if (link.attr('rel') === 'stylesheet') {
+          data.stylesheets.push(link.attr('href'));
+        }
+      });
+      elm = headerFragment.getAll('body')[0];
+      if (elm) {
+        data.langdir = getAttr(elm, 'dir');
+        data.style = getAttr(elm, 'style');
+        data.visited_color = getAttr(elm, 'vlink');
+        data.link_color = getAttr(elm, 'link');
+        data.active_color = getAttr(elm, 'alink');
+      }
+      return data;
     };
-    var getContent = function (editor) {
-      return editor.getContent({ source_view: true });
+    var dataToHtml = function (editor, data, head) {
+      var headElement, elm;
+      var dom = editor.dom;
+      var setAttr = function (elm, name, value) {
+        elm.attr(name, value ? value : undefined);
+      };
+      var addHeadNode = function (node) {
+        if (headElement.firstChild) {
+          headElement.insert(node, headElement.firstChild);
+        } else {
+          headElement.append(node);
+        }
+      };
+      var headerFragment = parseHeader(editor, head);
+      headElement = headerFragment.getAll('head')[0];
+      if (!headElement) {
+        elm = headerFragment.getAll('html')[0];
+        headElement = new global$1('head', 1);
+        if (elm.firstChild) {
+          elm.insert(headElement, elm.firstChild, true);
+        } else {
+          elm.append(headElement);
+        }
+      }
+      elm = headerFragment.firstChild;
+      if (data.xml_pi) {
+        var value = 'version="1.0"';
+        if (data.docencoding) {
+          value += ' encoding="' + data.docencoding + '"';
+        }
+        if (elm.type !== 7) {
+          elm = new global$1('xml', 7);
+          headerFragment.insert(elm, headerFragment.firstChild, true);
+        }
+        elm.value = value;
+      } else if (elm && elm.type === 7) {
+        elm.remove();
+      }
+      elm = headerFragment.getAll('#doctype')[0];
+      if (data.doctype) {
+        if (!elm) {
+          elm = new global$1('#doctype', 10);
+          if (data.xml_pi) {
+            headerFragment.insert(elm, headerFragment.firstChild);
+          } else {
+            addHeadNode(elm);
+          }
+        }
+        elm.value = data.doctype.substring(9, data.doctype.length - 1);
+      } else if (elm) {
+        elm.remove();
+      }
+      elm = null;
+      global$3.each(headerFragment.getAll('meta'), function (meta) {
+        if (meta.attr('http-equiv') === 'Content-Type') {
+          elm = meta;
+        }
+      });
+      if (data.docencoding) {
+        if (!elm) {
+          elm = new global$1('meta', 1);
+          elm.attr('http-equiv', 'Content-Type');
+          elm.shortEnded = true;
+          addHeadNode(elm);
+        }
+        elm.attr('content', 'text/html; charset=' + data.docencoding);
+      } else if (elm) {
+        elm.remove();
+      }
+      elm = headerFragment.getAll('title')[0];
+      if (data.title) {
+        if (!elm) {
+          elm = new global$1('title', 1);
+          addHeadNode(elm);
+        } else {
+          elm.empty();
+        }
+        elm.append(new global$1('#text', 3)).value = data.title;
+      } else if (elm) {
+        elm.remove();
+      }
+      global$3.each('keywords,description,author,copyright,robots'.split(','), function (name) {
+        var nodes = headerFragment.getAll('meta');
+        var i, meta;
+        var value = data[name];
+        for (i = 0; i < nodes.length; i++) {
+          meta = nodes[i];
+          if (meta.attr('name') === name) {
+            if (value) {
+              meta.attr('content', value);
+            } else {
+              meta.remove();
+            }
+            return;
+          }
+        }
+        if (value) {
+          elm = new global$1('meta', 1);
+          elm.attr('name', name);
+          elm.attr('content', value);
+          elm.shortEnded = true;
+          addHeadNode(elm);
+        }
+      });
+      var currentStyleSheetsMap = {};
+      global$3.each(headerFragment.getAll('link'), function (stylesheet) {
+        if (stylesheet.attr('rel') === 'stylesheet') {
+          currentStyleSheetsMap[stylesheet.attr('href')] = stylesheet;
+        }
+      });
+      global$3.each(data.stylesheets, function (stylesheet) {
+        if (!currentStyleSheetsMap[stylesheet]) {
+          elm = new global$1('link', 1);
+          elm.attr({
+            rel: 'stylesheet',
+            text: 'text/css',
+            href: stylesheet
+          });
+          elm.shortEnded = true;
+          addHeadNode(elm);
+        }
+        delete currentStyleSheetsMap[stylesheet];
+      });
+      global$3.each(currentStyleSheetsMap, function (stylesheet) {
+        stylesheet.remove();
+      });
+      elm = headerFragment.getAll('body')[0];
+      if (elm) {
+        setAttr(elm, 'dir', data.langdir);
+        setAttr(elm, 'style', data.style);
+        setAttr(elm, 'vlink', data.visited_color);
+        setAttr(elm, 'link', data.link_color);
+        setAttr(elm, 'alink', data.active_color);
+        dom.setAttribs(editor.getBody(), {
+          style: data.style,
+          dir: data.dir,
+          vLink: data.visited_color,
+          link: data.link_color,
+          aLink: data.active_color
+        });
+      }
+      elm = headerFragment.getAll('html')[0];
+      if (elm) {
+        setAttr(elm, 'lang', data.langcode);
+        setAttr(elm, 'xml:lang', data.langcode);
+      }
+      if (!headElement.firstChild) {
+        headElement.remove();
+      }
+      var html = global({
+        validate: false,
+        indent: true,
+        indent_before: 'head,html,body,meta,title,script,link,style',
+        indent_after: 'head,html,body,meta,title,script,link,style'
+      }).serialize(headerFragment);
+      return html.substring(0, html.indexOf('</body>'));
     };
 
-    var open = function (editor) {
-      var editorContent = getContent(editor);
+    var open = function (editor, headState) {
+      var data = htmlToData(editor, headState.get());
+      var defaultData = {
+        title: '',
+        keywords: '',
+        description: '',
+        robots: '',
+        author: '',
+        docencoding: ''
+      };
+      var initialData = __assign(__assign({}, defaultData), data);
       editor.windowManager.open({
-        title: 'Source Code',
-        size: 'large',
+        title: 'Metadata and Document Properties',
+        size: 'normal',
         body: {
           type: 'panel',
-          items: [{
-              type: 'textarea',
-              name: 'code'
-            }]
+          items: [
+            {
+              name: 'title',
+              type: 'input',
+              label: 'Title'
+            },
+            {
+              name: 'keywords',
+              type: 'input',
+              label: 'Keywords'
+            },
+            {
+              name: 'description',
+              type: 'input',
+              label: 'Description'
+            },
+            {
+              name: 'robots',
+              type: 'input',
+              label: 'Robots'
+            },
+            {
+              name: 'author',
+              type: 'input',
+              label: 'Author'
+            },
+            {
+              name: 'docencoding',
+              type: 'input',
+              label: 'Encoding'
+            }
+          ]
         },
         buttons: [
           {
@@ -52895,41 +52775,183 @@ tinymce.IconManager.add('default', {
             primary: true
           }
         ],
-        initialData: { code: editorContent },
+        initialData: initialData,
         onSubmit: function (api) {
-          setContent(editor, api.getData().code);
+          var nuData = api.getData();
+          var headHtml = dataToHtml(editor, global$3.extend(data, nuData), headState.get());
+          headState.set(headHtml);
           api.close();
         }
       });
     };
 
-    var register$1 = function (editor) {
-      editor.addCommand('mceCodeEditor', function () {
-        open(editor);
+    var register$1 = function (editor, headState) {
+      editor.addCommand('mceFullPageProperties', function () {
+        open(editor, headState);
+      });
+    };
+
+    var protectHtml = function (protect, html) {
+      global$3.each(protect, function (pattern) {
+        html = html.replace(pattern, function (str) {
+          return '<!--mce:protected ' + escape(str) + '-->';
+        });
+      });
+      return html;
+    };
+    var unprotectHtml = function (html) {
+      return html.replace(/<!--mce:protected ([\s\S]*?)-->/g, function (a, m) {
+        return unescape(m);
+      });
+    };
+
+    var each = global$3.each;
+    var low = function (s) {
+      return s.replace(/<\/?[A-Z]+/g, function (a) {
+        return a.toLowerCase();
+      });
+    };
+    var handleSetContent = function (editor, headState, footState, evt) {
+      var startPos, endPos, content, styles = '';
+      var dom = editor.dom;
+      if (evt.selection) {
+        return;
+      }
+      content = protectHtml(getProtect(editor), evt.content);
+      if (evt.format === 'raw' && headState.get()) {
+        return;
+      }
+      if (evt.source_view && shouldHideInSourceView(editor)) {
+        return;
+      }
+      if (content.length === 0 && !evt.source_view) {
+        content = global$3.trim(headState.get()) + '\n' + global$3.trim(content) + '\n' + global$3.trim(footState.get());
+      }
+      content = content.replace(/<(\/?)BODY/gi, '<$1body');
+      startPos = content.indexOf('<body');
+      if (startPos !== -1) {
+        startPos = content.indexOf('>', startPos);
+        headState.set(low(content.substring(0, startPos + 1)));
+        endPos = content.indexOf('</body', startPos);
+        if (endPos === -1) {
+          endPos = content.length;
+        }
+        evt.content = global$3.trim(content.substring(startPos + 1, endPos));
+        footState.set(low(content.substring(endPos)));
+      } else {
+        headState.set(getDefaultHeader(editor));
+        footState.set('\n</body>\n</html>');
+      }
+      var headerFragment = parseHeader(editor, headState.get());
+      each(headerFragment.getAll('style'), function (node) {
+        if (node.firstChild) {
+          styles += node.firstChild.value;
+        }
+      });
+      var bodyElm = headerFragment.getAll('body')[0];
+      if (bodyElm) {
+        dom.setAttribs(editor.getBody(), {
+          style: bodyElm.attr('style') || '',
+          dir: bodyElm.attr('dir') || '',
+          vLink: bodyElm.attr('vlink') || '',
+          link: bodyElm.attr('link') || '',
+          aLink: bodyElm.attr('alink') || ''
+        });
+      }
+      dom.remove('fullpage_styles');
+      var headElm = editor.getDoc().getElementsByTagName('head')[0];
+      if (styles) {
+        var styleElm = dom.add(headElm, 'style', { id: 'fullpage_styles' });
+        styleElm.appendChild(document.createTextNode(styles));
+      }
+      var currentStyleSheetsMap = {};
+      global$3.each(headElm.getElementsByTagName('link'), function (stylesheet) {
+        if (stylesheet.rel === 'stylesheet' && stylesheet.getAttribute('data-mce-fullpage')) {
+          currentStyleSheetsMap[stylesheet.href] = stylesheet;
+        }
+      });
+      global$3.each(headerFragment.getAll('link'), function (stylesheet) {
+        var href = stylesheet.attr('href');
+        if (!href) {
+          return true;
+        }
+        if (!currentStyleSheetsMap[href] && stylesheet.attr('rel') === 'stylesheet') {
+          dom.add(headElm, 'link', {
+            'rel': 'stylesheet',
+            'text': 'text/css',
+            href: href,
+            'data-mce-fullpage': '1'
+          });
+        }
+        delete currentStyleSheetsMap[href];
+      });
+      global$3.each(currentStyleSheetsMap, function (stylesheet) {
+        stylesheet.parentNode.removeChild(stylesheet);
+      });
+    };
+    var getDefaultHeader = function (editor) {
+      var header = '', value, styles = '';
+      if (getDefaultXmlPi(editor)) {
+        var piEncoding = getDefaultEncoding(editor);
+        header += '<?xml version="1.0" encoding="' + (piEncoding ? piEncoding : 'ISO-8859-1') + '" ?>\n';
+      }
+      header += getDefaultDocType(editor);
+      header += '\n<html>\n<head>\n';
+      if (value = getDefaultTitle(editor)) {
+        header += '<title>' + value + '</title>\n';
+      }
+      if (value = getDefaultEncoding(editor)) {
+        header += '<meta http-equiv="Content-Type" content="text/html; charset=' + value + '" />\n';
+      }
+      if (value = getDefaultFontFamily(editor)) {
+        styles += 'font-family: ' + value + ';';
+      }
+      if (value = getDefaultFontSize(editor)) {
+        styles += 'font-size: ' + value + ';';
+      }
+      if (value = getDefaultTextColor(editor)) {
+        styles += 'color: ' + value + ';';
+      }
+      header += '</head>\n<body' + (styles ? ' style="' + styles + '"' : '') + '>\n';
+      return header;
+    };
+    var handleGetContent = function (editor, head, foot, evt) {
+      if (evt.format === 'html' && !evt.selection && (!evt.source_view || !shouldHideInSourceView(editor))) {
+        evt.content = unprotectHtml(global$3.trim(head) + '\n' + global$3.trim(evt.content) + '\n' + global$3.trim(foot));
+      }
+    };
+    var setup = function (editor, headState, footState) {
+      editor.on('BeforeSetContent', function (evt) {
+        handleSetContent(editor, headState, footState, evt);
+      });
+      editor.on('GetContent', function (evt) {
+        handleGetContent(editor, headState.get(), footState.get(), evt);
       });
     };
 
     var register = function (editor) {
-      var onAction = function () {
-        return editor.execCommand('mceCodeEditor');
-      };
-      editor.ui.registry.addButton('code', {
-        icon: 'sourcecode',
-        tooltip: 'Source code',
-        onAction: onAction
+      editor.ui.registry.addButton('fullpage', {
+        tooltip: 'Metadata and document properties',
+        icon: 'document-properties',
+        onAction: function () {
+          editor.execCommand('mceFullPageProperties');
+        }
       });
-      editor.ui.registry.addMenuItem('code', {
-        icon: 'sourcecode',
-        text: 'Source code',
-        onAction: onAction
+      editor.ui.registry.addMenuItem('fullpage', {
+        text: 'Metadata and document properties',
+        icon: 'document-properties',
+        onAction: function () {
+          editor.execCommand('mceFullPageProperties');
+        }
       });
     };
 
     function Plugin () {
-      global.add('code', function (editor) {
-        register$1(editor);
+      global$4.add('fullpage', function (editor) {
+        var headState = Cell(''), footState = Cell('');
+        register$1(editor, headState);
         register(editor);
-        return {};
+        setup(editor, headState, footState);
       });
     }
 
@@ -52948,10 +52970,1336 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var get$5 = function (fullscreenState) {
+      return {
+        isFullscreen: function () {
+          return fullscreenState.get() !== null;
+        }
+      };
+    };
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType$1 = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType$1('string');
+    var isArray = isType$1('array');
+    var isBoolean = isSimpleType('boolean');
+    var isNullable = function (a) {
+      return a === null || a === undefined;
+    };
+    var isNonNullable = function (a) {
+      return !isNullable(a);
+    };
+    var isFunction = isSimpleType('function');
+    var isNumber = isSimpleType('number');
+
+    var noop = function () {
+    };
+    var compose = function (fa, fb) {
+      return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          args[_i] = arguments[_i];
+        }
+        return fa(fb.apply(null, args));
+      };
+    };
+    var compose1 = function (fbc, fab) {
+      return function (a) {
+        return fbc(fab(a));
+      };
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    function curry(fn) {
+      var initialArgs = [];
+      for (var _i = 1; _i < arguments.length; _i++) {
+        initialArgs[_i - 1] = arguments[_i];
+      }
+      return function () {
+        var restArgs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          restArgs[_i] = arguments[_i];
+        }
+        var all = initialArgs.concat(restArgs);
+        return fn.apply(null, all);
+      };
+    }
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s)
+            if (Object.prototype.hasOwnProperty.call(s, p))
+              t[p] = s[p];
+        }
+        return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    var singleton = function (doRevoke) {
+      var subject = Cell(Optional.none());
+      var revoke = function () {
+        return subject.get().each(doRevoke);
+      };
+      var clear = function () {
+        revoke();
+        subject.set(Optional.none());
+      };
+      var isSet = function () {
+        return subject.get().isSome();
+      };
+      var get = function () {
+        return subject.get();
+      };
+      var set = function (s) {
+        revoke();
+        subject.set(Optional.some(s));
+      };
+      return {
+        clear: clear,
+        isSet: isSet,
+        get: get,
+        set: set
+      };
+    };
+    var unbindable = function () {
+      return singleton(function (s) {
+        return s.unbind();
+      });
+    };
+    var value = function () {
+      var subject = singleton(noop);
+      var on = function (f) {
+        return subject.get().each(f);
+      };
+      return __assign(__assign({}, subject), { on: on });
+    };
+
+    var nativePush = Array.prototype.push;
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var each$1 = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var filter$1 = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
+    };
+    var findUntil = function (xs, pred, until) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          return Optional.some(x);
+        } else if (until(x, i)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+    var find$1 = function (xs, pred) {
+      return findUntil(xs, pred, never);
+    };
+    var flatten = function (xs) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; ++i) {
+        if (!isArray(xs[i])) {
+          throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
+        }
+        nativePush.apply(r, xs[i]);
+      }
+      return r;
+    };
+    var bind$3 = function (xs, f) {
+      return flatten(map(xs, f));
+    };
+    var get$4 = function (xs, i) {
+      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
+    };
+    var head = function (xs) {
+      return get$4(xs, 0);
+    };
+    var findMap = function (arr, f) {
+      for (var i = 0; i < arr.length; i++) {
+        var r = f(arr[i], i);
+        if (r.isSome()) {
+          return r;
+        }
+      }
+      return Optional.none();
+    };
+
+    var keys = Object.keys;
+    var each = function (obj, f) {
+      var props = keys(obj);
+      for (var k = 0, len = props.length; k < len; k++) {
+        var i = props[k];
+        var x = obj[i];
+        f(x, i);
+      }
+    };
+
+    var contains = function (str, substr) {
+      return str.indexOf(substr) !== -1;
+    };
+
+    var isSupported$1 = function (dom) {
+      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
+    };
+
+    var fromHtml = function (html, scope) {
+      var doc = scope || document;
+      var div = doc.createElement('div');
+      div.innerHTML = html;
+      if (!div.hasChildNodes() || div.childNodes.length > 1) {
+        console.error('HTML does not have a single root node', html);
+        throw new Error('HTML must have a single root node');
+      }
+      return fromDom(div.childNodes[0]);
+    };
+    var fromTag = function (tag, scope) {
+      var doc = scope || document;
+      var node = doc.createElement(tag);
+      return fromDom(node);
+    };
+    var fromText = function (text, scope) {
+      var doc = scope || document;
+      var node = doc.createTextNode(text);
+      return fromDom(node);
+    };
+    var fromDom = function (node) {
+      if (node === null || node === undefined) {
+        throw new Error('Node cannot be null or undefined');
+      }
+      return { dom: node };
+    };
+    var fromPoint = function (docElm, x, y) {
+      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
+    };
+    var SugarElement = {
+      fromHtml: fromHtml,
+      fromTag: fromTag,
+      fromText: fromText,
+      fromDom: fromDom,
+      fromPoint: fromPoint
+    };
+
+    typeof window !== 'undefined' ? window : Function('return this;')();
+
+    var DOCUMENT = 9;
+    var DOCUMENT_FRAGMENT = 11;
+    var ELEMENT = 1;
+    var TEXT = 3;
+
+    var type = function (element) {
+      return element.dom.nodeType;
+    };
+    var isType = function (t) {
+      return function (element) {
+        return type(element) === t;
+      };
+    };
+    var isElement = isType(ELEMENT);
+    var isText = isType(TEXT);
+    var isDocument = isType(DOCUMENT);
+    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
+
+    var cached = function (f) {
+      var called = false;
+      var r;
+      return function () {
+        var args = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          args[_i] = arguments[_i];
+        }
+        if (!called) {
+          called = true;
+          r = f.apply(null, args);
+        }
+        return r;
+      };
+    };
+
+    var DeviceType = function (os, browser, userAgent, mediaMatch) {
+      var isiPad = os.isiOS() && /ipad/i.test(userAgent) === true;
+      var isiPhone = os.isiOS() && !isiPad;
+      var isMobile = os.isiOS() || os.isAndroid();
+      var isTouch = isMobile || mediaMatch('(pointer:coarse)');
+      var isTablet = isiPad || !isiPhone && isMobile && mediaMatch('(min-device-width:768px)');
+      var isPhone = isiPhone || isMobile && !isTablet;
+      var iOSwebview = browser.isSafari() && os.isiOS() && /safari/i.test(userAgent) === false;
+      var isDesktop = !isPhone && !isTablet && !iOSwebview;
+      return {
+        isiPad: constant(isiPad),
+        isiPhone: constant(isiPhone),
+        isTablet: constant(isTablet),
+        isPhone: constant(isPhone),
+        isTouch: constant(isTouch),
+        isAndroid: os.isAndroid,
+        isiOS: os.isiOS,
+        isWebView: constant(iOSwebview),
+        isDesktop: constant(isDesktop)
+      };
+    };
+
+    var firstMatch = function (regexes, s) {
+      for (var i = 0; i < regexes.length; i++) {
+        var x = regexes[i];
+        if (x.test(s)) {
+          return x;
+        }
+      }
+      return undefined;
+    };
+    var find = function (regexes, agent) {
+      var r = firstMatch(regexes, agent);
+      if (!r) {
+        return {
+          major: 0,
+          minor: 0
+        };
+      }
+      var group = function (i) {
+        return Number(agent.replace(r, '$' + i));
+      };
+      return nu$2(group(1), group(2));
+    };
+    var detect$3 = function (versionRegexes, agent) {
+      var cleanedAgent = String(agent).toLowerCase();
+      if (versionRegexes.length === 0) {
+        return unknown$2();
+      }
+      return find(versionRegexes, cleanedAgent);
+    };
+    var unknown$2 = function () {
+      return nu$2(0, 0);
+    };
+    var nu$2 = function (major, minor) {
+      return {
+        major: major,
+        minor: minor
+      };
+    };
+    var Version = {
+      nu: nu$2,
+      detect: detect$3,
+      unknown: unknown$2
+    };
+
+    var detectBrowser$1 = function (browsers, userAgentData) {
+      return findMap(userAgentData.brands, function (uaBrand) {
+        var lcBrand = uaBrand.brand.toLowerCase();
+        return find$1(browsers, function (browser) {
+          var _a;
+          return lcBrand === ((_a = browser.brand) === null || _a === void 0 ? void 0 : _a.toLowerCase());
+        }).map(function (info) {
+          return {
+            current: info.name,
+            version: Version.nu(parseInt(uaBrand.version, 10), 0)
+          };
+        });
+      });
+    };
+
+    var detect$2 = function (candidates, userAgent) {
+      var agent = String(userAgent).toLowerCase();
+      return find$1(candidates, function (candidate) {
+        return candidate.search(agent);
+      });
+    };
+    var detectBrowser = function (browsers, userAgent) {
+      return detect$2(browsers, userAgent).map(function (browser) {
+        var version = Version.detect(browser.versionRegexes, userAgent);
+        return {
+          current: browser.name,
+          version: version
+        };
+      });
+    };
+    var detectOs = function (oses, userAgent) {
+      return detect$2(oses, userAgent).map(function (os) {
+        var version = Version.detect(os.versionRegexes, userAgent);
+        return {
+          current: os.name,
+          version: version
+        };
+      });
+    };
+
+    var normalVersionRegex = /.*?version\/\ ?([0-9]+)\.([0-9]+).*/;
+    var checkContains = function (target) {
+      return function (uastring) {
+        return contains(uastring, target);
+      };
+    };
+    var browsers = [
+      {
+        name: 'Edge',
+        versionRegexes: [/.*?edge\/ ?([0-9]+)\.([0-9]+)$/],
+        search: function (uastring) {
+          return contains(uastring, 'edge/') && contains(uastring, 'chrome') && contains(uastring, 'safari') && contains(uastring, 'applewebkit');
+        }
+      },
+      {
+        name: 'Chrome',
+        brand: 'Chromium',
+        versionRegexes: [
+          /.*?chrome\/([0-9]+)\.([0-9]+).*/,
+          normalVersionRegex
+        ],
+        search: function (uastring) {
+          return contains(uastring, 'chrome') && !contains(uastring, 'chromeframe');
+        }
+      },
+      {
+        name: 'IE',
+        versionRegexes: [
+          /.*?msie\ ?([0-9]+)\.([0-9]+).*/,
+          /.*?rv:([0-9]+)\.([0-9]+).*/
+        ],
+        search: function (uastring) {
+          return contains(uastring, 'msie') || contains(uastring, 'trident');
+        }
+      },
+      {
+        name: 'Opera',
+        versionRegexes: [
+          normalVersionRegex,
+          /.*?opera\/([0-9]+)\.([0-9]+).*/
+        ],
+        search: checkContains('opera')
+      },
+      {
+        name: 'Firefox',
+        versionRegexes: [/.*?firefox\/\ ?([0-9]+)\.([0-9]+).*/],
+        search: checkContains('firefox')
+      },
+      {
+        name: 'Safari',
+        versionRegexes: [
+          normalVersionRegex,
+          /.*?cpu os ([0-9]+)_([0-9]+).*/
+        ],
+        search: function (uastring) {
+          return (contains(uastring, 'safari') || contains(uastring, 'mobile/')) && contains(uastring, 'applewebkit');
+        }
+      }
+    ];
+    var oses = [
+      {
+        name: 'Windows',
+        search: checkContains('win'),
+        versionRegexes: [/.*?windows\ nt\ ?([0-9]+)\.([0-9]+).*/]
+      },
+      {
+        name: 'iOS',
+        search: function (uastring) {
+          return contains(uastring, 'iphone') || contains(uastring, 'ipad');
+        },
+        versionRegexes: [
+          /.*?version\/\ ?([0-9]+)\.([0-9]+).*/,
+          /.*cpu os ([0-9]+)_([0-9]+).*/,
+          /.*cpu iphone os ([0-9]+)_([0-9]+).*/
+        ]
+      },
+      {
+        name: 'Android',
+        search: checkContains('android'),
+        versionRegexes: [/.*?android\ ?([0-9]+)\.([0-9]+).*/]
+      },
+      {
+        name: 'OSX',
+        search: checkContains('mac os x'),
+        versionRegexes: [/.*?mac\ os\ x\ ?([0-9]+)_([0-9]+).*/]
+      },
+      {
+        name: 'Linux',
+        search: checkContains('linux'),
+        versionRegexes: []
+      },
+      {
+        name: 'Solaris',
+        search: checkContains('sunos'),
+        versionRegexes: []
+      },
+      {
+        name: 'FreeBSD',
+        search: checkContains('freebsd'),
+        versionRegexes: []
+      },
+      {
+        name: 'ChromeOS',
+        search: checkContains('cros'),
+        versionRegexes: [/.*?chrome\/([0-9]+)\.([0-9]+).*/]
+      }
+    ];
+    var PlatformInfo = {
+      browsers: constant(browsers),
+      oses: constant(oses)
+    };
+
+    var edge = 'Edge';
+    var chrome = 'Chrome';
+    var ie = 'IE';
+    var opera = 'Opera';
+    var firefox = 'Firefox';
+    var safari = 'Safari';
+    var unknown$1 = function () {
+      return nu$1({
+        current: undefined,
+        version: Version.unknown()
+      });
+    };
+    var nu$1 = function (info) {
+      var current = info.current;
+      var version = info.version;
+      var isBrowser = function (name) {
+        return function () {
+          return current === name;
+        };
+      };
+      return {
+        current: current,
+        version: version,
+        isEdge: isBrowser(edge),
+        isChrome: isBrowser(chrome),
+        isIE: isBrowser(ie),
+        isOpera: isBrowser(opera),
+        isFirefox: isBrowser(firefox),
+        isSafari: isBrowser(safari)
+      };
+    };
+    var Browser = {
+      unknown: unknown$1,
+      nu: nu$1,
+      edge: constant(edge),
+      chrome: constant(chrome),
+      ie: constant(ie),
+      opera: constant(opera),
+      firefox: constant(firefox),
+      safari: constant(safari)
+    };
+
+    var windows = 'Windows';
+    var ios = 'iOS';
+    var android = 'Android';
+    var linux = 'Linux';
+    var osx = 'OSX';
+    var solaris = 'Solaris';
+    var freebsd = 'FreeBSD';
+    var chromeos = 'ChromeOS';
+    var unknown = function () {
+      return nu({
+        current: undefined,
+        version: Version.unknown()
+      });
+    };
+    var nu = function (info) {
+      var current = info.current;
+      var version = info.version;
+      var isOS = function (name) {
+        return function () {
+          return current === name;
+        };
+      };
+      return {
+        current: current,
+        version: version,
+        isWindows: isOS(windows),
+        isiOS: isOS(ios),
+        isAndroid: isOS(android),
+        isOSX: isOS(osx),
+        isLinux: isOS(linux),
+        isSolaris: isOS(solaris),
+        isFreeBSD: isOS(freebsd),
+        isChromeOS: isOS(chromeos)
+      };
+    };
+    var OperatingSystem = {
+      unknown: unknown,
+      nu: nu,
+      windows: constant(windows),
+      ios: constant(ios),
+      android: constant(android),
+      linux: constant(linux),
+      osx: constant(osx),
+      solaris: constant(solaris),
+      freebsd: constant(freebsd),
+      chromeos: constant(chromeos)
+    };
+
+    var detect$1 = function (userAgent, userAgentDataOpt, mediaMatch) {
+      var browsers = PlatformInfo.browsers();
+      var oses = PlatformInfo.oses();
+      var browser = userAgentDataOpt.bind(function (userAgentData) {
+        return detectBrowser$1(browsers, userAgentData);
+      }).orThunk(function () {
+        return detectBrowser(browsers, userAgent);
+      }).fold(Browser.unknown, Browser.nu);
+      var os = detectOs(oses, userAgent).fold(OperatingSystem.unknown, OperatingSystem.nu);
+      var deviceType = DeviceType(os, browser, userAgent, mediaMatch);
+      return {
+        browser: browser,
+        os: os,
+        deviceType: deviceType
+      };
+    };
+    var PlatformDetection = { detect: detect$1 };
+
+    var mediaMatch = function (query) {
+      return window.matchMedia(query).matches;
+    };
+    var platform = cached(function () {
+      return PlatformDetection.detect(navigator.userAgent, Optional.from(navigator.userAgentData), mediaMatch);
+    });
+    var detect = function () {
+      return platform();
+    };
+
+    var is = function (element, selector) {
+      var dom = element.dom;
+      if (dom.nodeType !== ELEMENT) {
+        return false;
+      } else {
+        var elem = dom;
+        if (elem.matches !== undefined) {
+          return elem.matches(selector);
+        } else if (elem.msMatchesSelector !== undefined) {
+          return elem.msMatchesSelector(selector);
+        } else if (elem.webkitMatchesSelector !== undefined) {
+          return elem.webkitMatchesSelector(selector);
+        } else if (elem.mozMatchesSelector !== undefined) {
+          return elem.mozMatchesSelector(selector);
+        } else {
+          throw new Error('Browser lacks native selectors');
+        }
+      }
+    };
+    var bypassSelector = function (dom) {
+      return dom.nodeType !== ELEMENT && dom.nodeType !== DOCUMENT && dom.nodeType !== DOCUMENT_FRAGMENT || dom.childElementCount === 0;
+    };
+    var all$1 = function (selector, scope) {
+      var base = scope === undefined ? document : scope.dom;
+      return bypassSelector(base) ? [] : map(base.querySelectorAll(selector), SugarElement.fromDom);
+    };
+
+    var eq = function (e1, e2) {
+      return e1.dom === e2.dom;
+    };
+
+    var owner = function (element) {
+      return SugarElement.fromDom(element.dom.ownerDocument);
+    };
+    var documentOrOwner = function (dos) {
+      return isDocument(dos) ? dos : owner(dos);
+    };
+    var parent = function (element) {
+      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
+    };
+    var parents = function (element, isRoot) {
+      var stop = isFunction(isRoot) ? isRoot : never;
+      var dom = element.dom;
+      var ret = [];
+      while (dom.parentNode !== null && dom.parentNode !== undefined) {
+        var rawParent = dom.parentNode;
+        var p = SugarElement.fromDom(rawParent);
+        ret.push(p);
+        if (stop(p) === true) {
+          break;
+        } else {
+          dom = rawParent;
+        }
+      }
+      return ret;
+    };
+    var siblings$2 = function (element) {
+      var filterSelf = function (elements) {
+        return filter$1(elements, function (x) {
+          return !eq(element, x);
+        });
+      };
+      return parent(element).map(children).map(filterSelf).getOr([]);
+    };
+    var children = function (element) {
+      return map(element.dom.childNodes, SugarElement.fromDom);
+    };
+
+    var isShadowRoot = function (dos) {
+      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
+    };
+    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
+    var isSupported = constant(supported);
+    var getRootNode = supported ? function (e) {
+      return SugarElement.fromDom(e.dom.getRootNode());
+    } : documentOrOwner;
+    var getShadowRoot = function (e) {
+      var r = getRootNode(e);
+      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
+    };
+    var getShadowHost = function (e) {
+      return SugarElement.fromDom(e.dom.host);
+    };
+    var getOriginalEventTarget = function (event) {
+      if (isSupported() && isNonNullable(event.target)) {
+        var el = SugarElement.fromDom(event.target);
+        if (isElement(el) && isOpenShadowHost(el)) {
+          if (event.composed && event.composedPath) {
+            var composedPath = event.composedPath();
+            if (composedPath) {
+              return head(composedPath);
+            }
+          }
+        }
+      }
+      return Optional.from(event.target);
+    };
+    var isOpenShadowHost = function (element) {
+      return isNonNullable(element.dom.shadowRoot);
+    };
+
+    var inBody = function (element) {
+      var dom = isText(element) ? element.dom.parentNode : element.dom;
+      if (dom === undefined || dom === null || dom.ownerDocument === null) {
+        return false;
+      }
+      var doc = dom.ownerDocument;
+      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
+        return doc.body.contains(dom);
+      }, compose1(inBody, getShadowHost));
+    };
+    var getBody = function (doc) {
+      var b = doc.dom.body;
+      if (b === null || b === undefined) {
+        throw new Error('Body is not available yet');
+      }
+      return SugarElement.fromDom(b);
+    };
+
+    var rawSet = function (dom, key, value) {
+      if (isString(value) || isBoolean(value) || isNumber(value)) {
+        dom.setAttribute(key, value + '');
+      } else {
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        throw new Error('Attribute value was not simple');
+      }
+    };
+    var set = function (element, key, value) {
+      rawSet(element.dom, key, value);
+    };
+    var get$3 = function (element, key) {
+      var v = element.dom.getAttribute(key);
+      return v === null ? undefined : v;
+    };
+    var remove = function (element, key) {
+      element.dom.removeAttribute(key);
+    };
+
+    var internalSet = function (dom, property, value) {
+      if (!isString(value)) {
+        console.error('Invalid call to CSS.set. Property ', property, ':: Value ', value, ':: Element ', dom);
+        throw new Error('CSS value must be a string: ' + value);
+      }
+      if (isSupported$1(dom)) {
+        dom.style.setProperty(property, value);
+      }
+    };
+    var setAll = function (element, css) {
+      var dom = element.dom;
+      each(css, function (v, k) {
+        internalSet(dom, k, v);
+      });
+    };
+    var get$2 = function (element, property) {
+      var dom = element.dom;
+      var styles = window.getComputedStyle(dom);
+      var r = styles.getPropertyValue(property);
+      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
+    };
+    var getUnsafeProperty = function (dom, property) {
+      return isSupported$1(dom) ? dom.style.getPropertyValue(property) : '';
+    };
+
+    var mkEvent = function (target, x, y, stop, prevent, kill, raw) {
+      return {
+        target: target,
+        x: x,
+        y: y,
+        stop: stop,
+        prevent: prevent,
+        kill: kill,
+        raw: raw
+      };
+    };
+    var fromRawEvent = function (rawEvent) {
+      var target = SugarElement.fromDom(getOriginalEventTarget(rawEvent).getOr(rawEvent.target));
+      var stop = function () {
+        return rawEvent.stopPropagation();
+      };
+      var prevent = function () {
+        return rawEvent.preventDefault();
+      };
+      var kill = compose(prevent, stop);
+      return mkEvent(target, rawEvent.clientX, rawEvent.clientY, stop, prevent, kill, rawEvent);
+    };
+    var handle = function (filter, handler) {
+      return function (rawEvent) {
+        if (filter(rawEvent)) {
+          handler(fromRawEvent(rawEvent));
+        }
+      };
+    };
+    var binder = function (element, event, filter, handler, useCapture) {
+      var wrapped = handle(filter, handler);
+      element.dom.addEventListener(event, wrapped, useCapture);
+      return { unbind: curry(unbind, element, event, wrapped, useCapture) };
+    };
+    var bind$2 = function (element, event, filter, handler) {
+      return binder(element, event, filter, handler, false);
+    };
+    var unbind = function (element, event, handler, useCapture) {
+      element.dom.removeEventListener(event, handler, useCapture);
+    };
+
+    var filter = always;
+    var bind$1 = function (element, event, handler) {
+      return bind$2(element, event, filter, handler);
+    };
+
+    var r = function (left, top) {
+      var translate = function (x, y) {
+        return r(left + x, top + y);
+      };
+      return {
+        left: left,
+        top: top,
+        translate: translate
+      };
+    };
+    var SugarPosition = r;
+
+    var get$1 = function (_DOC) {
+      var doc = _DOC !== undefined ? _DOC.dom : document;
+      var x = doc.body.scrollLeft || doc.documentElement.scrollLeft;
+      var y = doc.body.scrollTop || doc.documentElement.scrollTop;
+      return SugarPosition(x, y);
+    };
+
+    var get = function (_win) {
+      var win = _win === undefined ? window : _win;
+      if (detect().browser.isFirefox()) {
+        return Optional.none();
+      } else {
+        return Optional.from(win['visualViewport']);
+      }
+    };
+    var bounds = function (x, y, width, height) {
+      return {
+        x: x,
+        y: y,
+        width: width,
+        height: height,
+        right: x + width,
+        bottom: y + height
+      };
+    };
+    var getBounds = function (_win) {
+      var win = _win === undefined ? window : _win;
+      var doc = win.document;
+      var scroll = get$1(SugarElement.fromDom(doc));
+      return get(win).fold(function () {
+        var html = win.document.documentElement;
+        var width = html.clientWidth;
+        var height = html.clientHeight;
+        return bounds(scroll.left, scroll.top, width, height);
+      }, function (visualViewport) {
+        return bounds(Math.max(visualViewport.pageLeft, scroll.left), Math.max(visualViewport.pageTop, scroll.top), visualViewport.width, visualViewport.height);
+      });
+    };
+    var bind = function (name, callback, _win) {
+      return get(_win).map(function (visualViewport) {
+        var handler = function (e) {
+          return callback(fromRawEvent(e));
+        };
+        visualViewport.addEventListener(name, handler);
+        return {
+          unbind: function () {
+            return visualViewport.removeEventListener(name, handler);
+          }
+        };
+      }).getOrThunk(function () {
+        return { unbind: noop };
+      });
+    };
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
+
+    var fireFullscreenStateChanged = function (editor, state) {
+      editor.fire('FullscreenStateChanged', { state: state });
+      editor.fire('ResizeEditor');
+    };
+
+    var getFullscreenNative = function (editor) {
+      return editor.getParam('fullscreen_native', false, 'boolean');
+    };
+
+    var getFullscreenRoot = function (editor) {
+      var elem = SugarElement.fromDom(editor.getElement());
+      return getShadowRoot(elem).map(getShadowHost).getOrThunk(function () {
+        return getBody(owner(elem));
+      });
+    };
+    var getFullscreenElement = function (root) {
+      if (root.fullscreenElement !== undefined) {
+        return root.fullscreenElement;
+      } else if (root.msFullscreenElement !== undefined) {
+        return root.msFullscreenElement;
+      } else if (root.webkitFullscreenElement !== undefined) {
+        return root.webkitFullscreenElement;
+      } else {
+        return null;
+      }
+    };
+    var getFullscreenchangeEventName = function () {
+      if (document.fullscreenElement !== undefined) {
+        return 'fullscreenchange';
+      } else if (document.msFullscreenElement !== undefined) {
+        return 'MSFullscreenChange';
+      } else if (document.webkitFullscreenElement !== undefined) {
+        return 'webkitfullscreenchange';
+      } else {
+        return 'fullscreenchange';
+      }
+    };
+    var requestFullscreen = function (sugarElem) {
+      var elem = sugarElem.dom;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      } else if (elem.webkitRequestFullScreen) {
+        elem.webkitRequestFullScreen();
+      }
+    };
+    var exitFullscreen = function (sugarDoc) {
+      var doc = sugarDoc.dom;
+      if (doc.exitFullscreen) {
+        doc.exitFullscreen();
+      } else if (doc.msExitFullscreen) {
+        doc.msExitFullscreen();
+      } else if (doc.webkitCancelFullScreen) {
+        doc.webkitCancelFullScreen();
+      }
+    };
+    var isFullscreenElement = function (elem) {
+      return elem.dom === getFullscreenElement(owner(elem).dom);
+    };
+
+    var ancestors$1 = function (scope, predicate, isRoot) {
+      return filter$1(parents(scope, isRoot), predicate);
+    };
+    var siblings$1 = function (scope, predicate) {
+      return filter$1(siblings$2(scope), predicate);
+    };
+
+    var all = function (selector) {
+      return all$1(selector);
+    };
+    var ancestors = function (scope, selector, isRoot) {
+      return ancestors$1(scope, function (e) {
+        return is(e, selector);
+      }, isRoot);
+    };
+    var siblings = function (scope, selector) {
+      return siblings$1(scope, function (e) {
+        return is(e, selector);
+      });
+    };
+
+    var attr = 'data-ephox-mobile-fullscreen-style';
+    var siblingStyles = 'display:none!important;';
+    var ancestorPosition = 'position:absolute!important;';
+    var ancestorStyles = 'top:0!important;left:0!important;margin:0!important;padding:0!important;width:100%!important;height:100%!important;overflow:visible!important;';
+    var bgFallback = 'background-color:rgb(255,255,255)!important;';
+    var isAndroid = global$1.os.isAndroid();
+    var matchColor = function (editorBody) {
+      var color = get$2(editorBody, 'background-color');
+      return color !== undefined && color !== '' ? 'background-color:' + color + '!important' : bgFallback;
+    };
+    var clobberStyles = function (dom, container, editorBody) {
+      var gatherSiblings = function (element) {
+        return siblings(element, '*:not(.tox-silver-sink)');
+      };
+      var clobber = function (clobberStyle) {
+        return function (element) {
+          var styles = get$3(element, 'style');
+          var backup = styles === undefined ? 'no-styles' : styles.trim();
+          if (backup === clobberStyle) {
+            return;
+          } else {
+            set(element, attr, backup);
+            setAll(element, dom.parseStyle(clobberStyle));
+          }
+        };
+      };
+      var ancestors$1 = ancestors(container, '*');
+      var siblings$1 = bind$3(ancestors$1, gatherSiblings);
+      var bgColor = matchColor(editorBody);
+      each$1(siblings$1, clobber(siblingStyles));
+      each$1(ancestors$1, clobber(ancestorPosition + ancestorStyles + bgColor));
+      var containerStyles = isAndroid === true ? '' : ancestorPosition;
+      clobber(containerStyles + ancestorStyles + bgColor)(container);
+    };
+    var restoreStyles = function (dom) {
+      var clobberedEls = all('[' + attr + ']');
+      each$1(clobberedEls, function (element) {
+        var restore = get$3(element, attr);
+        if (restore !== 'no-styles') {
+          setAll(element, dom.parseStyle(restore));
+        } else {
+          remove(element, 'style');
+        }
+        remove(element, attr);
+      });
+    };
+
+    var DOM = global$2.DOM;
+    var getScrollPos = function () {
+      return getBounds(window);
+    };
+    var setScrollPos = function (pos) {
+      return window.scrollTo(pos.x, pos.y);
+    };
+    var viewportUpdate = get().fold(function () {
+      return {
+        bind: noop,
+        unbind: noop
+      };
+    }, function (visualViewport) {
+      var editorContainer = value();
+      var resizeBinder = unbindable();
+      var scrollBinder = unbindable();
+      var refreshScroll = function () {
+        document.body.scrollTop = 0;
+        document.documentElement.scrollTop = 0;
+      };
+      var refreshVisualViewport = function () {
+        window.requestAnimationFrame(function () {
+          editorContainer.on(function (container) {
+            return setAll(container, {
+              top: visualViewport.offsetTop + 'px',
+              left: visualViewport.offsetLeft + 'px',
+              height: visualViewport.height + 'px',
+              width: visualViewport.width + 'px'
+            });
+          });
+        });
+      };
+      var update = global.throttle(function () {
+        refreshScroll();
+        refreshVisualViewport();
+      }, 50);
+      var bind$1 = function (element) {
+        editorContainer.set(element);
+        update();
+        resizeBinder.set(bind('resize', update));
+        scrollBinder.set(bind('scroll', update));
+      };
+      var unbind = function () {
+        editorContainer.on(function () {
+          resizeBinder.clear();
+          scrollBinder.clear();
+        });
+        editorContainer.clear();
+      };
+      return {
+        bind: bind$1,
+        unbind: unbind
+      };
+    });
+    var toggleFullscreen = function (editor, fullscreenState) {
+      var body = document.body;
+      var documentElement = document.documentElement;
+      var editorContainer = editor.getContainer();
+      var editorContainerS = SugarElement.fromDom(editorContainer);
+      var fullscreenRoot = getFullscreenRoot(editor);
+      var fullscreenInfo = fullscreenState.get();
+      var editorBody = SugarElement.fromDom(editor.getBody());
+      var isTouch = global$1.deviceType.isTouch();
+      var editorContainerStyle = editorContainer.style;
+      var iframe = editor.iframeElement;
+      var iframeStyle = iframe.style;
+      var handleClasses = function (handler) {
+        handler(body, 'tox-fullscreen');
+        handler(documentElement, 'tox-fullscreen');
+        handler(editorContainer, 'tox-fullscreen');
+        getShadowRoot(editorContainerS).map(function (root) {
+          return getShadowHost(root).dom;
+        }).each(function (host) {
+          handler(host, 'tox-fullscreen');
+          handler(host, 'tox-shadowhost');
+        });
+      };
+      var cleanup = function () {
+        if (isTouch) {
+          restoreStyles(editor.dom);
+        }
+        handleClasses(DOM.removeClass);
+        viewportUpdate.unbind();
+        Optional.from(fullscreenState.get()).each(function (info) {
+          return info.fullscreenChangeHandler.unbind();
+        });
+      };
+      if (!fullscreenInfo) {
+        var fullscreenChangeHandler = bind$1(owner(fullscreenRoot), getFullscreenchangeEventName(), function (_evt) {
+          if (getFullscreenNative(editor)) {
+            if (!isFullscreenElement(fullscreenRoot) && fullscreenState.get() !== null) {
+              toggleFullscreen(editor, fullscreenState);
+            }
+          }
+        });
+        var newFullScreenInfo = {
+          scrollPos: getScrollPos(),
+          containerWidth: editorContainerStyle.width,
+          containerHeight: editorContainerStyle.height,
+          containerTop: editorContainerStyle.top,
+          containerLeft: editorContainerStyle.left,
+          iframeWidth: iframeStyle.width,
+          iframeHeight: iframeStyle.height,
+          fullscreenChangeHandler: fullscreenChangeHandler
+        };
+        if (isTouch) {
+          clobberStyles(editor.dom, editorContainerS, editorBody);
+        }
+        iframeStyle.width = iframeStyle.height = '100%';
+        editorContainerStyle.width = editorContainerStyle.height = '';
+        handleClasses(DOM.addClass);
+        viewportUpdate.bind(editorContainerS);
+        editor.on('remove', cleanup);
+        fullscreenState.set(newFullScreenInfo);
+        if (getFullscreenNative(editor)) {
+          requestFullscreen(fullscreenRoot);
+        }
+        fireFullscreenStateChanged(editor, true);
+      } else {
+        fullscreenInfo.fullscreenChangeHandler.unbind();
+        if (getFullscreenNative(editor) && isFullscreenElement(fullscreenRoot)) {
+          exitFullscreen(owner(fullscreenRoot));
+        }
+        iframeStyle.width = fullscreenInfo.iframeWidth;
+        iframeStyle.height = fullscreenInfo.iframeHeight;
+        editorContainerStyle.width = fullscreenInfo.containerWidth;
+        editorContainerStyle.height = fullscreenInfo.containerHeight;
+        editorContainerStyle.top = fullscreenInfo.containerTop;
+        editorContainerStyle.left = fullscreenInfo.containerLeft;
+        cleanup();
+        setScrollPos(fullscreenInfo.scrollPos);
+        fullscreenState.set(null);
+        fireFullscreenStateChanged(editor, false);
+        editor.off('remove', cleanup);
+      }
+    };
+
+    var register$1 = function (editor, fullscreenState) {
+      editor.addCommand('mceFullScreen', function () {
+        toggleFullscreen(editor, fullscreenState);
+      });
+    };
+
+    var makeSetupHandler = function (editor, fullscreenState) {
+      return function (api) {
+        api.setActive(fullscreenState.get() !== null);
+        var editorEventCallback = function (e) {
+          return api.setActive(e.state);
+        };
+        editor.on('FullscreenStateChanged', editorEventCallback);
+        return function () {
+          return editor.off('FullscreenStateChanged', editorEventCallback);
+        };
+      };
+    };
+    var register = function (editor, fullscreenState) {
+      var onAction = function () {
+        return editor.execCommand('mceFullScreen');
+      };
+      editor.ui.registry.addToggleMenuItem('fullscreen', {
+        text: 'Fullscreen',
+        icon: 'fullscreen',
+        shortcut: 'Meta+Shift+F',
+        onAction: onAction,
+        onSetup: makeSetupHandler(editor, fullscreenState)
+      });
+      editor.ui.registry.addToggleButton('fullscreen', {
+        tooltip: 'Fullscreen',
+        icon: 'fullscreen',
+        onAction: onAction,
+        onSetup: makeSetupHandler(editor, fullscreenState)
+      });
+    };
 
     function Plugin () {
-      global.add('contextmenu', function () {
+      global$3.add('fullscreen', function (editor) {
+        var fullscreenState = Cell(null);
+        if (editor.inline) {
+          return get$5(fullscreenState);
+        }
+        register$1(editor, fullscreenState);
+        register(editor, fullscreenState);
+        editor.addShortcut('Meta+Shift+F', '', 'mceFullScreen');
+        return get$5(fullscreenState);
       });
     }
 
@@ -53805,6 +55153,52 @@ tinymce.IconManager.add('default', {
         register$1(editor, dialogOpener);
         editor.shortcuts.add('Alt+0', 'Open help dialog', 'mceHelp');
         return api;
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var register$1 = function (editor) {
+      editor.addCommand('InsertHorizontalRule', function () {
+        editor.execCommand('mceInsertContent', false, '<hr />');
+      });
+    };
+
+    var register = function (editor) {
+      var onAction = function () {
+        return editor.execCommand('InsertHorizontalRule');
+      };
+      editor.ui.registry.addButton('hr', {
+        icon: 'horizontal-rule',
+        tooltip: 'Horizontal line',
+        onAction: onAction
+      });
+      editor.ui.registry.addMenuItem('hr', {
+        icon: 'horizontal-rule',
+        text: 'Horizontal line',
+        onAction: onAction
+      });
+    };
+
+    function Plugin () {
+      global.add('hr', function (editor) {
+        register$1(editor);
+        register(editor);
       });
     }
 
@@ -55472,1583 +56866,6 @@ tinymce.IconManager.add('default', {
         setup(editor);
         register(editor);
         register$1(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
-        return value;
-      };
-      var set = function (v) {
-        value = v;
-      };
-      return {
-        get: get,
-        set: set
-      };
-    };
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var get$5 = function (fullscreenState) {
-      return {
-        isFullscreen: function () {
-          return fullscreenState.get() !== null;
-        }
-      };
-    };
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType$1 = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isSimpleType = function (type) {
-      return function (value) {
-        return typeof value === type;
-      };
-    };
-    var isString = isType$1('string');
-    var isArray = isType$1('array');
-    var isBoolean = isSimpleType('boolean');
-    var isNullable = function (a) {
-      return a === null || a === undefined;
-    };
-    var isNonNullable = function (a) {
-      return !isNullable(a);
-    };
-    var isFunction = isSimpleType('function');
-    var isNumber = isSimpleType('number');
-
-    var noop = function () {
-    };
-    var compose = function (fa, fb) {
-      return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-          args[_i] = arguments[_i];
-        }
-        return fa(fb.apply(null, args));
-      };
-    };
-    var compose1 = function (fbc, fab) {
-      return function (a) {
-        return fbc(fab(a));
-      };
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    function curry(fn) {
-      var initialArgs = [];
-      for (var _i = 1; _i < arguments.length; _i++) {
-        initialArgs[_i - 1] = arguments[_i];
-      }
-      return function () {
-        var restArgs = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-          restArgs[_i] = arguments[_i];
-        }
-        var all = initialArgs.concat(restArgs);
-        return fn.apply(null, all);
-      };
-    }
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
-        }
-        return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-
-    var singleton = function (doRevoke) {
-      var subject = Cell(Optional.none());
-      var revoke = function () {
-        return subject.get().each(doRevoke);
-      };
-      var clear = function () {
-        revoke();
-        subject.set(Optional.none());
-      };
-      var isSet = function () {
-        return subject.get().isSome();
-      };
-      var get = function () {
-        return subject.get();
-      };
-      var set = function (s) {
-        revoke();
-        subject.set(Optional.some(s));
-      };
-      return {
-        clear: clear,
-        isSet: isSet,
-        get: get,
-        set: set
-      };
-    };
-    var unbindable = function () {
-      return singleton(function (s) {
-        return s.unbind();
-      });
-    };
-    var value = function () {
-      var subject = singleton(noop);
-      var on = function (f) {
-        return subject.get().each(f);
-      };
-      return __assign(__assign({}, subject), { on: on });
-    };
-
-    var nativePush = Array.prototype.push;
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var each$1 = function (xs, f) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var filter$1 = function (xs, pred) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          r.push(x);
-        }
-      }
-      return r;
-    };
-    var findUntil = function (xs, pred, until) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          return Optional.some(x);
-        } else if (until(x, i)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-    var find$1 = function (xs, pred) {
-      return findUntil(xs, pred, never);
-    };
-    var flatten = function (xs) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; ++i) {
-        if (!isArray(xs[i])) {
-          throw new Error('Arr.flatten item ' + i + ' was not an array, input: ' + xs);
-        }
-        nativePush.apply(r, xs[i]);
-      }
-      return r;
-    };
-    var bind$3 = function (xs, f) {
-      return flatten(map(xs, f));
-    };
-    var get$4 = function (xs, i) {
-      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
-    };
-    var head = function (xs) {
-      return get$4(xs, 0);
-    };
-    var findMap = function (arr, f) {
-      for (var i = 0; i < arr.length; i++) {
-        var r = f(arr[i], i);
-        if (r.isSome()) {
-          return r;
-        }
-      }
-      return Optional.none();
-    };
-
-    var keys = Object.keys;
-    var each = function (obj, f) {
-      var props = keys(obj);
-      for (var k = 0, len = props.length; k < len; k++) {
-        var i = props[k];
-        var x = obj[i];
-        f(x, i);
-      }
-    };
-
-    var contains = function (str, substr) {
-      return str.indexOf(substr) !== -1;
-    };
-
-    var isSupported$1 = function (dom) {
-      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
-    };
-
-    var fromHtml = function (html, scope) {
-      var doc = scope || document;
-      var div = doc.createElement('div');
-      div.innerHTML = html;
-      if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        console.error('HTML does not have a single root node', html);
-        throw new Error('HTML must have a single root node');
-      }
-      return fromDom(div.childNodes[0]);
-    };
-    var fromTag = function (tag, scope) {
-      var doc = scope || document;
-      var node = doc.createElement(tag);
-      return fromDom(node);
-    };
-    var fromText = function (text, scope) {
-      var doc = scope || document;
-      var node = doc.createTextNode(text);
-      return fromDom(node);
-    };
-    var fromDom = function (node) {
-      if (node === null || node === undefined) {
-        throw new Error('Node cannot be null or undefined');
-      }
-      return { dom: node };
-    };
-    var fromPoint = function (docElm, x, y) {
-      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
-    };
-    var SugarElement = {
-      fromHtml: fromHtml,
-      fromTag: fromTag,
-      fromText: fromText,
-      fromDom: fromDom,
-      fromPoint: fromPoint
-    };
-
-    typeof window !== 'undefined' ? window : Function('return this;')();
-
-    var DOCUMENT = 9;
-    var DOCUMENT_FRAGMENT = 11;
-    var ELEMENT = 1;
-    var TEXT = 3;
-
-    var type = function (element) {
-      return element.dom.nodeType;
-    };
-    var isType = function (t) {
-      return function (element) {
-        return type(element) === t;
-      };
-    };
-    var isElement = isType(ELEMENT);
-    var isText = isType(TEXT);
-    var isDocument = isType(DOCUMENT);
-    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
-
-    var cached = function (f) {
-      var called = false;
-      var r;
-      return function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-          args[_i] = arguments[_i];
-        }
-        if (!called) {
-          called = true;
-          r = f.apply(null, args);
-        }
-        return r;
-      };
-    };
-
-    var DeviceType = function (os, browser, userAgent, mediaMatch) {
-      var isiPad = os.isiOS() && /ipad/i.test(userAgent) === true;
-      var isiPhone = os.isiOS() && !isiPad;
-      var isMobile = os.isiOS() || os.isAndroid();
-      var isTouch = isMobile || mediaMatch('(pointer:coarse)');
-      var isTablet = isiPad || !isiPhone && isMobile && mediaMatch('(min-device-width:768px)');
-      var isPhone = isiPhone || isMobile && !isTablet;
-      var iOSwebview = browser.isSafari() && os.isiOS() && /safari/i.test(userAgent) === false;
-      var isDesktop = !isPhone && !isTablet && !iOSwebview;
-      return {
-        isiPad: constant(isiPad),
-        isiPhone: constant(isiPhone),
-        isTablet: constant(isTablet),
-        isPhone: constant(isPhone),
-        isTouch: constant(isTouch),
-        isAndroid: os.isAndroid,
-        isiOS: os.isiOS,
-        isWebView: constant(iOSwebview),
-        isDesktop: constant(isDesktop)
-      };
-    };
-
-    var firstMatch = function (regexes, s) {
-      for (var i = 0; i < regexes.length; i++) {
-        var x = regexes[i];
-        if (x.test(s)) {
-          return x;
-        }
-      }
-      return undefined;
-    };
-    var find = function (regexes, agent) {
-      var r = firstMatch(regexes, agent);
-      if (!r) {
-        return {
-          major: 0,
-          minor: 0
-        };
-      }
-      var group = function (i) {
-        return Number(agent.replace(r, '$' + i));
-      };
-      return nu$2(group(1), group(2));
-    };
-    var detect$3 = function (versionRegexes, agent) {
-      var cleanedAgent = String(agent).toLowerCase();
-      if (versionRegexes.length === 0) {
-        return unknown$2();
-      }
-      return find(versionRegexes, cleanedAgent);
-    };
-    var unknown$2 = function () {
-      return nu$2(0, 0);
-    };
-    var nu$2 = function (major, minor) {
-      return {
-        major: major,
-        minor: minor
-      };
-    };
-    var Version = {
-      nu: nu$2,
-      detect: detect$3,
-      unknown: unknown$2
-    };
-
-    var detectBrowser$1 = function (browsers, userAgentData) {
-      return findMap(userAgentData.brands, function (uaBrand) {
-        var lcBrand = uaBrand.brand.toLowerCase();
-        return find$1(browsers, function (browser) {
-          var _a;
-          return lcBrand === ((_a = browser.brand) === null || _a === void 0 ? void 0 : _a.toLowerCase());
-        }).map(function (info) {
-          return {
-            current: info.name,
-            version: Version.nu(parseInt(uaBrand.version, 10), 0)
-          };
-        });
-      });
-    };
-
-    var detect$2 = function (candidates, userAgent) {
-      var agent = String(userAgent).toLowerCase();
-      return find$1(candidates, function (candidate) {
-        return candidate.search(agent);
-      });
-    };
-    var detectBrowser = function (browsers, userAgent) {
-      return detect$2(browsers, userAgent).map(function (browser) {
-        var version = Version.detect(browser.versionRegexes, userAgent);
-        return {
-          current: browser.name,
-          version: version
-        };
-      });
-    };
-    var detectOs = function (oses, userAgent) {
-      return detect$2(oses, userAgent).map(function (os) {
-        var version = Version.detect(os.versionRegexes, userAgent);
-        return {
-          current: os.name,
-          version: version
-        };
-      });
-    };
-
-    var normalVersionRegex = /.*?version\/\ ?([0-9]+)\.([0-9]+).*/;
-    var checkContains = function (target) {
-      return function (uastring) {
-        return contains(uastring, target);
-      };
-    };
-    var browsers = [
-      {
-        name: 'Edge',
-        versionRegexes: [/.*?edge\/ ?([0-9]+)\.([0-9]+)$/],
-        search: function (uastring) {
-          return contains(uastring, 'edge/') && contains(uastring, 'chrome') && contains(uastring, 'safari') && contains(uastring, 'applewebkit');
-        }
-      },
-      {
-        name: 'Chrome',
-        brand: 'Chromium',
-        versionRegexes: [
-          /.*?chrome\/([0-9]+)\.([0-9]+).*/,
-          normalVersionRegex
-        ],
-        search: function (uastring) {
-          return contains(uastring, 'chrome') && !contains(uastring, 'chromeframe');
-        }
-      },
-      {
-        name: 'IE',
-        versionRegexes: [
-          /.*?msie\ ?([0-9]+)\.([0-9]+).*/,
-          /.*?rv:([0-9]+)\.([0-9]+).*/
-        ],
-        search: function (uastring) {
-          return contains(uastring, 'msie') || contains(uastring, 'trident');
-        }
-      },
-      {
-        name: 'Opera',
-        versionRegexes: [
-          normalVersionRegex,
-          /.*?opera\/([0-9]+)\.([0-9]+).*/
-        ],
-        search: checkContains('opera')
-      },
-      {
-        name: 'Firefox',
-        versionRegexes: [/.*?firefox\/\ ?([0-9]+)\.([0-9]+).*/],
-        search: checkContains('firefox')
-      },
-      {
-        name: 'Safari',
-        versionRegexes: [
-          normalVersionRegex,
-          /.*?cpu os ([0-9]+)_([0-9]+).*/
-        ],
-        search: function (uastring) {
-          return (contains(uastring, 'safari') || contains(uastring, 'mobile/')) && contains(uastring, 'applewebkit');
-        }
-      }
-    ];
-    var oses = [
-      {
-        name: 'Windows',
-        search: checkContains('win'),
-        versionRegexes: [/.*?windows\ nt\ ?([0-9]+)\.([0-9]+).*/]
-      },
-      {
-        name: 'iOS',
-        search: function (uastring) {
-          return contains(uastring, 'iphone') || contains(uastring, 'ipad');
-        },
-        versionRegexes: [
-          /.*?version\/\ ?([0-9]+)\.([0-9]+).*/,
-          /.*cpu os ([0-9]+)_([0-9]+).*/,
-          /.*cpu iphone os ([0-9]+)_([0-9]+).*/
-        ]
-      },
-      {
-        name: 'Android',
-        search: checkContains('android'),
-        versionRegexes: [/.*?android\ ?([0-9]+)\.([0-9]+).*/]
-      },
-      {
-        name: 'OSX',
-        search: checkContains('mac os x'),
-        versionRegexes: [/.*?mac\ os\ x\ ?([0-9]+)_([0-9]+).*/]
-      },
-      {
-        name: 'Linux',
-        search: checkContains('linux'),
-        versionRegexes: []
-      },
-      {
-        name: 'Solaris',
-        search: checkContains('sunos'),
-        versionRegexes: []
-      },
-      {
-        name: 'FreeBSD',
-        search: checkContains('freebsd'),
-        versionRegexes: []
-      },
-      {
-        name: 'ChromeOS',
-        search: checkContains('cros'),
-        versionRegexes: [/.*?chrome\/([0-9]+)\.([0-9]+).*/]
-      }
-    ];
-    var PlatformInfo = {
-      browsers: constant(browsers),
-      oses: constant(oses)
-    };
-
-    var edge = 'Edge';
-    var chrome = 'Chrome';
-    var ie = 'IE';
-    var opera = 'Opera';
-    var firefox = 'Firefox';
-    var safari = 'Safari';
-    var unknown$1 = function () {
-      return nu$1({
-        current: undefined,
-        version: Version.unknown()
-      });
-    };
-    var nu$1 = function (info) {
-      var current = info.current;
-      var version = info.version;
-      var isBrowser = function (name) {
-        return function () {
-          return current === name;
-        };
-      };
-      return {
-        current: current,
-        version: version,
-        isEdge: isBrowser(edge),
-        isChrome: isBrowser(chrome),
-        isIE: isBrowser(ie),
-        isOpera: isBrowser(opera),
-        isFirefox: isBrowser(firefox),
-        isSafari: isBrowser(safari)
-      };
-    };
-    var Browser = {
-      unknown: unknown$1,
-      nu: nu$1,
-      edge: constant(edge),
-      chrome: constant(chrome),
-      ie: constant(ie),
-      opera: constant(opera),
-      firefox: constant(firefox),
-      safari: constant(safari)
-    };
-
-    var windows = 'Windows';
-    var ios = 'iOS';
-    var android = 'Android';
-    var linux = 'Linux';
-    var osx = 'OSX';
-    var solaris = 'Solaris';
-    var freebsd = 'FreeBSD';
-    var chromeos = 'ChromeOS';
-    var unknown = function () {
-      return nu({
-        current: undefined,
-        version: Version.unknown()
-      });
-    };
-    var nu = function (info) {
-      var current = info.current;
-      var version = info.version;
-      var isOS = function (name) {
-        return function () {
-          return current === name;
-        };
-      };
-      return {
-        current: current,
-        version: version,
-        isWindows: isOS(windows),
-        isiOS: isOS(ios),
-        isAndroid: isOS(android),
-        isOSX: isOS(osx),
-        isLinux: isOS(linux),
-        isSolaris: isOS(solaris),
-        isFreeBSD: isOS(freebsd),
-        isChromeOS: isOS(chromeos)
-      };
-    };
-    var OperatingSystem = {
-      unknown: unknown,
-      nu: nu,
-      windows: constant(windows),
-      ios: constant(ios),
-      android: constant(android),
-      linux: constant(linux),
-      osx: constant(osx),
-      solaris: constant(solaris),
-      freebsd: constant(freebsd),
-      chromeos: constant(chromeos)
-    };
-
-    var detect$1 = function (userAgent, userAgentDataOpt, mediaMatch) {
-      var browsers = PlatformInfo.browsers();
-      var oses = PlatformInfo.oses();
-      var browser = userAgentDataOpt.bind(function (userAgentData) {
-        return detectBrowser$1(browsers, userAgentData);
-      }).orThunk(function () {
-        return detectBrowser(browsers, userAgent);
-      }).fold(Browser.unknown, Browser.nu);
-      var os = detectOs(oses, userAgent).fold(OperatingSystem.unknown, OperatingSystem.nu);
-      var deviceType = DeviceType(os, browser, userAgent, mediaMatch);
-      return {
-        browser: browser,
-        os: os,
-        deviceType: deviceType
-      };
-    };
-    var PlatformDetection = { detect: detect$1 };
-
-    var mediaMatch = function (query) {
-      return window.matchMedia(query).matches;
-    };
-    var platform = cached(function () {
-      return PlatformDetection.detect(navigator.userAgent, Optional.from(navigator.userAgentData), mediaMatch);
-    });
-    var detect = function () {
-      return platform();
-    };
-
-    var is = function (element, selector) {
-      var dom = element.dom;
-      if (dom.nodeType !== ELEMENT) {
-        return false;
-      } else {
-        var elem = dom;
-        if (elem.matches !== undefined) {
-          return elem.matches(selector);
-        } else if (elem.msMatchesSelector !== undefined) {
-          return elem.msMatchesSelector(selector);
-        } else if (elem.webkitMatchesSelector !== undefined) {
-          return elem.webkitMatchesSelector(selector);
-        } else if (elem.mozMatchesSelector !== undefined) {
-          return elem.mozMatchesSelector(selector);
-        } else {
-          throw new Error('Browser lacks native selectors');
-        }
-      }
-    };
-    var bypassSelector = function (dom) {
-      return dom.nodeType !== ELEMENT && dom.nodeType !== DOCUMENT && dom.nodeType !== DOCUMENT_FRAGMENT || dom.childElementCount === 0;
-    };
-    var all$1 = function (selector, scope) {
-      var base = scope === undefined ? document : scope.dom;
-      return bypassSelector(base) ? [] : map(base.querySelectorAll(selector), SugarElement.fromDom);
-    };
-
-    var eq = function (e1, e2) {
-      return e1.dom === e2.dom;
-    };
-
-    var owner = function (element) {
-      return SugarElement.fromDom(element.dom.ownerDocument);
-    };
-    var documentOrOwner = function (dos) {
-      return isDocument(dos) ? dos : owner(dos);
-    };
-    var parent = function (element) {
-      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
-    };
-    var parents = function (element, isRoot) {
-      var stop = isFunction(isRoot) ? isRoot : never;
-      var dom = element.dom;
-      var ret = [];
-      while (dom.parentNode !== null && dom.parentNode !== undefined) {
-        var rawParent = dom.parentNode;
-        var p = SugarElement.fromDom(rawParent);
-        ret.push(p);
-        if (stop(p) === true) {
-          break;
-        } else {
-          dom = rawParent;
-        }
-      }
-      return ret;
-    };
-    var siblings$2 = function (element) {
-      var filterSelf = function (elements) {
-        return filter$1(elements, function (x) {
-          return !eq(element, x);
-        });
-      };
-      return parent(element).map(children).map(filterSelf).getOr([]);
-    };
-    var children = function (element) {
-      return map(element.dom.childNodes, SugarElement.fromDom);
-    };
-
-    var isShadowRoot = function (dos) {
-      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
-    };
-    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
-    var isSupported = constant(supported);
-    var getRootNode = supported ? function (e) {
-      return SugarElement.fromDom(e.dom.getRootNode());
-    } : documentOrOwner;
-    var getShadowRoot = function (e) {
-      var r = getRootNode(e);
-      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
-    };
-    var getShadowHost = function (e) {
-      return SugarElement.fromDom(e.dom.host);
-    };
-    var getOriginalEventTarget = function (event) {
-      if (isSupported() && isNonNullable(event.target)) {
-        var el = SugarElement.fromDom(event.target);
-        if (isElement(el) && isOpenShadowHost(el)) {
-          if (event.composed && event.composedPath) {
-            var composedPath = event.composedPath();
-            if (composedPath) {
-              return head(composedPath);
-            }
-          }
-        }
-      }
-      return Optional.from(event.target);
-    };
-    var isOpenShadowHost = function (element) {
-      return isNonNullable(element.dom.shadowRoot);
-    };
-
-    var inBody = function (element) {
-      var dom = isText(element) ? element.dom.parentNode : element.dom;
-      if (dom === undefined || dom === null || dom.ownerDocument === null) {
-        return false;
-      }
-      var doc = dom.ownerDocument;
-      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
-        return doc.body.contains(dom);
-      }, compose1(inBody, getShadowHost));
-    };
-    var getBody = function (doc) {
-      var b = doc.dom.body;
-      if (b === null || b === undefined) {
-        throw new Error('Body is not available yet');
-      }
-      return SugarElement.fromDom(b);
-    };
-
-    var rawSet = function (dom, key, value) {
-      if (isString(value) || isBoolean(value) || isNumber(value)) {
-        dom.setAttribute(key, value + '');
-      } else {
-        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
-        throw new Error('Attribute value was not simple');
-      }
-    };
-    var set = function (element, key, value) {
-      rawSet(element.dom, key, value);
-    };
-    var get$3 = function (element, key) {
-      var v = element.dom.getAttribute(key);
-      return v === null ? undefined : v;
-    };
-    var remove = function (element, key) {
-      element.dom.removeAttribute(key);
-    };
-
-    var internalSet = function (dom, property, value) {
-      if (!isString(value)) {
-        console.error('Invalid call to CSS.set. Property ', property, ':: Value ', value, ':: Element ', dom);
-        throw new Error('CSS value must be a string: ' + value);
-      }
-      if (isSupported$1(dom)) {
-        dom.style.setProperty(property, value);
-      }
-    };
-    var setAll = function (element, css) {
-      var dom = element.dom;
-      each(css, function (v, k) {
-        internalSet(dom, k, v);
-      });
-    };
-    var get$2 = function (element, property) {
-      var dom = element.dom;
-      var styles = window.getComputedStyle(dom);
-      var r = styles.getPropertyValue(property);
-      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
-    };
-    var getUnsafeProperty = function (dom, property) {
-      return isSupported$1(dom) ? dom.style.getPropertyValue(property) : '';
-    };
-
-    var mkEvent = function (target, x, y, stop, prevent, kill, raw) {
-      return {
-        target: target,
-        x: x,
-        y: y,
-        stop: stop,
-        prevent: prevent,
-        kill: kill,
-        raw: raw
-      };
-    };
-    var fromRawEvent = function (rawEvent) {
-      var target = SugarElement.fromDom(getOriginalEventTarget(rawEvent).getOr(rawEvent.target));
-      var stop = function () {
-        return rawEvent.stopPropagation();
-      };
-      var prevent = function () {
-        return rawEvent.preventDefault();
-      };
-      var kill = compose(prevent, stop);
-      return mkEvent(target, rawEvent.clientX, rawEvent.clientY, stop, prevent, kill, rawEvent);
-    };
-    var handle = function (filter, handler) {
-      return function (rawEvent) {
-        if (filter(rawEvent)) {
-          handler(fromRawEvent(rawEvent));
-        }
-      };
-    };
-    var binder = function (element, event, filter, handler, useCapture) {
-      var wrapped = handle(filter, handler);
-      element.dom.addEventListener(event, wrapped, useCapture);
-      return { unbind: curry(unbind, element, event, wrapped, useCapture) };
-    };
-    var bind$2 = function (element, event, filter, handler) {
-      return binder(element, event, filter, handler, false);
-    };
-    var unbind = function (element, event, handler, useCapture) {
-      element.dom.removeEventListener(event, handler, useCapture);
-    };
-
-    var filter = always;
-    var bind$1 = function (element, event, handler) {
-      return bind$2(element, event, filter, handler);
-    };
-
-    var r = function (left, top) {
-      var translate = function (x, y) {
-        return r(left + x, top + y);
-      };
-      return {
-        left: left,
-        top: top,
-        translate: translate
-      };
-    };
-    var SugarPosition = r;
-
-    var get$1 = function (_DOC) {
-      var doc = _DOC !== undefined ? _DOC.dom : document;
-      var x = doc.body.scrollLeft || doc.documentElement.scrollLeft;
-      var y = doc.body.scrollTop || doc.documentElement.scrollTop;
-      return SugarPosition(x, y);
-    };
-
-    var get = function (_win) {
-      var win = _win === undefined ? window : _win;
-      if (detect().browser.isFirefox()) {
-        return Optional.none();
-      } else {
-        return Optional.from(win['visualViewport']);
-      }
-    };
-    var bounds = function (x, y, width, height) {
-      return {
-        x: x,
-        y: y,
-        width: width,
-        height: height,
-        right: x + width,
-        bottom: y + height
-      };
-    };
-    var getBounds = function (_win) {
-      var win = _win === undefined ? window : _win;
-      var doc = win.document;
-      var scroll = get$1(SugarElement.fromDom(doc));
-      return get(win).fold(function () {
-        var html = win.document.documentElement;
-        var width = html.clientWidth;
-        var height = html.clientHeight;
-        return bounds(scroll.left, scroll.top, width, height);
-      }, function (visualViewport) {
-        return bounds(Math.max(visualViewport.pageLeft, scroll.left), Math.max(visualViewport.pageTop, scroll.top), visualViewport.width, visualViewport.height);
-      });
-    };
-    var bind = function (name, callback, _win) {
-      return get(_win).map(function (visualViewport) {
-        var handler = function (e) {
-          return callback(fromRawEvent(e));
-        };
-        visualViewport.addEventListener(name, handler);
-        return {
-          unbind: function () {
-            return visualViewport.removeEventListener(name, handler);
-          }
-        };
-      }).getOrThunk(function () {
-        return { unbind: noop };
-      });
-    };
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Delay');
-
-    var fireFullscreenStateChanged = function (editor, state) {
-      editor.fire('FullscreenStateChanged', { state: state });
-      editor.fire('ResizeEditor');
-    };
-
-    var getFullscreenNative = function (editor) {
-      return editor.getParam('fullscreen_native', false, 'boolean');
-    };
-
-    var getFullscreenRoot = function (editor) {
-      var elem = SugarElement.fromDom(editor.getElement());
-      return getShadowRoot(elem).map(getShadowHost).getOrThunk(function () {
-        return getBody(owner(elem));
-      });
-    };
-    var getFullscreenElement = function (root) {
-      if (root.fullscreenElement !== undefined) {
-        return root.fullscreenElement;
-      } else if (root.msFullscreenElement !== undefined) {
-        return root.msFullscreenElement;
-      } else if (root.webkitFullscreenElement !== undefined) {
-        return root.webkitFullscreenElement;
-      } else {
-        return null;
-      }
-    };
-    var getFullscreenchangeEventName = function () {
-      if (document.fullscreenElement !== undefined) {
-        return 'fullscreenchange';
-      } else if (document.msFullscreenElement !== undefined) {
-        return 'MSFullscreenChange';
-      } else if (document.webkitFullscreenElement !== undefined) {
-        return 'webkitfullscreenchange';
-      } else {
-        return 'fullscreenchange';
-      }
-    };
-    var requestFullscreen = function (sugarElem) {
-      var elem = sugarElem.dom;
-      if (elem.requestFullscreen) {
-        elem.requestFullscreen();
-      } else if (elem.msRequestFullscreen) {
-        elem.msRequestFullscreen();
-      } else if (elem.webkitRequestFullScreen) {
-        elem.webkitRequestFullScreen();
-      }
-    };
-    var exitFullscreen = function (sugarDoc) {
-      var doc = sugarDoc.dom;
-      if (doc.exitFullscreen) {
-        doc.exitFullscreen();
-      } else if (doc.msExitFullscreen) {
-        doc.msExitFullscreen();
-      } else if (doc.webkitCancelFullScreen) {
-        doc.webkitCancelFullScreen();
-      }
-    };
-    var isFullscreenElement = function (elem) {
-      return elem.dom === getFullscreenElement(owner(elem).dom);
-    };
-
-    var ancestors$1 = function (scope, predicate, isRoot) {
-      return filter$1(parents(scope, isRoot), predicate);
-    };
-    var siblings$1 = function (scope, predicate) {
-      return filter$1(siblings$2(scope), predicate);
-    };
-
-    var all = function (selector) {
-      return all$1(selector);
-    };
-    var ancestors = function (scope, selector, isRoot) {
-      return ancestors$1(scope, function (e) {
-        return is(e, selector);
-      }, isRoot);
-    };
-    var siblings = function (scope, selector) {
-      return siblings$1(scope, function (e) {
-        return is(e, selector);
-      });
-    };
-
-    var attr = 'data-ephox-mobile-fullscreen-style';
-    var siblingStyles = 'display:none!important;';
-    var ancestorPosition = 'position:absolute!important;';
-    var ancestorStyles = 'top:0!important;left:0!important;margin:0!important;padding:0!important;width:100%!important;height:100%!important;overflow:visible!important;';
-    var bgFallback = 'background-color:rgb(255,255,255)!important;';
-    var isAndroid = global$1.os.isAndroid();
-    var matchColor = function (editorBody) {
-      var color = get$2(editorBody, 'background-color');
-      return color !== undefined && color !== '' ? 'background-color:' + color + '!important' : bgFallback;
-    };
-    var clobberStyles = function (dom, container, editorBody) {
-      var gatherSiblings = function (element) {
-        return siblings(element, '*:not(.tox-silver-sink)');
-      };
-      var clobber = function (clobberStyle) {
-        return function (element) {
-          var styles = get$3(element, 'style');
-          var backup = styles === undefined ? 'no-styles' : styles.trim();
-          if (backup === clobberStyle) {
-            return;
-          } else {
-            set(element, attr, backup);
-            setAll(element, dom.parseStyle(clobberStyle));
-          }
-        };
-      };
-      var ancestors$1 = ancestors(container, '*');
-      var siblings$1 = bind$3(ancestors$1, gatherSiblings);
-      var bgColor = matchColor(editorBody);
-      each$1(siblings$1, clobber(siblingStyles));
-      each$1(ancestors$1, clobber(ancestorPosition + ancestorStyles + bgColor));
-      var containerStyles = isAndroid === true ? '' : ancestorPosition;
-      clobber(containerStyles + ancestorStyles + bgColor)(container);
-    };
-    var restoreStyles = function (dom) {
-      var clobberedEls = all('[' + attr + ']');
-      each$1(clobberedEls, function (element) {
-        var restore = get$3(element, attr);
-        if (restore !== 'no-styles') {
-          setAll(element, dom.parseStyle(restore));
-        } else {
-          remove(element, 'style');
-        }
-        remove(element, attr);
-      });
-    };
-
-    var DOM = global$2.DOM;
-    var getScrollPos = function () {
-      return getBounds(window);
-    };
-    var setScrollPos = function (pos) {
-      return window.scrollTo(pos.x, pos.y);
-    };
-    var viewportUpdate = get().fold(function () {
-      return {
-        bind: noop,
-        unbind: noop
-      };
-    }, function (visualViewport) {
-      var editorContainer = value();
-      var resizeBinder = unbindable();
-      var scrollBinder = unbindable();
-      var refreshScroll = function () {
-        document.body.scrollTop = 0;
-        document.documentElement.scrollTop = 0;
-      };
-      var refreshVisualViewport = function () {
-        window.requestAnimationFrame(function () {
-          editorContainer.on(function (container) {
-            return setAll(container, {
-              top: visualViewport.offsetTop + 'px',
-              left: visualViewport.offsetLeft + 'px',
-              height: visualViewport.height + 'px',
-              width: visualViewport.width + 'px'
-            });
-          });
-        });
-      };
-      var update = global.throttle(function () {
-        refreshScroll();
-        refreshVisualViewport();
-      }, 50);
-      var bind$1 = function (element) {
-        editorContainer.set(element);
-        update();
-        resizeBinder.set(bind('resize', update));
-        scrollBinder.set(bind('scroll', update));
-      };
-      var unbind = function () {
-        editorContainer.on(function () {
-          resizeBinder.clear();
-          scrollBinder.clear();
-        });
-        editorContainer.clear();
-      };
-      return {
-        bind: bind$1,
-        unbind: unbind
-      };
-    });
-    var toggleFullscreen = function (editor, fullscreenState) {
-      var body = document.body;
-      var documentElement = document.documentElement;
-      var editorContainer = editor.getContainer();
-      var editorContainerS = SugarElement.fromDom(editorContainer);
-      var fullscreenRoot = getFullscreenRoot(editor);
-      var fullscreenInfo = fullscreenState.get();
-      var editorBody = SugarElement.fromDom(editor.getBody());
-      var isTouch = global$1.deviceType.isTouch();
-      var editorContainerStyle = editorContainer.style;
-      var iframe = editor.iframeElement;
-      var iframeStyle = iframe.style;
-      var handleClasses = function (handler) {
-        handler(body, 'tox-fullscreen');
-        handler(documentElement, 'tox-fullscreen');
-        handler(editorContainer, 'tox-fullscreen');
-        getShadowRoot(editorContainerS).map(function (root) {
-          return getShadowHost(root).dom;
-        }).each(function (host) {
-          handler(host, 'tox-fullscreen');
-          handler(host, 'tox-shadowhost');
-        });
-      };
-      var cleanup = function () {
-        if (isTouch) {
-          restoreStyles(editor.dom);
-        }
-        handleClasses(DOM.removeClass);
-        viewportUpdate.unbind();
-        Optional.from(fullscreenState.get()).each(function (info) {
-          return info.fullscreenChangeHandler.unbind();
-        });
-      };
-      if (!fullscreenInfo) {
-        var fullscreenChangeHandler = bind$1(owner(fullscreenRoot), getFullscreenchangeEventName(), function (_evt) {
-          if (getFullscreenNative(editor)) {
-            if (!isFullscreenElement(fullscreenRoot) && fullscreenState.get() !== null) {
-              toggleFullscreen(editor, fullscreenState);
-            }
-          }
-        });
-        var newFullScreenInfo = {
-          scrollPos: getScrollPos(),
-          containerWidth: editorContainerStyle.width,
-          containerHeight: editorContainerStyle.height,
-          containerTop: editorContainerStyle.top,
-          containerLeft: editorContainerStyle.left,
-          iframeWidth: iframeStyle.width,
-          iframeHeight: iframeStyle.height,
-          fullscreenChangeHandler: fullscreenChangeHandler
-        };
-        if (isTouch) {
-          clobberStyles(editor.dom, editorContainerS, editorBody);
-        }
-        iframeStyle.width = iframeStyle.height = '100%';
-        editorContainerStyle.width = editorContainerStyle.height = '';
-        handleClasses(DOM.addClass);
-        viewportUpdate.bind(editorContainerS);
-        editor.on('remove', cleanup);
-        fullscreenState.set(newFullScreenInfo);
-        if (getFullscreenNative(editor)) {
-          requestFullscreen(fullscreenRoot);
-        }
-        fireFullscreenStateChanged(editor, true);
-      } else {
-        fullscreenInfo.fullscreenChangeHandler.unbind();
-        if (getFullscreenNative(editor) && isFullscreenElement(fullscreenRoot)) {
-          exitFullscreen(owner(fullscreenRoot));
-        }
-        iframeStyle.width = fullscreenInfo.iframeWidth;
-        iframeStyle.height = fullscreenInfo.iframeHeight;
-        editorContainerStyle.width = fullscreenInfo.containerWidth;
-        editorContainerStyle.height = fullscreenInfo.containerHeight;
-        editorContainerStyle.top = fullscreenInfo.containerTop;
-        editorContainerStyle.left = fullscreenInfo.containerLeft;
-        cleanup();
-        setScrollPos(fullscreenInfo.scrollPos);
-        fullscreenState.set(null);
-        fireFullscreenStateChanged(editor, false);
-        editor.off('remove', cleanup);
-      }
-    };
-
-    var register$1 = function (editor, fullscreenState) {
-      editor.addCommand('mceFullScreen', function () {
-        toggleFullscreen(editor, fullscreenState);
-      });
-    };
-
-    var makeSetupHandler = function (editor, fullscreenState) {
-      return function (api) {
-        api.setActive(fullscreenState.get() !== null);
-        var editorEventCallback = function (e) {
-          return api.setActive(e.state);
-        };
-        editor.on('FullscreenStateChanged', editorEventCallback);
-        return function () {
-          return editor.off('FullscreenStateChanged', editorEventCallback);
-        };
-      };
-    };
-    var register = function (editor, fullscreenState) {
-      var onAction = function () {
-        return editor.execCommand('mceFullScreen');
-      };
-      editor.ui.registry.addToggleMenuItem('fullscreen', {
-        text: 'Fullscreen',
-        icon: 'fullscreen',
-        shortcut: 'Meta+Shift+F',
-        onAction: onAction,
-        onSetup: makeSetupHandler(editor, fullscreenState)
-      });
-      editor.ui.registry.addToggleButton('fullscreen', {
-        tooltip: 'Fullscreen',
-        icon: 'fullscreen',
-        onAction: onAction,
-        onSetup: makeSetupHandler(editor, fullscreenState)
-      });
-    };
-
-    function Plugin () {
-      global$3.add('fullscreen', function (editor) {
-        var fullscreenState = Cell(null);
-        if (editor.inline) {
-          return get$5(fullscreenState);
-        }
-        register$1(editor, fullscreenState);
-        register(editor, fullscreenState);
-        editor.addShortcut('Meta+Shift+F', '', 'mceFullScreen');
-        return get$5(fullscreenState);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var register$1 = function (editor) {
-      editor.addCommand('InsertHorizontalRule', function () {
-        editor.execCommand('mceInsertContent', false, '<hr />');
-      });
-    };
-
-    var register = function (editor) {
-      var onAction = function () {
-        return editor.execCommand('InsertHorizontalRule');
-      };
-      editor.ui.registry.addButton('hr', {
-        icon: 'horizontal-rule',
-        tooltip: 'Horizontal line',
-        onAction: onAction
-      });
-      editor.ui.registry.addMenuItem('hr', {
-        icon: 'horizontal-rule',
-        text: 'Horizontal line',
-        onAction: onAction
-      });
-    };
-
-    function Plugin () {
-      global.add('hr', function (editor) {
-        register$1(editor);
-        register(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var getDateFormat = function (editor) {
-      return editor.getParam('insertdatetime_dateformat', editor.translate('%Y-%m-%d'));
-    };
-    var getTimeFormat = function (editor) {
-      return editor.getParam('insertdatetime_timeformat', editor.translate('%H:%M:%S'));
-    };
-    var getFormats = function (editor) {
-      return editor.getParam('insertdatetime_formats', [
-        '%H:%M:%S',
-        '%Y-%m-%d',
-        '%I:%M:%S %p',
-        '%D'
-      ]);
-    };
-    var getDefaultDateTime = function (editor) {
-      var formats = getFormats(editor);
-      return formats.length > 0 ? formats[0] : getTimeFormat(editor);
-    };
-    var shouldInsertTimeElement = function (editor) {
-      return editor.getParam('insertdatetime_element', false);
-    };
-
-    var daysShort = 'Sun Mon Tue Wed Thu Fri Sat Sun'.split(' ');
-    var daysLong = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday'.split(' ');
-    var monthsShort = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
-    var monthsLong = 'January February March April May June July August September October November December'.split(' ');
-    var addZeros = function (value, len) {
-      value = '' + value;
-      if (value.length < len) {
-        for (var i = 0; i < len - value.length; i++) {
-          value = '0' + value;
-        }
-      }
-      return value;
-    };
-    var getDateTime = function (editor, fmt, date) {
-      if (date === void 0) {
-        date = new Date();
-      }
-      fmt = fmt.replace('%D', '%m/%d/%Y');
-      fmt = fmt.replace('%r', '%I:%M:%S %p');
-      fmt = fmt.replace('%Y', '' + date.getFullYear());
-      fmt = fmt.replace('%y', '' + date.getYear());
-      fmt = fmt.replace('%m', addZeros(date.getMonth() + 1, 2));
-      fmt = fmt.replace('%d', addZeros(date.getDate(), 2));
-      fmt = fmt.replace('%H', '' + addZeros(date.getHours(), 2));
-      fmt = fmt.replace('%M', '' + addZeros(date.getMinutes(), 2));
-      fmt = fmt.replace('%S', '' + addZeros(date.getSeconds(), 2));
-      fmt = fmt.replace('%I', '' + ((date.getHours() + 11) % 12 + 1));
-      fmt = fmt.replace('%p', '' + (date.getHours() < 12 ? 'AM' : 'PM'));
-      fmt = fmt.replace('%B', '' + editor.translate(monthsLong[date.getMonth()]));
-      fmt = fmt.replace('%b', '' + editor.translate(monthsShort[date.getMonth()]));
-      fmt = fmt.replace('%A', '' + editor.translate(daysLong[date.getDay()]));
-      fmt = fmt.replace('%a', '' + editor.translate(daysShort[date.getDay()]));
-      fmt = fmt.replace('%%', '%');
-      return fmt;
-    };
-    var updateElement = function (editor, timeElm, computerTime, userTime) {
-      var newTimeElm = editor.dom.create('time', { datetime: computerTime }, userTime);
-      timeElm.parentNode.insertBefore(newTimeElm, timeElm);
-      editor.dom.remove(timeElm);
-      editor.selection.select(newTimeElm, true);
-      editor.selection.collapse(false);
-    };
-    var insertDateTime = function (editor, format) {
-      if (shouldInsertTimeElement(editor)) {
-        var userTime = getDateTime(editor, format);
-        var computerTime = void 0;
-        if (/%[HMSIp]/.test(format)) {
-          computerTime = getDateTime(editor, '%Y-%m-%dT%H:%M');
-        } else {
-          computerTime = getDateTime(editor, '%Y-%m-%d');
-        }
-        var timeElm = editor.dom.getParent(editor.selection.getStart(), 'time');
-        if (timeElm) {
-          updateElement(editor, timeElm, computerTime, userTime);
-        } else {
-          editor.insertContent('<time datetime="' + computerTime + '">' + userTime + '</time>');
-        }
-      } else {
-        editor.insertContent(getDateTime(editor, format));
-      }
-    };
-
-    var register$1 = function (editor) {
-      editor.addCommand('mceInsertDate', function (_ui, value) {
-        insertDateTime(editor, value !== null && value !== void 0 ? value : getDateFormat(editor));
-      });
-      editor.addCommand('mceInsertTime', function (_ui, value) {
-        insertDateTime(editor, value !== null && value !== void 0 ? value : getTimeFormat(editor));
-      });
-    };
-
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
-        return value;
-      };
-      var set = function (v) {
-        value = v;
-      };
-      return {
-        get: get,
-        set: set
-      };
-    };
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var register = function (editor) {
-      var formats = getFormats(editor);
-      var defaultFormat = Cell(getDefaultDateTime(editor));
-      var insertDateTime = function (format) {
-        return editor.execCommand('mceInsertDate', false, format);
-      };
-      editor.ui.registry.addSplitButton('insertdatetime', {
-        icon: 'insert-time',
-        tooltip: 'Insert date/time',
-        select: function (value) {
-          return value === defaultFormat.get();
-        },
-        fetch: function (done) {
-          done(global.map(formats, function (format) {
-            return {
-              type: 'choiceitem',
-              text: getDateTime(editor, format),
-              value: format
-            };
-          }));
-        },
-        onAction: function (_api) {
-          insertDateTime(defaultFormat.get());
-        },
-        onItemAction: function (_api, value) {
-          defaultFormat.set(value);
-          insertDateTime(value);
-        }
-      });
-      var makeMenuItemHandler = function (format) {
-        return function () {
-          defaultFormat.set(format);
-          insertDateTime(format);
-        };
-      };
-      editor.ui.registry.addNestedMenuItem('insertdatetime', {
-        icon: 'insert-time',
-        text: 'Date/time',
-        getSubmenuItems: function () {
-          return global.map(formats, function (format) {
-            return {
-              type: 'menuitem',
-              text: getDateTime(editor, format),
-              onAction: makeMenuItemHandler(format)
-            };
-          });
-        }
-      });
-    };
-
-    function Plugin () {
-      global$1.add('insertdatetime', function (editor) {
-        register$1(editor);
-        register(editor);
       });
     }
 
@@ -58924,6 +58741,189 @@ tinymce.IconManager.add('default', {
       global$4.add('importcss', function (editor) {
         setup(editor);
         return get(editor);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var getDateFormat = function (editor) {
+      return editor.getParam('insertdatetime_dateformat', editor.translate('%Y-%m-%d'));
+    };
+    var getTimeFormat = function (editor) {
+      return editor.getParam('insertdatetime_timeformat', editor.translate('%H:%M:%S'));
+    };
+    var getFormats = function (editor) {
+      return editor.getParam('insertdatetime_formats', [
+        '%H:%M:%S',
+        '%Y-%m-%d',
+        '%I:%M:%S %p',
+        '%D'
+      ]);
+    };
+    var getDefaultDateTime = function (editor) {
+      var formats = getFormats(editor);
+      return formats.length > 0 ? formats[0] : getTimeFormat(editor);
+    };
+    var shouldInsertTimeElement = function (editor) {
+      return editor.getParam('insertdatetime_element', false);
+    };
+
+    var daysShort = 'Sun Mon Tue Wed Thu Fri Sat Sun'.split(' ');
+    var daysLong = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday'.split(' ');
+    var monthsShort = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+    var monthsLong = 'January February March April May June July August September October November December'.split(' ');
+    var addZeros = function (value, len) {
+      value = '' + value;
+      if (value.length < len) {
+        for (var i = 0; i < len - value.length; i++) {
+          value = '0' + value;
+        }
+      }
+      return value;
+    };
+    var getDateTime = function (editor, fmt, date) {
+      if (date === void 0) {
+        date = new Date();
+      }
+      fmt = fmt.replace('%D', '%m/%d/%Y');
+      fmt = fmt.replace('%r', '%I:%M:%S %p');
+      fmt = fmt.replace('%Y', '' + date.getFullYear());
+      fmt = fmt.replace('%y', '' + date.getYear());
+      fmt = fmt.replace('%m', addZeros(date.getMonth() + 1, 2));
+      fmt = fmt.replace('%d', addZeros(date.getDate(), 2));
+      fmt = fmt.replace('%H', '' + addZeros(date.getHours(), 2));
+      fmt = fmt.replace('%M', '' + addZeros(date.getMinutes(), 2));
+      fmt = fmt.replace('%S', '' + addZeros(date.getSeconds(), 2));
+      fmt = fmt.replace('%I', '' + ((date.getHours() + 11) % 12 + 1));
+      fmt = fmt.replace('%p', '' + (date.getHours() < 12 ? 'AM' : 'PM'));
+      fmt = fmt.replace('%B', '' + editor.translate(monthsLong[date.getMonth()]));
+      fmt = fmt.replace('%b', '' + editor.translate(monthsShort[date.getMonth()]));
+      fmt = fmt.replace('%A', '' + editor.translate(daysLong[date.getDay()]));
+      fmt = fmt.replace('%a', '' + editor.translate(daysShort[date.getDay()]));
+      fmt = fmt.replace('%%', '%');
+      return fmt;
+    };
+    var updateElement = function (editor, timeElm, computerTime, userTime) {
+      var newTimeElm = editor.dom.create('time', { datetime: computerTime }, userTime);
+      timeElm.parentNode.insertBefore(newTimeElm, timeElm);
+      editor.dom.remove(timeElm);
+      editor.selection.select(newTimeElm, true);
+      editor.selection.collapse(false);
+    };
+    var insertDateTime = function (editor, format) {
+      if (shouldInsertTimeElement(editor)) {
+        var userTime = getDateTime(editor, format);
+        var computerTime = void 0;
+        if (/%[HMSIp]/.test(format)) {
+          computerTime = getDateTime(editor, '%Y-%m-%dT%H:%M');
+        } else {
+          computerTime = getDateTime(editor, '%Y-%m-%d');
+        }
+        var timeElm = editor.dom.getParent(editor.selection.getStart(), 'time');
+        if (timeElm) {
+          updateElement(editor, timeElm, computerTime, userTime);
+        } else {
+          editor.insertContent('<time datetime="' + computerTime + '">' + userTime + '</time>');
+        }
+      } else {
+        editor.insertContent(getDateTime(editor, format));
+      }
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceInsertDate', function (_ui, value) {
+        insertDateTime(editor, value !== null && value !== void 0 ? value : getDateFormat(editor));
+      });
+      editor.addCommand('mceInsertTime', function (_ui, value) {
+        insertDateTime(editor, value !== null && value !== void 0 ? value : getTimeFormat(editor));
+      });
+    };
+
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var register = function (editor) {
+      var formats = getFormats(editor);
+      var defaultFormat = Cell(getDefaultDateTime(editor));
+      var insertDateTime = function (format) {
+        return editor.execCommand('mceInsertDate', false, format);
+      };
+      editor.ui.registry.addSplitButton('insertdatetime', {
+        icon: 'insert-time',
+        tooltip: 'Insert date/time',
+        select: function (value) {
+          return value === defaultFormat.get();
+        },
+        fetch: function (done) {
+          done(global.map(formats, function (format) {
+            return {
+              type: 'choiceitem',
+              text: getDateTime(editor, format),
+              value: format
+            };
+          }));
+        },
+        onAction: function (_api) {
+          insertDateTime(defaultFormat.get());
+        },
+        onItemAction: function (_api, value) {
+          defaultFormat.set(value);
+          insertDateTime(value);
+        }
+      });
+      var makeMenuItemHandler = function (format) {
+        return function () {
+          defaultFormat.set(format);
+          insertDateTime(format);
+        };
+      };
+      editor.ui.registry.addNestedMenuItem('insertdatetime', {
+        icon: 'insert-time',
+        text: 'Date/time',
+        getSubmenuItems: function () {
+          return global.map(formats, function (format) {
+            return {
+              type: 'menuitem',
+              text: getDateTime(editor, format),
+              onAction: makeMenuItemHandler(format)
+            };
+          });
+        }
+      });
+    };
+
+    function Plugin () {
+      global$1.add('insertdatetime', function (editor) {
+        register$1(editor);
+        register(editor);
       });
     }
 
@@ -68181,137 +68181,6 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var global$6 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var global$5 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
-
-    var global$4 = tinymce.util.Tools.resolve('tinymce.EditorManager');
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Delay');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.VK');
-
-    var getTabFocusElements = function (editor) {
-      return editor.getParam('tabfocus_elements', ':prev,:next');
-    };
-    var getTabFocus = function (editor) {
-      return editor.getParam('tab_focus', getTabFocusElements(editor));
-    };
-
-    var DOM = global$5.DOM;
-    var tabCancel = function (e) {
-      if (e.keyCode === global.TAB && !e.ctrlKey && !e.altKey && !e.metaKey) {
-        e.preventDefault();
-      }
-    };
-    var setup = function (editor) {
-      var tabHandler = function (e) {
-        var x;
-        if (e.keyCode !== global.TAB || e.ctrlKey || e.altKey || e.metaKey || e.isDefaultPrevented()) {
-          return;
-        }
-        var find = function (direction) {
-          var el = DOM.select(':input:enabled,*[tabindex]:not(iframe)');
-          var canSelectRecursive = function (e) {
-            var castElem = e;
-            return e.nodeName === 'BODY' || castElem.type !== 'hidden' && castElem.style.display !== 'none' && castElem.style.visibility !== 'hidden' && canSelectRecursive(e.parentNode);
-          };
-          var canSelect = function (el) {
-            return /INPUT|TEXTAREA|BUTTON/.test(el.tagName) && global$4.get(e.id) && el.tabIndex !== -1 && canSelectRecursive(el);
-          };
-          global$1.each(el, function (e, i) {
-            if (e.id === editor.id) {
-              x = i;
-              return false;
-            }
-          });
-          if (direction > 0) {
-            for (var i = x + 1; i < el.length; i++) {
-              if (canSelect(el[i])) {
-                return el[i];
-              }
-            }
-          } else {
-            for (var i = x - 1; i >= 0; i--) {
-              if (canSelect(el[i])) {
-                return el[i];
-              }
-            }
-          }
-          return null;
-        };
-        var v = global$1.explode(getTabFocus(editor));
-        if (v.length === 1) {
-          v[1] = v[0];
-          v[0] = ':prev';
-        }
-        var el;
-        if (e.shiftKey) {
-          if (v[0] === ':prev') {
-            el = find(-1);
-          } else {
-            el = DOM.get(v[0]);
-          }
-        } else {
-          if (v[1] === ':next') {
-            el = find(1);
-          } else {
-            el = DOM.get(v[1]);
-          }
-        }
-        if (el) {
-          var focusEditor = global$4.get(el.id || el.name);
-          if (el.id && focusEditor) {
-            focusEditor.focus();
-          } else {
-            global$2.setTimeout(function () {
-              if (!global$3.webkit) {
-                window.focus();
-              }
-              el.focus();
-            }, 10);
-          }
-          e.preventDefault();
-        }
-      };
-      editor.on('init', function () {
-        if (editor.inline) {
-          DOM.setAttrib(editor.getBody(), 'tabIndex', null);
-        }
-        editor.on('keyup', tabCancel);
-        if (global$3.gecko) {
-          editor.on('keypress keydown', tabHandler);
-        } else {
-          editor.on('keydown', tabHandler);
-        }
-      });
-    };
-
-    function Plugin () {
-      global$6.add('tabfocus', function (editor) {
-        setup(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
     var Cell = function (initial) {
       var value = initial;
       var get = function () {
@@ -69043,1954 +68912,118 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
-        return value;
-      };
-      var set = function (v) {
-        value = v;
-      };
-      return {
-        get: get,
-        set: set
-      };
+    var global$6 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var global$5 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+
+    var global$4 = tinymce.util.Tools.resolve('tinymce.EditorManager');
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.VK');
+
+    var getTabFocusElements = function (editor) {
+      return editor.getParam('tabfocus_elements', ':prev,:next');
+    };
+    var getTabFocus = function (editor) {
+      return editor.getParam('tab_focus', getTabFocusElements(editor));
     };
 
-    var global$5 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
-        }
-        return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-    function __spreadArray(to, from, pack) {
-      if (pack || arguments.length === 2)
-        for (var i = 0, l = from.length, ar; i < l; i++) {
-          if (ar || !(i in from)) {
-            if (!ar)
-              ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-          }
-        }
-      return to.concat(ar || Array.prototype.slice.call(from));
-    }
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
+    var DOM = global$5.DOM;
+    var tabCancel = function (e) {
+      if (e.keyCode === global.TAB && !e.ctrlKey && !e.altKey && !e.metaKey) {
+        e.preventDefault();
       }
     };
-    var isType = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isString = isType('string');
-    var isObject = isType('object');
-    var isArray = isType('array');
-
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    var die = function (msg) {
-      return function () {
-        throw new Error(msg);
-      };
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var nativeSlice = Array.prototype.slice;
-    var nativeIndexOf = Array.prototype.indexOf;
-    var rawIndexOf = function (ts, t) {
-      return nativeIndexOf.call(ts, t);
-    };
-    var contains = function (xs, x) {
-      return rawIndexOf(xs, x) > -1;
-    };
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var each = function (xs, f) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var eachr = function (xs, f) {
-      for (var i = xs.length - 1; i >= 0; i--) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var filter = function (xs, pred) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          r.push(x);
-        }
-      }
-      return r;
-    };
-    var foldr = function (xs, f, acc) {
-      eachr(xs, function (x, i) {
-        acc = f(acc, x, i);
-      });
-      return acc;
-    };
-    var foldl = function (xs, f, acc) {
-      each(xs, function (x, i) {
-        acc = f(acc, x, i);
-      });
-      return acc;
-    };
-    var findUntil = function (xs, pred, until) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          return Optional.some(x);
-        } else if (until(x, i)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-    var find = function (xs, pred) {
-      return findUntil(xs, pred, never);
-    };
-    var forall = function (xs, pred) {
-      for (var i = 0, len = xs.length; i < len; ++i) {
-        var x = xs[i];
-        if (pred(x, i) !== true) {
-          return false;
-        }
-      }
-      return true;
-    };
-    var sort = function (xs, comparator) {
-      var copy = nativeSlice.call(xs, 0);
-      copy.sort(comparator);
-      return copy;
-    };
-    var get$1 = function (xs, i) {
-      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
-    };
-    var head = function (xs) {
-      return get$1(xs, 0);
-    };
-
-    var keys = Object.keys;
-    var hasOwnProperty = Object.hasOwnProperty;
-    var has = function (obj, key) {
-      return hasOwnProperty.call(obj, key);
-    };
-
-    var generate$1 = function (cases) {
-      if (!isArray(cases)) {
-        throw new Error('cases must be an array');
-      }
-      if (cases.length === 0) {
-        throw new Error('there must be at least one case');
-      }
-      var constructors = [];
-      var adt = {};
-      each(cases, function (acase, count) {
-        var keys$1 = keys(acase);
-        if (keys$1.length !== 1) {
-          throw new Error('one and only one name per case');
-        }
-        var key = keys$1[0];
-        var value = acase[key];
-        if (adt[key] !== undefined) {
-          throw new Error('duplicate key detected:' + key);
-        } else if (key === 'cata') {
-          throw new Error('cannot have a case named cata (sorry)');
-        } else if (!isArray(value)) {
-          throw new Error('case arguments must be an array');
-        }
-        constructors.push(key);
-        adt[key] = function () {
-          var args = [];
-          for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-          }
-          var argLength = args.length;
-          if (argLength !== value.length) {
-            throw new Error('Wrong number of arguments to case ' + key + '. Expected ' + value.length + ' (' + value + '), got ' + argLength);
-          }
-          var match = function (branches) {
-            var branchKeys = keys(branches);
-            if (constructors.length !== branchKeys.length) {
-              throw new Error('Wrong number of arguments to match. Expected: ' + constructors.join(',') + '\nActual: ' + branchKeys.join(','));
-            }
-            var allReqd = forall(constructors, function (reqKey) {
-              return contains(branchKeys, reqKey);
-            });
-            if (!allReqd) {
-              throw new Error('Not all branches were specified when using match. Specified: ' + branchKeys.join(', ') + '\nRequired: ' + constructors.join(', '));
-            }
-            return branches[key].apply(null, args);
-          };
-          return {
-            fold: function () {
-              var foldArgs = [];
-              for (var _i = 0; _i < arguments.length; _i++) {
-                foldArgs[_i] = arguments[_i];
-              }
-              if (foldArgs.length !== cases.length) {
-                throw new Error('Wrong number of arguments to fold. Expected ' + cases.length + ', got ' + foldArgs.length);
-              }
-              var target = foldArgs[count];
-              return target.apply(null, args);
-            },
-            match: match,
-            log: function (label) {
-              console.log(label, {
-                constructors: constructors,
-                constructor: key,
-                params: args
-              });
-            }
-          };
-        };
-      });
-      return adt;
-    };
-    var Adt = { generate: generate$1 };
-
-    Adt.generate([
-      {
-        bothErrors: [
-          'error1',
-          'error2'
-        ]
-      },
-      {
-        firstError: [
-          'error1',
-          'value2'
-        ]
-      },
-      {
-        secondError: [
-          'value1',
-          'error2'
-        ]
-      },
-      {
-        bothValues: [
-          'value1',
-          'value2'
-        ]
-      }
-    ]);
-    var partition = function (results) {
-      var errors = [];
-      var values = [];
-      each(results, function (result) {
-        result.fold(function (err) {
-          errors.push(err);
-        }, function (value) {
-          values.push(value);
-        });
-      });
-      return {
-        errors: errors,
-        values: values
-      };
-    };
-
-    var value = function (o) {
-      var or = function (_opt) {
-        return value(o);
-      };
-      var orThunk = function (_f) {
-        return value(o);
-      };
-      var map = function (f) {
-        return value(f(o));
-      };
-      var mapError = function (_f) {
-        return value(o);
-      };
-      var each = function (f) {
-        f(o);
-      };
-      var bind = function (f) {
-        return f(o);
-      };
-      var fold = function (_, onValue) {
-        return onValue(o);
-      };
-      var exists = function (f) {
-        return f(o);
-      };
-      var forall = function (f) {
-        return f(o);
-      };
-      var toOptional = function () {
-        return Optional.some(o);
-      };
-      return {
-        isValue: always,
-        isError: never,
-        getOr: constant(o),
-        getOrThunk: constant(o),
-        getOrDie: constant(o),
-        or: or,
-        orThunk: orThunk,
-        fold: fold,
-        map: map,
-        mapError: mapError,
-        each: each,
-        bind: bind,
-        exists: exists,
-        forall: forall,
-        toOptional: toOptional
-      };
-    };
-    var error$1 = function (message) {
-      var getOrThunk = function (f) {
-        return f();
-      };
-      var getOrDie = function () {
-        return die(String(message))();
-      };
-      var or = identity;
-      var orThunk = function (f) {
-        return f();
-      };
-      var map = function (_f) {
-        return error$1(message);
-      };
-      var mapError = function (f) {
-        return error$1(f(message));
-      };
-      var bind = function (_f) {
-        return error$1(message);
-      };
-      var fold = function (onError, _) {
-        return onError(message);
-      };
-      return {
-        isValue: never,
-        isError: always,
-        getOr: identity,
-        getOrThunk: getOrThunk,
-        getOrDie: getOrDie,
-        or: or,
-        orThunk: orThunk,
-        fold: fold,
-        map: map,
-        mapError: mapError,
-        each: noop,
-        bind: bind,
-        exists: never,
-        forall: always,
-        toOptional: Optional.none
-      };
-    };
-    var fromOption = function (opt, err) {
-      return opt.fold(function () {
-        return error$1(err);
-      }, value);
-    };
-    var Result = {
-      value: value,
-      error: error$1,
-      fromOption: fromOption
-    };
-
-    var isInlinePattern = function (pattern) {
-      return pattern.type === 'inline-command' || pattern.type === 'inline-format';
-    };
-    var isBlockPattern = function (pattern) {
-      return pattern.type === 'block-command' || pattern.type === 'block-format';
-    };
-    var sortPatterns = function (patterns) {
-      return sort(patterns, function (a, b) {
-        if (a.start.length === b.start.length) {
-          return 0;
-        }
-        return a.start.length > b.start.length ? -1 : 1;
-      });
-    };
-    var normalizePattern = function (pattern) {
-      var err = function (message) {
-        return Result.error({
-          message: message,
-          pattern: pattern
-        });
-      };
-      var formatOrCmd = function (name, onFormat, onCommand) {
-        if (pattern.format !== undefined) {
-          var formats = void 0;
-          if (isArray(pattern.format)) {
-            if (!forall(pattern.format, isString)) {
-              return err(name + ' pattern has non-string items in the `format` array');
-            }
-            formats = pattern.format;
-          } else if (isString(pattern.format)) {
-            formats = [pattern.format];
-          } else {
-            return err(name + ' pattern has non-string `format` parameter');
-          }
-          return Result.value(onFormat(formats));
-        } else if (pattern.cmd !== undefined) {
-          if (!isString(pattern.cmd)) {
-            return err(name + ' pattern has non-string `cmd` parameter');
-          }
-          return Result.value(onCommand(pattern.cmd, pattern.value));
-        } else {
-          return err(name + ' pattern is missing both `format` and `cmd` parameters');
-        }
-      };
-      if (!isObject(pattern)) {
-        return err('Raw pattern is not an object');
-      }
-      if (!isString(pattern.start)) {
-        return err('Raw pattern is missing `start` parameter');
-      }
-      if (pattern.end !== undefined) {
-        if (!isString(pattern.end)) {
-          return err('Inline pattern has non-string `end` parameter');
-        }
-        if (pattern.start.length === 0 && pattern.end.length === 0) {
-          return err('Inline pattern has empty `start` and `end` parameters');
-        }
-        var start_1 = pattern.start;
-        var end_1 = pattern.end;
-        if (end_1.length === 0) {
-          end_1 = start_1;
-          start_1 = '';
-        }
-        return formatOrCmd('Inline', function (format) {
-          return {
-            type: 'inline-format',
-            start: start_1,
-            end: end_1,
-            format: format
-          };
-        }, function (cmd, value) {
-          return {
-            type: 'inline-command',
-            start: start_1,
-            end: end_1,
-            cmd: cmd,
-            value: value
-          };
-        });
-      } else if (pattern.replacement !== undefined) {
-        if (!isString(pattern.replacement)) {
-          return err('Replacement pattern has non-string `replacement` parameter');
-        }
-        if (pattern.start.length === 0) {
-          return err('Replacement pattern has empty `start` parameter');
-        }
-        return Result.value({
-          type: 'inline-command',
-          start: '',
-          end: pattern.start,
-          cmd: 'mceInsertContent',
-          value: pattern.replacement
-        });
-      } else {
-        if (pattern.start.length === 0) {
-          return err('Block pattern has empty `start` parameter');
-        }
-        return formatOrCmd('Block', function (formats) {
-          return {
-            type: 'block-format',
-            start: pattern.start,
-            format: formats[0]
-          };
-        }, function (command, commandValue) {
-          return {
-            type: 'block-command',
-            start: pattern.start,
-            cmd: command,
-            value: commandValue
-          };
-        });
-      }
-    };
-    var denormalizePattern = function (pattern) {
-      if (pattern.type === 'block-command') {
-        return {
-          start: pattern.start,
-          cmd: pattern.cmd,
-          value: pattern.value
-        };
-      } else if (pattern.type === 'block-format') {
-        return {
-          start: pattern.start,
-          format: pattern.format
-        };
-      } else if (pattern.type === 'inline-command') {
-        if (pattern.cmd === 'mceInsertContent' && pattern.start === '') {
-          return {
-            start: pattern.end,
-            replacement: pattern.value
-          };
-        } else {
-          return {
-            start: pattern.start,
-            end: pattern.end,
-            cmd: pattern.cmd,
-            value: pattern.value
-          };
-        }
-      } else if (pattern.type === 'inline-format') {
-        return {
-          start: pattern.start,
-          end: pattern.end,
-          format: pattern.format.length === 1 ? pattern.format[0] : pattern.format
-        };
-      }
-    };
-    var createPatternSet = function (patterns) {
-      return {
-        inlinePatterns: filter(patterns, isInlinePattern),
-        blockPatterns: sortPatterns(filter(patterns, isBlockPattern))
-      };
-    };
-
-    var get = function (patternsState) {
-      var setPatterns = function (newPatterns) {
-        var normalized = partition(map(newPatterns, normalizePattern));
-        if (normalized.errors.length > 0) {
-          var firstError = normalized.errors[0];
-          throw new Error(firstError.message + ':\n' + JSON.stringify(firstError.pattern, null, 2));
-        }
-        patternsState.set(createPatternSet(normalized.values));
-      };
-      var getPatterns = function () {
-        return __spreadArray(__spreadArray([], map(patternsState.get().inlinePatterns, denormalizePattern), true), map(patternsState.get().blockPatterns, denormalizePattern), true);
-      };
-      return {
-        setPatterns: setPatterns,
-        getPatterns: getPatterns
-      };
-    };
-
-    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
-
-    var error = function () {
-      var args = [];
-      for (var _i = 0; _i < arguments.length; _i++) {
-        args[_i] = arguments[_i];
-      }
-      var console = Global.console;
-      if (console) {
-        if (console.error) {
-          console.error.apply(console, args);
-        } else {
-          console.log.apply(console, args);
-        }
-      }
-    };
-    var defaultPatterns = [
-      {
-        start: '*',
-        end: '*',
-        format: 'italic'
-      },
-      {
-        start: '**',
-        end: '**',
-        format: 'bold'
-      },
-      {
-        start: '#',
-        format: 'h1'
-      },
-      {
-        start: '##',
-        format: 'h2'
-      },
-      {
-        start: '###',
-        format: 'h3'
-      },
-      {
-        start: '####',
-        format: 'h4'
-      },
-      {
-        start: '#####',
-        format: 'h5'
-      },
-      {
-        start: '######',
-        format: 'h6'
-      },
-      {
-        start: '1. ',
-        cmd: 'InsertOrderedList'
-      },
-      {
-        start: '* ',
-        cmd: 'InsertUnorderedList'
-      },
-      {
-        start: '- ',
-        cmd: 'InsertUnorderedList'
-      }
-    ];
-    var getPatternSet = function (editor) {
-      var patterns = editor.getParam('textpattern_patterns', defaultPatterns, 'array');
-      if (!isArray(patterns)) {
-        error('The setting textpattern_patterns should be an array');
-        return {
-          inlinePatterns: [],
-          blockPatterns: []
-        };
-      }
-      var normalized = partition(map(patterns, normalizePattern));
-      each(normalized.errors, function (err) {
-        return error(err.message, err.pattern);
-      });
-      return createPatternSet(normalized.values);
-    };
-    var getForcedRootBlock = function (editor) {
-      var block = editor.getParam('forced_root_block', 'p');
-      if (block === false) {
-        return '';
-      } else if (block === true) {
-        return 'p';
-      } else {
-        return block;
-      }
-    };
-
-    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Delay');
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.VK');
-
-    var zeroWidth = '\uFEFF';
-    var nbsp = '\xA0';
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
-
-    var global = tinymce.util.Tools.resolve('tinymce.dom.TextSeeker');
-
-    var point = function (container, offset) {
-      return {
-        container: container,
-        offset: offset
-      };
-    };
-
-    var isText = function (node) {
-      return node.nodeType === Node.TEXT_NODE;
-    };
-    var cleanEmptyNodes = function (dom, node, isRoot) {
-      if (node && dom.isEmpty(node) && !isRoot(node)) {
-        var parent_1 = node.parentNode;
-        dom.remove(node);
-        cleanEmptyNodes(dom, parent_1, isRoot);
-      }
-    };
-    var deleteRng = function (dom, rng, isRoot, clean) {
-      if (clean === void 0) {
-        clean = true;
-      }
-      var startParent = rng.startContainer.parentNode;
-      var endParent = rng.endContainer.parentNode;
-      rng.deleteContents();
-      if (clean && !isRoot(rng.startContainer)) {
-        if (isText(rng.startContainer) && rng.startContainer.data.length === 0) {
-          dom.remove(rng.startContainer);
-        }
-        if (isText(rng.endContainer) && rng.endContainer.data.length === 0) {
-          dom.remove(rng.endContainer);
-        }
-        cleanEmptyNodes(dom, startParent, isRoot);
-        if (startParent !== endParent) {
-          cleanEmptyNodes(dom, endParent, isRoot);
-        }
-      }
-    };
-    var isBlockFormatName = function (name, formatter) {
-      var formatSet = formatter.get(name);
-      return isArray(formatSet) && head(formatSet).exists(function (format) {
-        return has(format, 'block');
-      });
-    };
-    var isReplacementPattern = function (pattern) {
-      return pattern.start.length === 0;
-    };
-    var getParentBlock = function (editor, rng) {
-      var parentBlockOpt = Optional.from(editor.dom.getParent(rng.startContainer, editor.dom.isBlock));
-      if (getForcedRootBlock(editor) === '') {
-        return parentBlockOpt.orThunk(function () {
-          return Optional.some(editor.getBody());
-        });
-      } else {
-        return parentBlockOpt;
-      }
-    };
-
-    var DOM = global$1.DOM;
-    var alwaysNext = function (startNode) {
-      return function (node) {
-        return startNode === node ? -1 : 0;
-      };
-    };
-    var isBoundary = function (dom) {
-      return function (node) {
-        return dom.isBlock(node) || contains([
-          'BR',
-          'IMG',
-          'HR',
-          'INPUT'
-        ], node.nodeName) || dom.getContentEditable(node) === 'false';
-      };
-    };
-    var textBefore = function (node, offset, rootNode) {
-      if (isText(node) && offset >= 0) {
-        return Optional.some(point(node, offset));
-      } else {
-        var textSeeker = global(DOM);
-        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
-          return point(prev.container, prev.container.data.length);
-        });
-      }
-    };
-    var textAfter = function (node, offset, rootNode) {
-      if (isText(node) && offset >= node.length) {
-        return Optional.some(point(node, offset));
-      } else {
-        var textSeeker = global(DOM);
-        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
-          return point(prev.container, 0);
-        });
-      }
-    };
-    var scanLeft = function (node, offset, rootNode) {
-      if (!isText(node)) {
-        return Optional.none();
-      }
-      var text = node.textContent;
-      if (offset >= 0 && offset <= text.length) {
-        return Optional.some(point(node, offset));
-      } else {
-        var textSeeker = global(DOM);
-        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).bind(function (prev) {
-          var prevText = prev.container.data;
-          return scanLeft(prev.container, offset + prevText.length, rootNode);
-        });
-      }
-    };
-    var scanRight = function (node, offset, rootNode) {
-      if (!isText(node)) {
-        return Optional.none();
-      }
-      var text = node.textContent;
-      if (offset <= text.length) {
-        return Optional.some(point(node, offset));
-      } else {
-        var textSeeker = global(DOM);
-        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).bind(function (next) {
-          return scanRight(next.container, offset - text.length, rootNode);
-        });
-      }
-    };
-    var repeatLeft = function (dom, node, offset, process, rootNode) {
-      var search = global(dom, isBoundary(dom));
-      return Optional.from(search.backwards(node, offset, process, rootNode));
-    };
-
-    var generatePath = function (root, node, offset) {
-      if (isText(node) && (offset < 0 || offset > node.data.length)) {
-        return [];
-      }
-      var p = [offset];
-      var current = node;
-      while (current !== root && current.parentNode) {
-        var parent_1 = current.parentNode;
-        for (var i = 0; i < parent_1.childNodes.length; i++) {
-          if (parent_1.childNodes[i] === current) {
-            p.push(i);
-            break;
-          }
-        }
-        current = parent_1;
-      }
-      return current === root ? p.reverse() : [];
-    };
-    var generatePathRange = function (root, startNode, startOffset, endNode, endOffset) {
-      var start = generatePath(root, startNode, startOffset);
-      var end = generatePath(root, endNode, endOffset);
-      return {
-        start: start,
-        end: end
-      };
-    };
-    var resolvePath = function (root, path) {
-      var nodePath = path.slice();
-      var offset = nodePath.pop();
-      var resolvedNode = foldl(nodePath, function (optNode, index) {
-        return optNode.bind(function (node) {
-          return Optional.from(node.childNodes[index]);
-        });
-      }, Optional.some(root));
-      return resolvedNode.bind(function (node) {
-        if (isText(node) && (offset < 0 || offset > node.data.length)) {
-          return Optional.none();
-        } else {
-          return Optional.some({
-            node: node,
-            offset: offset
-          });
-        }
-      });
-    };
-    var resolvePathRange = function (root, range) {
-      return resolvePath(root, range.start).bind(function (_a) {
-        var startNode = _a.node, startOffset = _a.offset;
-        return resolvePath(root, range.end).map(function (_a) {
-          var endNode = _a.node, endOffset = _a.offset;
-          var rng = document.createRange();
-          rng.setStart(startNode, startOffset);
-          rng.setEnd(endNode, endOffset);
-          return rng;
-        });
-      });
-    };
-    var generatePathRangeFromRange = function (root, range) {
-      return generatePathRange(root, range.startContainer, range.startOffset, range.endContainer, range.endOffset);
-    };
-
-    var stripPattern = function (dom, block, pattern) {
-      var firstTextNode = textAfter(block, 0, block);
-      firstTextNode.each(function (spot) {
-        var node = spot.container;
-        scanRight(node, pattern.start.length, block).each(function (end) {
-          var rng = dom.createRng();
-          rng.setStart(node, 0);
-          rng.setEnd(end.container, end.offset);
-          deleteRng(dom, rng, function (e) {
-            return e === block;
-          });
-        });
-      });
-    };
-    var applyPattern$1 = function (editor, match) {
-      var dom = editor.dom;
-      var pattern = match.pattern;
-      var rng = resolvePathRange(dom.getRoot(), match.range).getOrDie('Unable to resolve path range');
-      getParentBlock(editor, rng).each(function (block) {
-        if (pattern.type === 'block-format') {
-          if (isBlockFormatName(pattern.format, editor.formatter)) {
-            editor.undoManager.transact(function () {
-              stripPattern(editor.dom, block, pattern);
-              editor.formatter.apply(pattern.format);
-            });
-          }
-        } else if (pattern.type === 'block-command') {
-          editor.undoManager.transact(function () {
-            stripPattern(editor.dom, block, pattern);
-            editor.execCommand(pattern.cmd, false, pattern.value);
-          });
-        }
-      });
-      return true;
-    };
-    var findPattern$1 = function (patterns, text) {
-      var nuText = text.replace(nbsp, ' ');
-      return find(patterns, function (pattern) {
-        return text.indexOf(pattern.start) === 0 || nuText.indexOf(pattern.start) === 0;
-      });
-    };
-    var findPatterns$1 = function (editor, patterns) {
-      var dom = editor.dom;
-      var rng = editor.selection.getRng();
-      return getParentBlock(editor, rng).filter(function (block) {
-        var forcedRootBlock = getForcedRootBlock(editor);
-        var matchesForcedRootBlock = forcedRootBlock === '' && dom.is(block, 'body') || dom.is(block, forcedRootBlock);
-        return block !== null && matchesForcedRootBlock;
-      }).bind(function (block) {
-        var blockText = block.textContent;
-        var matchedPattern = findPattern$1(patterns, blockText);
-        return matchedPattern.map(function (pattern) {
-          if (global$2.trim(blockText).length === pattern.start.length) {
-            return [];
-          }
-          return [{
-              pattern: pattern,
-              range: generatePathRange(dom.getRoot(), block, 0, block, 0)
-            }];
-        });
-      }).getOr([]);
-    };
-    var applyMatches$1 = function (editor, matches) {
-      if (matches.length === 0) {
-        return;
-      }
-      var bookmark = editor.selection.getBookmark();
-      each(matches, function (match) {
-        return applyPattern$1(editor, match);
-      });
-      editor.selection.moveToBookmark(bookmark);
-    };
-
-    var unique = 0;
-    var generate = function (prefix) {
-      var date = new Date();
-      var time = date.getTime();
-      var random = Math.floor(Math.random() * 1000000000);
-      unique++;
-      return prefix + '_' + random + unique + String(time);
-    };
-
-    var checkRange = function (str, substr, start) {
-      return substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
-    };
-    var endsWith = function (str, suffix) {
-      return checkRange(str, suffix, str.length - suffix.length);
-    };
-
-    var newMarker = function (dom, id) {
-      return dom.create('span', {
-        'data-mce-type': 'bookmark',
-        id: id
-      });
-    };
-    var rangeFromMarker = function (dom, marker) {
-      var rng = dom.createRng();
-      rng.setStartAfter(marker.start);
-      rng.setEndBefore(marker.end);
-      return rng;
-    };
-    var createMarker = function (dom, markerPrefix, pathRange) {
-      var rng = resolvePathRange(dom.getRoot(), pathRange).getOrDie('Unable to resolve path range');
-      var startNode = rng.startContainer;
-      var endNode = rng.endContainer;
-      var textEnd = rng.endOffset === 0 ? endNode : endNode.splitText(rng.endOffset);
-      var textStart = rng.startOffset === 0 ? startNode : startNode.splitText(rng.startOffset);
-      return {
-        prefix: markerPrefix,
-        end: textEnd.parentNode.insertBefore(newMarker(dom, markerPrefix + '-end'), textEnd),
-        start: textStart.parentNode.insertBefore(newMarker(dom, markerPrefix + '-start'), textStart)
-      };
-    };
-    var removeMarker = function (dom, marker, isRoot) {
-      cleanEmptyNodes(dom, dom.get(marker.prefix + '-end'), isRoot);
-      cleanEmptyNodes(dom, dom.get(marker.prefix + '-start'), isRoot);
-    };
-
-    var matchesPattern = function (dom, block, patternContent) {
-      return function (element, offset) {
-        var text = element.data;
-        var searchText = text.substring(0, offset);
-        var startEndIndex = searchText.lastIndexOf(patternContent.charAt(patternContent.length - 1));
-        var startIndex = searchText.lastIndexOf(patternContent);
-        if (startIndex !== -1) {
-          return startIndex + patternContent.length;
-        } else if (startEndIndex !== -1) {
-          return startEndIndex + 1;
-        } else {
-          return -1;
-        }
-      };
-    };
-    var findPatternStartFromSpot = function (dom, pattern, block, spot) {
-      var startPattern = pattern.start;
-      var startSpot = repeatLeft(dom, spot.container, spot.offset, matchesPattern(dom, block, startPattern), block);
-      return startSpot.bind(function (spot) {
-        if (spot.offset >= startPattern.length) {
-          var rng = dom.createRng();
-          rng.setStart(spot.container, spot.offset - startPattern.length);
-          rng.setEnd(spot.container, spot.offset);
-          return Optional.some(rng);
-        } else {
-          var offset = spot.offset - startPattern.length;
-          return scanLeft(spot.container, offset, block).map(function (nextSpot) {
-            var rng = dom.createRng();
-            rng.setStart(nextSpot.container, nextSpot.offset);
-            rng.setEnd(spot.container, spot.offset);
-            return rng;
-          }).filter(function (rng) {
-            return rng.toString() === startPattern;
-          }).orThunk(function () {
-            return findPatternStartFromSpot(dom, pattern, block, point(spot.container, 0));
-          });
-        }
-      });
-    };
-    var findPatternStart = function (dom, pattern, node, offset, block, requireGap) {
-      if (requireGap === void 0) {
-        requireGap = false;
-      }
-      if (pattern.start.length === 0 && !requireGap) {
-        var rng = dom.createRng();
-        rng.setStart(node, offset);
-        rng.setEnd(node, offset);
-        return Optional.some(rng);
-      }
-      return textBefore(node, offset, block).bind(function (spot) {
-        var start = findPatternStartFromSpot(dom, pattern, block, spot);
-        return start.bind(function (startRange) {
-          if (requireGap) {
-            if (startRange.endContainer === spot.container && startRange.endOffset === spot.offset) {
-              return Optional.none();
-            } else if (spot.offset === 0 && startRange.endContainer.textContent.length === startRange.endOffset) {
-              return Optional.none();
-            }
-          }
-          return Optional.some(startRange);
-        });
-      });
-    };
-    var findPattern = function (editor, block, details) {
-      var dom = editor.dom;
-      var root = dom.getRoot();
-      var pattern = details.pattern;
-      var endNode = details.position.container;
-      var endOffset = details.position.offset;
-      return scanLeft(endNode, endOffset - details.pattern.end.length, block).bind(function (spot) {
-        var endPathRng = generatePathRange(root, spot.container, spot.offset, endNode, endOffset);
-        if (isReplacementPattern(pattern)) {
-          return Optional.some({
-            matches: [{
-                pattern: pattern,
-                startRng: endPathRng,
-                endRng: endPathRng
-              }],
-            position: spot
-          });
-        } else {
-          var resultsOpt = findPatternsRec(editor, details.remainingPatterns, spot.container, spot.offset, block);
-          var results_1 = resultsOpt.getOr({
-            matches: [],
-            position: spot
-          });
-          var pos = results_1.position;
-          var start = findPatternStart(dom, pattern, pos.container, pos.offset, block, resultsOpt.isNone());
-          return start.map(function (startRng) {
-            var startPathRng = generatePathRangeFromRange(root, startRng);
-            return {
-              matches: results_1.matches.concat([{
-                  pattern: pattern,
-                  startRng: startPathRng,
-                  endRng: endPathRng
-                }]),
-              position: point(startRng.startContainer, startRng.startOffset)
-            };
-          });
-        }
-      });
-    };
-    var findPatternsRec = function (editor, patterns, node, offset, block) {
-      var dom = editor.dom;
-      return textBefore(node, offset, dom.getRoot()).bind(function (endSpot) {
-        var rng = dom.createRng();
-        rng.setStart(block, 0);
-        rng.setEnd(node, offset);
-        var text = rng.toString();
-        for (var i = 0; i < patterns.length; i++) {
-          var pattern = patterns[i];
-          if (!endsWith(text, pattern.end)) {
-            continue;
-          }
-          var patternsWithoutCurrent = patterns.slice();
-          patternsWithoutCurrent.splice(i, 1);
-          var result = findPattern(editor, block, {
-            pattern: pattern,
-            remainingPatterns: patternsWithoutCurrent,
-            position: endSpot
-          });
-          if (result.isSome()) {
-            return result;
-          }
-        }
-        return Optional.none();
-      });
-    };
-    var applyPattern = function (editor, pattern, patternRange) {
-      editor.selection.setRng(patternRange);
-      if (pattern.type === 'inline-format') {
-        each(pattern.format, function (format) {
-          editor.formatter.apply(format);
-        });
-      } else {
-        editor.execCommand(pattern.cmd, false, pattern.value);
-      }
-    };
-    var applyReplacementPattern = function (editor, pattern, marker, isRoot) {
-      var markerRange = rangeFromMarker(editor.dom, marker);
-      deleteRng(editor.dom, markerRange, isRoot);
-      applyPattern(editor, pattern, markerRange);
-    };
-    var applyPatternWithContent = function (editor, pattern, startMarker, endMarker, isRoot) {
-      var dom = editor.dom;
-      var markerEndRange = rangeFromMarker(dom, endMarker);
-      var markerStartRange = rangeFromMarker(dom, startMarker);
-      deleteRng(dom, markerStartRange, isRoot);
-      deleteRng(dom, markerEndRange, isRoot);
-      var patternMarker = {
-        prefix: startMarker.prefix,
-        start: startMarker.end,
-        end: endMarker.start
-      };
-      var patternRange = rangeFromMarker(dom, patternMarker);
-      applyPattern(editor, pattern, patternRange);
-    };
-    var addMarkers = function (dom, matches) {
-      var markerPrefix = generate('mce_textpattern');
-      var matchesWithEnds = foldr(matches, function (acc, match) {
-        var endMarker = createMarker(dom, markerPrefix + ('_end' + acc.length), match.endRng);
-        return acc.concat([__assign(__assign({}, match), { endMarker: endMarker })]);
-      }, []);
-      return foldr(matchesWithEnds, function (acc, match) {
-        var idx = matchesWithEnds.length - acc.length - 1;
-        var startMarker = isReplacementPattern(match.pattern) ? match.endMarker : createMarker(dom, markerPrefix + ('_start' + idx), match.startRng);
-        return acc.concat([__assign(__assign({}, match), { startMarker: startMarker })]);
-      }, []);
-    };
-    var findPatterns = function (editor, patterns, space) {
-      var rng = editor.selection.getRng();
-      if (rng.collapsed === false) {
-        return [];
-      }
-      return getParentBlock(editor, rng).bind(function (block) {
-        var offset = rng.startOffset - (space ? 1 : 0);
-        return findPatternsRec(editor, patterns, rng.startContainer, offset, block);
-      }).fold(function () {
-        return [];
-      }, function (result) {
-        return result.matches;
-      });
-    };
-    var applyMatches = function (editor, matches) {
-      if (matches.length === 0) {
-        return;
-      }
-      var dom = editor.dom;
-      var bookmark = editor.selection.getBookmark();
-      var matchesWithMarkers = addMarkers(dom, matches);
-      each(matchesWithMarkers, function (match) {
-        var block = dom.getParent(match.startMarker.start, dom.isBlock);
-        var isRoot = function (node) {
-          return node === block;
-        };
-        if (isReplacementPattern(match.pattern)) {
-          applyReplacementPattern(editor, match.pattern, match.endMarker, isRoot);
-        } else {
-          applyPatternWithContent(editor, match.pattern, match.startMarker, match.endMarker, isRoot);
-        }
-        removeMarker(dom, match.endMarker, isRoot);
-        removeMarker(dom, match.startMarker, isRoot);
-      });
-      editor.selection.moveToBookmark(bookmark);
-    };
-
-    var handleEnter = function (editor, patternSet) {
-      if (!editor.selection.isCollapsed()) {
-        return false;
-      }
-      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, false);
-      var blockMatches = findPatterns$1(editor, patternSet.blockPatterns);
-      if (blockMatches.length > 0 || inlineMatches.length > 0) {
-        editor.undoManager.add();
-        editor.undoManager.extra(function () {
-          editor.execCommand('mceInsertNewLine');
-        }, function () {
-          editor.insertContent(zeroWidth);
-          applyMatches(editor, inlineMatches);
-          applyMatches$1(editor, blockMatches);
-          var range = editor.selection.getRng();
-          var spot = textBefore(range.startContainer, range.startOffset, editor.dom.getRoot());
-          editor.execCommand('mceInsertNewLine');
-          spot.each(function (s) {
-            var node = s.container;
-            if (node.data.charAt(s.offset - 1) === zeroWidth) {
-              node.deleteData(s.offset - 1, 1);
-              cleanEmptyNodes(editor.dom, node.parentNode, function (e) {
-                return e === editor.dom.getRoot();
-              });
-            }
-          });
-        });
-        return true;
-      }
-      return false;
-    };
-    var handleInlineKey = function (editor, patternSet) {
-      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, true);
-      if (inlineMatches.length > 0) {
-        editor.undoManager.transact(function () {
-          applyMatches(editor, inlineMatches);
-        });
-      }
-    };
-    var checkKeyEvent = function (codes, event, predicate) {
-      for (var i = 0; i < codes.length; i++) {
-        if (predicate(codes[i], event)) {
-          return true;
-        }
-      }
-      return false;
-    };
-    var checkKeyCode = function (codes, event) {
-      return checkKeyEvent(codes, event, function (code, event) {
-        return code === event.keyCode && global$3.modifierPressed(event) === false;
-      });
-    };
-    var checkCharCode = function (chars, event) {
-      return checkKeyEvent(chars, event, function (chr, event) {
-        return chr.charCodeAt(0) === event.charCode;
-      });
-    };
-
-    var setup = function (editor, patternsState) {
-      var charCodes = [
-        ',',
-        '.',
-        ';',
-        ':',
-        '!',
-        '?'
-      ];
-      var keyCodes = [32];
-      editor.on('keydown', function (e) {
-        if (e.keyCode === 13 && !global$3.modifierPressed(e)) {
-          if (handleEnter(editor, patternsState.get())) {
-            e.preventDefault();
-          }
-        }
-      }, true);
-      editor.on('keyup', function (e) {
-        if (checkKeyCode(keyCodes, e)) {
-          handleInlineKey(editor, patternsState.get());
-        }
-      });
-      editor.on('keypress', function (e) {
-        if (checkCharCode(charCodes, e)) {
-          global$4.setEditorTimeout(editor, function () {
-            handleInlineKey(editor, patternsState.get());
-          });
-        }
-      });
-    };
-
-    function Plugin () {
-      global$5.add('textpattern', function (editor) {
-        var patternsState = Cell(getPatternSet(editor));
-        setup(editor, patternsState);
-        return get(patternsState);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isSimpleType = function (type) {
-      return function (value) {
-        return typeof value === type;
-      };
-    };
-    var isString = isType('string');
-    var isFunction = isSimpleType('function');
-
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    function curry(fn) {
-      var initialArgs = [];
-      for (var _i = 1; _i < arguments.length; _i++) {
-        initialArgs[_i - 1] = arguments[_i];
-      }
-      return function () {
-        var restArgs = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-          restArgs[_i] = arguments[_i];
-        }
-        var all = initialArgs.concat(restArgs);
-        return fn.apply(null, all);
-      };
-    }
-    var never = constant(false);
-    var always = constant(true);
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.util.XHR');
-
-    var getCreationDateClasses = function (editor) {
-      return editor.getParam('template_cdate_classes', 'cdate');
-    };
-    var getModificationDateClasses = function (editor) {
-      return editor.getParam('template_mdate_classes', 'mdate');
-    };
-    var getSelectedContentClasses = function (editor) {
-      return editor.getParam('template_selected_content_classes', 'selcontent');
-    };
-    var getPreviewReplaceValues = function (editor) {
-      return editor.getParam('template_preview_replace_values');
-    };
-    var getContentStyle = function (editor) {
-      return editor.getParam('content_style', '', 'string');
-    };
-    var shouldUseContentCssCors = function (editor) {
-      return editor.getParam('content_css_cors', false, 'boolean');
-    };
-    var getTemplateReplaceValues = function (editor) {
-      return editor.getParam('template_replace_values');
-    };
-    var getTemplates = function (editor) {
-      return editor.getParam('templates');
-    };
-    var getCdateFormat = function (editor) {
-      return editor.getParam('template_cdate_format', editor.translate('%Y-%m-%d'));
-    };
-    var getMdateFormat = function (editor) {
-      return editor.getParam('template_mdate_format', editor.translate('%Y-%m-%d'));
-    };
-    var getBodyClassFromHash = function (editor) {
-      var bodyClass = editor.getParam('body_class', '', 'hash');
-      return bodyClass[editor.id] || '';
-    };
-    var getBodyClass = function (editor) {
-      var bodyClass = editor.getParam('body_class', '', 'string');
-      if (bodyClass.indexOf('=') === -1) {
-        return bodyClass;
-      } else {
-        return getBodyClassFromHash(editor);
-      }
-    };
-
-    var addZeros = function (value, len) {
-      value = '' + value;
-      if (value.length < len) {
-        for (var i = 0; i < len - value.length; i++) {
-          value = '0' + value;
-        }
-      }
-      return value;
-    };
-    var getDateTime = function (editor, fmt, date) {
-      if (date === void 0) {
-        date = new Date();
-      }
-      var daysShort = 'Sun Mon Tue Wed Thu Fri Sat Sun'.split(' ');
-      var daysLong = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday'.split(' ');
-      var monthsShort = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
-      var monthsLong = 'January February March April May June July August September October November December'.split(' ');
-      fmt = fmt.replace('%D', '%m/%d/%Y');
-      fmt = fmt.replace('%r', '%I:%M:%S %p');
-      fmt = fmt.replace('%Y', '' + date.getFullYear());
-      fmt = fmt.replace('%y', '' + date.getYear());
-      fmt = fmt.replace('%m', addZeros(date.getMonth() + 1, 2));
-      fmt = fmt.replace('%d', addZeros(date.getDate(), 2));
-      fmt = fmt.replace('%H', '' + addZeros(date.getHours(), 2));
-      fmt = fmt.replace('%M', '' + addZeros(date.getMinutes(), 2));
-      fmt = fmt.replace('%S', '' + addZeros(date.getSeconds(), 2));
-      fmt = fmt.replace('%I', '' + ((date.getHours() + 11) % 12 + 1));
-      fmt = fmt.replace('%p', '' + (date.getHours() < 12 ? 'AM' : 'PM'));
-      fmt = fmt.replace('%B', '' + editor.translate(monthsLong[date.getMonth()]));
-      fmt = fmt.replace('%b', '' + editor.translate(monthsShort[date.getMonth()]));
-      fmt = fmt.replace('%A', '' + editor.translate(daysLong[date.getDay()]));
-      fmt = fmt.replace('%a', '' + editor.translate(daysShort[date.getDay()]));
-      fmt = fmt.replace('%%', '%');
-      return fmt;
-    };
-
-    var createTemplateList = function (editor, callback) {
-      return function () {
-        var templateList = getTemplates(editor);
-        if (isFunction(templateList)) {
-          templateList(callback);
-        } else if (isString(templateList)) {
-          global$2.send({
-            url: templateList,
-            success: function (text) {
-              callback(JSON.parse(text));
-            }
-          });
-        } else {
-          callback(templateList);
-        }
-      };
-    };
-    var replaceTemplateValues = function (html, templateValues) {
-      global$3.each(templateValues, function (v, k) {
-        if (isFunction(v)) {
-          v = v(k);
-        }
-        html = html.replace(new RegExp('\\{\\$' + k + '\\}', 'g'), v);
-      });
-      return html;
-    };
-    var replaceVals = function (editor, scope) {
-      var dom = editor.dom, vl = getTemplateReplaceValues(editor);
-      global$3.each(dom.select('*', scope), function (e) {
-        global$3.each(vl, function (v, k) {
-          if (dom.hasClass(e, k)) {
-            if (isFunction(v)) {
-              v(e);
-            }
-          }
-        });
-      });
-    };
-    var hasClass = function (n, c) {
-      return new RegExp('\\b' + c + '\\b', 'g').test(n.className);
-    };
-    var insertTemplate = function (editor, _ui, html) {
-      var dom = editor.dom;
-      var sel = editor.selection.getContent();
-      html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
-      var el = dom.create('div', null, html);
-      var n = dom.select('.mceTmpl', el);
-      if (n && n.length > 0) {
-        el = dom.create('div', null);
-        el.appendChild(n[0].cloneNode(true));
-      }
-      global$3.each(dom.select('*', el), function (n) {
-        if (hasClass(n, getCreationDateClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = getDateTime(editor, getCdateFormat(editor));
-        }
-        if (hasClass(n, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = getDateTime(editor, getMdateFormat(editor));
-        }
-        if (hasClass(n, getSelectedContentClasses(editor).replace(/\s+/g, '|'))) {
-          n.innerHTML = sel;
-        }
-      });
-      replaceVals(editor, el);
-      editor.execCommand('mceInsertContent', false, el.innerHTML);
-      editor.addVisual();
-    };
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var findUntil = function (xs, pred, until) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          return Optional.some(x);
-        } else if (until(x, i)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-    var find = function (xs, pred) {
-      return findUntil(xs, pred, never);
-    };
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Promise');
-
-    var hasOwnProperty = Object.hasOwnProperty;
-    var get = function (obj, key) {
-      return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
-    };
-    var has = function (obj, key) {
-      return hasOwnProperty.call(obj, key);
-    };
-
-    var entitiesAttr = {
-      '"': '&quot;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '&': '&amp;',
-      '\'': '&#039;'
-    };
-    var htmlEscape = function (html) {
-      return html.replace(/["'<>&]/g, function (match) {
-        return get(entitiesAttr, match).getOr(match);
-      });
-    };
-
-    var getPreviewContent = function (editor, html) {
-      if (html.indexOf('<html>') === -1) {
-        var contentCssEntries_1 = '';
-        var contentStyle = getContentStyle(editor);
-        var cors_1 = shouldUseContentCssCors(editor) ? ' crossorigin="anonymous"' : '';
-        global$3.each(editor.contentCSS, function (url) {
-          contentCssEntries_1 += '<link type="text/css" rel="stylesheet" href="' + editor.documentBaseURI.toAbsolute(url) + '"' + cors_1 + '>';
-        });
-        if (contentStyle) {
-          contentCssEntries_1 += '<style type="text/css">' + contentStyle + '</style>';
-        }
-        var bodyClass = getBodyClass(editor);
-        var encode = editor.dom.encode;
-        var isMetaKeyPressed = global$1.mac ? 'e.metaKey' : 'e.ctrlKey && !e.altKey';
-        var preventClicksOnLinksScript = '<script>' + 'document.addEventListener && document.addEventListener("click", function(e) {' + 'for (var elm = e.target; elm; elm = elm.parentNode) {' + 'if (elm.nodeName === "A" && !(' + isMetaKeyPressed + ')) {' + 'e.preventDefault();' + '}' + '}' + '}, false);' + '</script> ';
-        var directionality = editor.getBody().dir;
-        var dirAttr = directionality ? ' dir="' + encode(directionality) + '"' : '';
-        html = '<!DOCTYPE html>' + '<html>' + '<head>' + '<base href="' + encode(editor.documentBaseURI.getURI()) + '">' + contentCssEntries_1 + preventClicksOnLinksScript + '</head>' + '<body class="' + encode(bodyClass) + '"' + dirAttr + '>' + html + '</body>' + '</html>';
-      }
-      return replaceTemplateValues(html, getPreviewReplaceValues(editor));
-    };
-    var open = function (editor, templateList) {
-      var createTemplates = function () {
-        if (!templateList || templateList.length === 0) {
-          var message = editor.translate('No templates defined.');
-          editor.notificationManager.open({
-            text: message,
-            type: 'info'
-          });
-          return Optional.none();
-        }
-        return Optional.from(global$3.map(templateList, function (template, index) {
-          var isUrlTemplate = function (t) {
-            return t.url !== undefined;
-          };
-          return {
-            selected: index === 0,
-            text: template.title,
-            value: {
-              url: isUrlTemplate(template) ? Optional.from(template.url) : Optional.none(),
-              content: !isUrlTemplate(template) ? Optional.from(template.content) : Optional.none(),
-              description: template.description
-            }
-          };
-        }));
-      };
-      var createSelectBoxItems = function (templates) {
-        return map(templates, function (t) {
-          return {
-            text: t.text,
-            value: t.text
-          };
-        });
-      };
-      var findTemplate = function (templates, templateTitle) {
-        return find(templates, function (t) {
-          return t.text === templateTitle;
-        });
-      };
-      var loadFailedAlert = function (api) {
-        editor.windowManager.alert('Could not load the specified template.', function () {
-          return api.focus('template');
-        });
-      };
-      var getTemplateContent = function (t) {
-        return new global(function (resolve, reject) {
-          t.value.url.fold(function () {
-            return resolve(t.value.content.getOr(''));
-          }, function (url) {
-            return global$2.send({
-              url: url,
-              success: function (html) {
-                resolve(html);
-              },
-              error: function (e) {
-                reject(e);
-              }
-            });
-          });
-        });
-      };
-      var onChange = function (templates, updateDialog) {
-        return function (api, change) {
-          if (change.name === 'template') {
-            var newTemplateTitle = api.getData().template;
-            findTemplate(templates, newTemplateTitle).each(function (t) {
-              api.block('Loading...');
-              getTemplateContent(t).then(function (previewHtml) {
-                updateDialog(api, t, previewHtml);
-              }).catch(function () {
-                updateDialog(api, t, '');
-                api.disable('save');
-                loadFailedAlert(api);
-              });
-            });
-          }
-        };
-      };
-      var onSubmit = function (templates) {
-        return function (api) {
-          var data = api.getData();
-          findTemplate(templates, data.template).each(function (t) {
-            getTemplateContent(t).then(function (previewHtml) {
-              editor.execCommand('mceInsertTemplate', false, previewHtml);
-              api.close();
-            }).catch(function () {
-              api.disable('save');
-              loadFailedAlert(api);
-            });
-          });
-        };
-      };
-      var openDialog = function (templates) {
-        var selectBoxItems = createSelectBoxItems(templates);
-        var buildDialogSpec = function (bodyItems, initialData) {
-          return {
-            title: 'Insert Template',
-            size: 'large',
-            body: {
-              type: 'panel',
-              items: bodyItems
-            },
-            initialData: initialData,
-            buttons: [
-              {
-                type: 'cancel',
-                name: 'cancel',
-                text: 'Cancel'
-              },
-              {
-                type: 'submit',
-                name: 'save',
-                text: 'Save',
-                primary: true
-              }
-            ],
-            onSubmit: onSubmit(templates),
-            onChange: onChange(templates, updateDialog)
-          };
-        };
-        var updateDialog = function (dialogApi, template, previewHtml) {
-          var content = getPreviewContent(editor, previewHtml);
-          var bodyItems = [
-            {
-              type: 'selectbox',
-              name: 'template',
-              label: 'Templates',
-              items: selectBoxItems
-            },
-            {
-              type: 'htmlpanel',
-              html: '<p aria-live="polite">' + htmlEscape(template.value.description) + '</p>'
-            },
-            {
-              label: 'Preview',
-              type: 'iframe',
-              name: 'preview',
-              sandboxed: false
-            }
-          ];
-          var initialData = {
-            template: template.text,
-            preview: content
-          };
-          dialogApi.unblock();
-          dialogApi.redial(buildDialogSpec(bodyItems, initialData));
-          dialogApi.focus('template');
-        };
-        var dialogApi = editor.windowManager.open(buildDialogSpec([], {
-          template: '',
-          preview: ''
-        }));
-        dialogApi.block('Loading...');
-        getTemplateContent(templates[0]).then(function (previewHtml) {
-          updateDialog(dialogApi, templates[0], previewHtml);
-        }).catch(function () {
-          updateDialog(dialogApi, templates[0], '');
-          dialogApi.disable('save');
-          loadFailedAlert(dialogApi);
-        });
-      };
-      var optTemplates = createTemplates();
-      optTemplates.each(openDialog);
-    };
-
-    var showDialog = function (editor) {
-      return function (templates) {
-        open(editor, templates);
-      };
-    };
-    var register$1 = function (editor) {
-      editor.addCommand('mceInsertTemplate', curry(insertTemplate, editor));
-      editor.addCommand('mceTemplate', createTemplateList(editor, showDialog(editor)));
-    };
-
     var setup = function (editor) {
-      editor.on('PreProcess', function (o) {
-        var dom = editor.dom, dateFormat = getMdateFormat(editor);
-        global$3.each(dom.select('div', o.node), function (e) {
-          if (dom.hasClass(e, 'mceTmpl')) {
-            global$3.each(dom.select('*', e), function (e) {
-              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
-                e.innerHTML = getDateTime(editor, dateFormat);
+      var tabHandler = function (e) {
+        var x;
+        if (e.keyCode !== global.TAB || e.ctrlKey || e.altKey || e.metaKey || e.isDefaultPrevented()) {
+          return;
+        }
+        var find = function (direction) {
+          var el = DOM.select(':input:enabled,*[tabindex]:not(iframe)');
+          var canSelectRecursive = function (e) {
+            var castElem = e;
+            return e.nodeName === 'BODY' || castElem.type !== 'hidden' && castElem.style.display !== 'none' && castElem.style.visibility !== 'hidden' && canSelectRecursive(e.parentNode);
+          };
+          var canSelect = function (el) {
+            return /INPUT|TEXTAREA|BUTTON/.test(el.tagName) && global$4.get(e.id) && el.tabIndex !== -1 && canSelectRecursive(el);
+          };
+          global$1.each(el, function (e, i) {
+            if (e.id === editor.id) {
+              x = i;
+              return false;
+            }
+          });
+          if (direction > 0) {
+            for (var i = x + 1; i < el.length; i++) {
+              if (canSelect(el[i])) {
+                return el[i];
               }
-            });
-            replaceVals(editor, e);
+            }
+          } else {
+            for (var i = x - 1; i >= 0; i--) {
+              if (canSelect(el[i])) {
+                return el[i];
+              }
+            }
           }
-        });
-      });
-    };
-
-    var register = function (editor) {
-      var onAction = function () {
-        return editor.execCommand('mceTemplate');
+          return null;
+        };
+        var v = global$1.explode(getTabFocus(editor));
+        if (v.length === 1) {
+          v[1] = v[0];
+          v[0] = ':prev';
+        }
+        var el;
+        if (e.shiftKey) {
+          if (v[0] === ':prev') {
+            el = find(-1);
+          } else {
+            el = DOM.get(v[0]);
+          }
+        } else {
+          if (v[1] === ':next') {
+            el = find(1);
+          } else {
+            el = DOM.get(v[1]);
+          }
+        }
+        if (el) {
+          var focusEditor = global$4.get(el.id || el.name);
+          if (el.id && focusEditor) {
+            focusEditor.focus();
+          } else {
+            global$2.setTimeout(function () {
+              if (!global$3.webkit) {
+                window.focus();
+              }
+              el.focus();
+            }, 10);
+          }
+          e.preventDefault();
+        }
       };
-      editor.ui.registry.addButton('template', {
-        icon: 'template',
-        tooltip: 'Insert template',
-        onAction: onAction
-      });
-      editor.ui.registry.addMenuItem('template', {
-        icon: 'template',
-        text: 'Insert template...',
-        onAction: onAction
+      editor.on('init', function () {
+        if (editor.inline) {
+          DOM.setAttrib(editor.getBody(), 'tabIndex', null);
+        }
+        editor.on('keyup', tabCancel);
+        if (global$3.gecko) {
+          editor.on('keypress keydown', tabHandler);
+        } else {
+          editor.on('keydown', tabHandler);
+        }
       });
     };
 
     function Plugin () {
-      global$4.add('template', function (editor) {
-        register(editor);
-        register$1(editor);
+      global$6.add('tabfocus', function (editor) {
         setup(editor);
       });
     }
@@ -82521,10 +80554,1977 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
+    var global$4 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType('string');
+    var isFunction = isSimpleType('function');
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    function curry(fn) {
+      var initialArgs = [];
+      for (var _i = 1; _i < arguments.length; _i++) {
+        initialArgs[_i - 1] = arguments[_i];
+      }
+      return function () {
+        var restArgs = [];
+        for (var _i = 0; _i < arguments.length; _i++) {
+          restArgs[_i] = arguments[_i];
+        }
+        var all = initialArgs.concat(restArgs);
+        return fn.apply(null, all);
+      };
+    }
+    var never = constant(false);
+    var always = constant(true);
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.XHR');
+
+    var getCreationDateClasses = function (editor) {
+      return editor.getParam('template_cdate_classes', 'cdate');
+    };
+    var getModificationDateClasses = function (editor) {
+      return editor.getParam('template_mdate_classes', 'mdate');
+    };
+    var getSelectedContentClasses = function (editor) {
+      return editor.getParam('template_selected_content_classes', 'selcontent');
+    };
+    var getPreviewReplaceValues = function (editor) {
+      return editor.getParam('template_preview_replace_values');
+    };
+    var getContentStyle = function (editor) {
+      return editor.getParam('content_style', '', 'string');
+    };
+    var shouldUseContentCssCors = function (editor) {
+      return editor.getParam('content_css_cors', false, 'boolean');
+    };
+    var getTemplateReplaceValues = function (editor) {
+      return editor.getParam('template_replace_values');
+    };
+    var getTemplates = function (editor) {
+      return editor.getParam('templates');
+    };
+    var getCdateFormat = function (editor) {
+      return editor.getParam('template_cdate_format', editor.translate('%Y-%m-%d'));
+    };
+    var getMdateFormat = function (editor) {
+      return editor.getParam('template_mdate_format', editor.translate('%Y-%m-%d'));
+    };
+    var getBodyClassFromHash = function (editor) {
+      var bodyClass = editor.getParam('body_class', '', 'hash');
+      return bodyClass[editor.id] || '';
+    };
+    var getBodyClass = function (editor) {
+      var bodyClass = editor.getParam('body_class', '', 'string');
+      if (bodyClass.indexOf('=') === -1) {
+        return bodyClass;
+      } else {
+        return getBodyClassFromHash(editor);
+      }
+    };
+
+    var addZeros = function (value, len) {
+      value = '' + value;
+      if (value.length < len) {
+        for (var i = 0; i < len - value.length; i++) {
+          value = '0' + value;
+        }
+      }
+      return value;
+    };
+    var getDateTime = function (editor, fmt, date) {
+      if (date === void 0) {
+        date = new Date();
+      }
+      var daysShort = 'Sun Mon Tue Wed Thu Fri Sat Sun'.split(' ');
+      var daysLong = 'Sunday Monday Tuesday Wednesday Thursday Friday Saturday Sunday'.split(' ');
+      var monthsShort = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split(' ');
+      var monthsLong = 'January February March April May June July August September October November December'.split(' ');
+      fmt = fmt.replace('%D', '%m/%d/%Y');
+      fmt = fmt.replace('%r', '%I:%M:%S %p');
+      fmt = fmt.replace('%Y', '' + date.getFullYear());
+      fmt = fmt.replace('%y', '' + date.getYear());
+      fmt = fmt.replace('%m', addZeros(date.getMonth() + 1, 2));
+      fmt = fmt.replace('%d', addZeros(date.getDate(), 2));
+      fmt = fmt.replace('%H', '' + addZeros(date.getHours(), 2));
+      fmt = fmt.replace('%M', '' + addZeros(date.getMinutes(), 2));
+      fmt = fmt.replace('%S', '' + addZeros(date.getSeconds(), 2));
+      fmt = fmt.replace('%I', '' + ((date.getHours() + 11) % 12 + 1));
+      fmt = fmt.replace('%p', '' + (date.getHours() < 12 ? 'AM' : 'PM'));
+      fmt = fmt.replace('%B', '' + editor.translate(monthsLong[date.getMonth()]));
+      fmt = fmt.replace('%b', '' + editor.translate(monthsShort[date.getMonth()]));
+      fmt = fmt.replace('%A', '' + editor.translate(daysLong[date.getDay()]));
+      fmt = fmt.replace('%a', '' + editor.translate(daysShort[date.getDay()]));
+      fmt = fmt.replace('%%', '%');
+      return fmt;
+    };
+
+    var createTemplateList = function (editor, callback) {
+      return function () {
+        var templateList = getTemplates(editor);
+        if (isFunction(templateList)) {
+          templateList(callback);
+        } else if (isString(templateList)) {
+          global$2.send({
+            url: templateList,
+            success: function (text) {
+              callback(JSON.parse(text));
+            }
+          });
+        } else {
+          callback(templateList);
+        }
+      };
+    };
+    var replaceTemplateValues = function (html, templateValues) {
+      global$3.each(templateValues, function (v, k) {
+        if (isFunction(v)) {
+          v = v(k);
+        }
+        html = html.replace(new RegExp('\\{\\$' + k + '\\}', 'g'), v);
+      });
+      return html;
+    };
+    var replaceVals = function (editor, scope) {
+      var dom = editor.dom, vl = getTemplateReplaceValues(editor);
+      global$3.each(dom.select('*', scope), function (e) {
+        global$3.each(vl, function (v, k) {
+          if (dom.hasClass(e, k)) {
+            if (isFunction(v)) {
+              v(e);
+            }
+          }
+        });
+      });
+    };
+    var hasClass = function (n, c) {
+      return new RegExp('\\b' + c + '\\b', 'g').test(n.className);
+    };
+    var insertTemplate = function (editor, _ui, html) {
+      var dom = editor.dom;
+      var sel = editor.selection.getContent();
+      html = replaceTemplateValues(html, getTemplateReplaceValues(editor));
+      var el = dom.create('div', null, html);
+      var n = dom.select('.mceTmpl', el);
+      if (n && n.length > 0) {
+        el = dom.create('div', null);
+        el.appendChild(n[0].cloneNode(true));
+      }
+      global$3.each(dom.select('*', el), function (n) {
+        if (hasClass(n, getCreationDateClasses(editor).replace(/\s+/g, '|'))) {
+          n.innerHTML = getDateTime(editor, getCdateFormat(editor));
+        }
+        if (hasClass(n, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
+          n.innerHTML = getDateTime(editor, getMdateFormat(editor));
+        }
+        if (hasClass(n, getSelectedContentClasses(editor).replace(/\s+/g, '|'))) {
+          n.innerHTML = sel;
+        }
+      });
+      replaceVals(editor, el);
+      editor.execCommand('mceInsertContent', false, el.innerHTML);
+      editor.addVisual();
+    };
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var findUntil = function (xs, pred, until) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          return Optional.some(x);
+        } else if (until(x, i)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+    var find = function (xs, pred) {
+      return findUntil(xs, pred, never);
+    };
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Promise');
+
+    var hasOwnProperty = Object.hasOwnProperty;
+    var get = function (obj, key) {
+      return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
+    };
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+
+    var entitiesAttr = {
+      '"': '&quot;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '&': '&amp;',
+      '\'': '&#039;'
+    };
+    var htmlEscape = function (html) {
+      return html.replace(/["'<>&]/g, function (match) {
+        return get(entitiesAttr, match).getOr(match);
+      });
+    };
+
+    var getPreviewContent = function (editor, html) {
+      if (html.indexOf('<html>') === -1) {
+        var contentCssEntries_1 = '';
+        var contentStyle = getContentStyle(editor);
+        var cors_1 = shouldUseContentCssCors(editor) ? ' crossorigin="anonymous"' : '';
+        global$3.each(editor.contentCSS, function (url) {
+          contentCssEntries_1 += '<link type="text/css" rel="stylesheet" href="' + editor.documentBaseURI.toAbsolute(url) + '"' + cors_1 + '>';
+        });
+        if (contentStyle) {
+          contentCssEntries_1 += '<style type="text/css">' + contentStyle + '</style>';
+        }
+        var bodyClass = getBodyClass(editor);
+        var encode = editor.dom.encode;
+        var isMetaKeyPressed = global$1.mac ? 'e.metaKey' : 'e.ctrlKey && !e.altKey';
+        var preventClicksOnLinksScript = '<script>' + 'document.addEventListener && document.addEventListener("click", function(e) {' + 'for (var elm = e.target; elm; elm = elm.parentNode) {' + 'if (elm.nodeName === "A" && !(' + isMetaKeyPressed + ')) {' + 'e.preventDefault();' + '}' + '}' + '}, false);' + '</script> ';
+        var directionality = editor.getBody().dir;
+        var dirAttr = directionality ? ' dir="' + encode(directionality) + '"' : '';
+        html = '<!DOCTYPE html>' + '<html>' + '<head>' + '<base href="' + encode(editor.documentBaseURI.getURI()) + '">' + contentCssEntries_1 + preventClicksOnLinksScript + '</head>' + '<body class="' + encode(bodyClass) + '"' + dirAttr + '>' + html + '</body>' + '</html>';
+      }
+      return replaceTemplateValues(html, getPreviewReplaceValues(editor));
+    };
+    var open = function (editor, templateList) {
+      var createTemplates = function () {
+        if (!templateList || templateList.length === 0) {
+          var message = editor.translate('No templates defined.');
+          editor.notificationManager.open({
+            text: message,
+            type: 'info'
+          });
+          return Optional.none();
+        }
+        return Optional.from(global$3.map(templateList, function (template, index) {
+          var isUrlTemplate = function (t) {
+            return t.url !== undefined;
+          };
+          return {
+            selected: index === 0,
+            text: template.title,
+            value: {
+              url: isUrlTemplate(template) ? Optional.from(template.url) : Optional.none(),
+              content: !isUrlTemplate(template) ? Optional.from(template.content) : Optional.none(),
+              description: template.description
+            }
+          };
+        }));
+      };
+      var createSelectBoxItems = function (templates) {
+        return map(templates, function (t) {
+          return {
+            text: t.text,
+            value: t.text
+          };
+        });
+      };
+      var findTemplate = function (templates, templateTitle) {
+        return find(templates, function (t) {
+          return t.text === templateTitle;
+        });
+      };
+      var loadFailedAlert = function (api) {
+        editor.windowManager.alert('Could not load the specified template.', function () {
+          return api.focus('template');
+        });
+      };
+      var getTemplateContent = function (t) {
+        return new global(function (resolve, reject) {
+          t.value.url.fold(function () {
+            return resolve(t.value.content.getOr(''));
+          }, function (url) {
+            return global$2.send({
+              url: url,
+              success: function (html) {
+                resolve(html);
+              },
+              error: function (e) {
+                reject(e);
+              }
+            });
+          });
+        });
+      };
+      var onChange = function (templates, updateDialog) {
+        return function (api, change) {
+          if (change.name === 'template') {
+            var newTemplateTitle = api.getData().template;
+            findTemplate(templates, newTemplateTitle).each(function (t) {
+              api.block('Loading...');
+              getTemplateContent(t).then(function (previewHtml) {
+                updateDialog(api, t, previewHtml);
+              }).catch(function () {
+                updateDialog(api, t, '');
+                api.disable('save');
+                loadFailedAlert(api);
+              });
+            });
+          }
+        };
+      };
+      var onSubmit = function (templates) {
+        return function (api) {
+          var data = api.getData();
+          findTemplate(templates, data.template).each(function (t) {
+            getTemplateContent(t).then(function (previewHtml) {
+              editor.execCommand('mceInsertTemplate', false, previewHtml);
+              api.close();
+            }).catch(function () {
+              api.disable('save');
+              loadFailedAlert(api);
+            });
+          });
+        };
+      };
+      var openDialog = function (templates) {
+        var selectBoxItems = createSelectBoxItems(templates);
+        var buildDialogSpec = function (bodyItems, initialData) {
+          return {
+            title: 'Insert Template',
+            size: 'large',
+            body: {
+              type: 'panel',
+              items: bodyItems
+            },
+            initialData: initialData,
+            buttons: [
+              {
+                type: 'cancel',
+                name: 'cancel',
+                text: 'Cancel'
+              },
+              {
+                type: 'submit',
+                name: 'save',
+                text: 'Save',
+                primary: true
+              }
+            ],
+            onSubmit: onSubmit(templates),
+            onChange: onChange(templates, updateDialog)
+          };
+        };
+        var updateDialog = function (dialogApi, template, previewHtml) {
+          var content = getPreviewContent(editor, previewHtml);
+          var bodyItems = [
+            {
+              type: 'selectbox',
+              name: 'template',
+              label: 'Templates',
+              items: selectBoxItems
+            },
+            {
+              type: 'htmlpanel',
+              html: '<p aria-live="polite">' + htmlEscape(template.value.description) + '</p>'
+            },
+            {
+              label: 'Preview',
+              type: 'iframe',
+              name: 'preview',
+              sandboxed: false
+            }
+          ];
+          var initialData = {
+            template: template.text,
+            preview: content
+          };
+          dialogApi.unblock();
+          dialogApi.redial(buildDialogSpec(bodyItems, initialData));
+          dialogApi.focus('template');
+        };
+        var dialogApi = editor.windowManager.open(buildDialogSpec([], {
+          template: '',
+          preview: ''
+        }));
+        dialogApi.block('Loading...');
+        getTemplateContent(templates[0]).then(function (previewHtml) {
+          updateDialog(dialogApi, templates[0], previewHtml);
+        }).catch(function () {
+          updateDialog(dialogApi, templates[0], '');
+          dialogApi.disable('save');
+          loadFailedAlert(dialogApi);
+        });
+      };
+      var optTemplates = createTemplates();
+      optTemplates.each(openDialog);
+    };
+
+    var showDialog = function (editor) {
+      return function (templates) {
+        open(editor, templates);
+      };
+    };
+    var register$1 = function (editor) {
+      editor.addCommand('mceInsertTemplate', curry(insertTemplate, editor));
+      editor.addCommand('mceTemplate', createTemplateList(editor, showDialog(editor)));
+    };
+
+    var setup = function (editor) {
+      editor.on('PreProcess', function (o) {
+        var dom = editor.dom, dateFormat = getMdateFormat(editor);
+        global$3.each(dom.select('div', o.node), function (e) {
+          if (dom.hasClass(e, 'mceTmpl')) {
+            global$3.each(dom.select('*', e), function (e) {
+              if (dom.hasClass(e, getModificationDateClasses(editor).replace(/\s+/g, '|'))) {
+                e.innerHTML = getDateTime(editor, dateFormat);
+              }
+            });
+            replaceVals(editor, e);
+          }
+        });
+      });
+    };
+
+    var register = function (editor) {
+      var onAction = function () {
+        return editor.execCommand('mceTemplate');
+      };
+      editor.ui.registry.addButton('template', {
+        icon: 'template',
+        tooltip: 'Insert template',
+        onAction: onAction
+      });
+      editor.ui.registry.addMenuItem('template', {
+        icon: 'template',
+        text: 'Insert template...',
+        onAction: onAction
+      });
+    };
+
+    function Plugin () {
+      global$4.add('template', function (editor) {
+        register(editor);
+        register$1(editor);
+        setup(editor);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
     var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     function Plugin () {
       global.add('textcolor', function () {
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
+
+    var global$5 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s)
+            if (Object.prototype.hasOwnProperty.call(s, p))
+              t[p] = s[p];
+        }
+        return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+    function __spreadArray(to, from, pack) {
+      if (pack || arguments.length === 2)
+        for (var i = 0, l = from.length, ar; i < l; i++) {
+          if (ar || !(i in from)) {
+            if (!ar)
+              ar = Array.prototype.slice.call(from, 0, i);
+            ar[i] = from[i];
+          }
+        }
+      return to.concat(ar || Array.prototype.slice.call(from));
+    }
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isString = isType('string');
+    var isObject = isType('object');
+    var isArray = isType('array');
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var die = function (msg) {
+      return function () {
+        throw new Error(msg);
+      };
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var nativeSlice = Array.prototype.slice;
+    var nativeIndexOf = Array.prototype.indexOf;
+    var rawIndexOf = function (ts, t) {
+      return nativeIndexOf.call(ts, t);
+    };
+    var contains = function (xs, x) {
+      return rawIndexOf(xs, x) > -1;
+    };
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var each = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var eachr = function (xs, f) {
+      for (var i = xs.length - 1; i >= 0; i--) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var filter = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
+    };
+    var foldr = function (xs, f, acc) {
+      eachr(xs, function (x, i) {
+        acc = f(acc, x, i);
+      });
+      return acc;
+    };
+    var foldl = function (xs, f, acc) {
+      each(xs, function (x, i) {
+        acc = f(acc, x, i);
+      });
+      return acc;
+    };
+    var findUntil = function (xs, pred, until) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          return Optional.some(x);
+        } else if (until(x, i)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+    var find = function (xs, pred) {
+      return findUntil(xs, pred, never);
+    };
+    var forall = function (xs, pred) {
+      for (var i = 0, len = xs.length; i < len; ++i) {
+        var x = xs[i];
+        if (pred(x, i) !== true) {
+          return false;
+        }
+      }
+      return true;
+    };
+    var sort = function (xs, comparator) {
+      var copy = nativeSlice.call(xs, 0);
+      copy.sort(comparator);
+      return copy;
+    };
+    var get$1 = function (xs, i) {
+      return i >= 0 && i < xs.length ? Optional.some(xs[i]) : Optional.none();
+    };
+    var head = function (xs) {
+      return get$1(xs, 0);
+    };
+
+    var keys = Object.keys;
+    var hasOwnProperty = Object.hasOwnProperty;
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+
+    var generate$1 = function (cases) {
+      if (!isArray(cases)) {
+        throw new Error('cases must be an array');
+      }
+      if (cases.length === 0) {
+        throw new Error('there must be at least one case');
+      }
+      var constructors = [];
+      var adt = {};
+      each(cases, function (acase, count) {
+        var keys$1 = keys(acase);
+        if (keys$1.length !== 1) {
+          throw new Error('one and only one name per case');
+        }
+        var key = keys$1[0];
+        var value = acase[key];
+        if (adt[key] !== undefined) {
+          throw new Error('duplicate key detected:' + key);
+        } else if (key === 'cata') {
+          throw new Error('cannot have a case named cata (sorry)');
+        } else if (!isArray(value)) {
+          throw new Error('case arguments must be an array');
+        }
+        constructors.push(key);
+        adt[key] = function () {
+          var args = [];
+          for (var _i = 0; _i < arguments.length; _i++) {
+            args[_i] = arguments[_i];
+          }
+          var argLength = args.length;
+          if (argLength !== value.length) {
+            throw new Error('Wrong number of arguments to case ' + key + '. Expected ' + value.length + ' (' + value + '), got ' + argLength);
+          }
+          var match = function (branches) {
+            var branchKeys = keys(branches);
+            if (constructors.length !== branchKeys.length) {
+              throw new Error('Wrong number of arguments to match. Expected: ' + constructors.join(',') + '\nActual: ' + branchKeys.join(','));
+            }
+            var allReqd = forall(constructors, function (reqKey) {
+              return contains(branchKeys, reqKey);
+            });
+            if (!allReqd) {
+              throw new Error('Not all branches were specified when using match. Specified: ' + branchKeys.join(', ') + '\nRequired: ' + constructors.join(', '));
+            }
+            return branches[key].apply(null, args);
+          };
+          return {
+            fold: function () {
+              var foldArgs = [];
+              for (var _i = 0; _i < arguments.length; _i++) {
+                foldArgs[_i] = arguments[_i];
+              }
+              if (foldArgs.length !== cases.length) {
+                throw new Error('Wrong number of arguments to fold. Expected ' + cases.length + ', got ' + foldArgs.length);
+              }
+              var target = foldArgs[count];
+              return target.apply(null, args);
+            },
+            match: match,
+            log: function (label) {
+              console.log(label, {
+                constructors: constructors,
+                constructor: key,
+                params: args
+              });
+            }
+          };
+        };
+      });
+      return adt;
+    };
+    var Adt = { generate: generate$1 };
+
+    Adt.generate([
+      {
+        bothErrors: [
+          'error1',
+          'error2'
+        ]
+      },
+      {
+        firstError: [
+          'error1',
+          'value2'
+        ]
+      },
+      {
+        secondError: [
+          'value1',
+          'error2'
+        ]
+      },
+      {
+        bothValues: [
+          'value1',
+          'value2'
+        ]
+      }
+    ]);
+    var partition = function (results) {
+      var errors = [];
+      var values = [];
+      each(results, function (result) {
+        result.fold(function (err) {
+          errors.push(err);
+        }, function (value) {
+          values.push(value);
+        });
+      });
+      return {
+        errors: errors,
+        values: values
+      };
+    };
+
+    var value = function (o) {
+      var or = function (_opt) {
+        return value(o);
+      };
+      var orThunk = function (_f) {
+        return value(o);
+      };
+      var map = function (f) {
+        return value(f(o));
+      };
+      var mapError = function (_f) {
+        return value(o);
+      };
+      var each = function (f) {
+        f(o);
+      };
+      var bind = function (f) {
+        return f(o);
+      };
+      var fold = function (_, onValue) {
+        return onValue(o);
+      };
+      var exists = function (f) {
+        return f(o);
+      };
+      var forall = function (f) {
+        return f(o);
+      };
+      var toOptional = function () {
+        return Optional.some(o);
+      };
+      return {
+        isValue: always,
+        isError: never,
+        getOr: constant(o),
+        getOrThunk: constant(o),
+        getOrDie: constant(o),
+        or: or,
+        orThunk: orThunk,
+        fold: fold,
+        map: map,
+        mapError: mapError,
+        each: each,
+        bind: bind,
+        exists: exists,
+        forall: forall,
+        toOptional: toOptional
+      };
+    };
+    var error$1 = function (message) {
+      var getOrThunk = function (f) {
+        return f();
+      };
+      var getOrDie = function () {
+        return die(String(message))();
+      };
+      var or = identity;
+      var orThunk = function (f) {
+        return f();
+      };
+      var map = function (_f) {
+        return error$1(message);
+      };
+      var mapError = function (f) {
+        return error$1(f(message));
+      };
+      var bind = function (_f) {
+        return error$1(message);
+      };
+      var fold = function (onError, _) {
+        return onError(message);
+      };
+      return {
+        isValue: never,
+        isError: always,
+        getOr: identity,
+        getOrThunk: getOrThunk,
+        getOrDie: getOrDie,
+        or: or,
+        orThunk: orThunk,
+        fold: fold,
+        map: map,
+        mapError: mapError,
+        each: noop,
+        bind: bind,
+        exists: never,
+        forall: always,
+        toOptional: Optional.none
+      };
+    };
+    var fromOption = function (opt, err) {
+      return opt.fold(function () {
+        return error$1(err);
+      }, value);
+    };
+    var Result = {
+      value: value,
+      error: error$1,
+      fromOption: fromOption
+    };
+
+    var isInlinePattern = function (pattern) {
+      return pattern.type === 'inline-command' || pattern.type === 'inline-format';
+    };
+    var isBlockPattern = function (pattern) {
+      return pattern.type === 'block-command' || pattern.type === 'block-format';
+    };
+    var sortPatterns = function (patterns) {
+      return sort(patterns, function (a, b) {
+        if (a.start.length === b.start.length) {
+          return 0;
+        }
+        return a.start.length > b.start.length ? -1 : 1;
+      });
+    };
+    var normalizePattern = function (pattern) {
+      var err = function (message) {
+        return Result.error({
+          message: message,
+          pattern: pattern
+        });
+      };
+      var formatOrCmd = function (name, onFormat, onCommand) {
+        if (pattern.format !== undefined) {
+          var formats = void 0;
+          if (isArray(pattern.format)) {
+            if (!forall(pattern.format, isString)) {
+              return err(name + ' pattern has non-string items in the `format` array');
+            }
+            formats = pattern.format;
+          } else if (isString(pattern.format)) {
+            formats = [pattern.format];
+          } else {
+            return err(name + ' pattern has non-string `format` parameter');
+          }
+          return Result.value(onFormat(formats));
+        } else if (pattern.cmd !== undefined) {
+          if (!isString(pattern.cmd)) {
+            return err(name + ' pattern has non-string `cmd` parameter');
+          }
+          return Result.value(onCommand(pattern.cmd, pattern.value));
+        } else {
+          return err(name + ' pattern is missing both `format` and `cmd` parameters');
+        }
+      };
+      if (!isObject(pattern)) {
+        return err('Raw pattern is not an object');
+      }
+      if (!isString(pattern.start)) {
+        return err('Raw pattern is missing `start` parameter');
+      }
+      if (pattern.end !== undefined) {
+        if (!isString(pattern.end)) {
+          return err('Inline pattern has non-string `end` parameter');
+        }
+        if (pattern.start.length === 0 && pattern.end.length === 0) {
+          return err('Inline pattern has empty `start` and `end` parameters');
+        }
+        var start_1 = pattern.start;
+        var end_1 = pattern.end;
+        if (end_1.length === 0) {
+          end_1 = start_1;
+          start_1 = '';
+        }
+        return formatOrCmd('Inline', function (format) {
+          return {
+            type: 'inline-format',
+            start: start_1,
+            end: end_1,
+            format: format
+          };
+        }, function (cmd, value) {
+          return {
+            type: 'inline-command',
+            start: start_1,
+            end: end_1,
+            cmd: cmd,
+            value: value
+          };
+        });
+      } else if (pattern.replacement !== undefined) {
+        if (!isString(pattern.replacement)) {
+          return err('Replacement pattern has non-string `replacement` parameter');
+        }
+        if (pattern.start.length === 0) {
+          return err('Replacement pattern has empty `start` parameter');
+        }
+        return Result.value({
+          type: 'inline-command',
+          start: '',
+          end: pattern.start,
+          cmd: 'mceInsertContent',
+          value: pattern.replacement
+        });
+      } else {
+        if (pattern.start.length === 0) {
+          return err('Block pattern has empty `start` parameter');
+        }
+        return formatOrCmd('Block', function (formats) {
+          return {
+            type: 'block-format',
+            start: pattern.start,
+            format: formats[0]
+          };
+        }, function (command, commandValue) {
+          return {
+            type: 'block-command',
+            start: pattern.start,
+            cmd: command,
+            value: commandValue
+          };
+        });
+      }
+    };
+    var denormalizePattern = function (pattern) {
+      if (pattern.type === 'block-command') {
+        return {
+          start: pattern.start,
+          cmd: pattern.cmd,
+          value: pattern.value
+        };
+      } else if (pattern.type === 'block-format') {
+        return {
+          start: pattern.start,
+          format: pattern.format
+        };
+      } else if (pattern.type === 'inline-command') {
+        if (pattern.cmd === 'mceInsertContent' && pattern.start === '') {
+          return {
+            start: pattern.end,
+            replacement: pattern.value
+          };
+        } else {
+          return {
+            start: pattern.start,
+            end: pattern.end,
+            cmd: pattern.cmd,
+            value: pattern.value
+          };
+        }
+      } else if (pattern.type === 'inline-format') {
+        return {
+          start: pattern.start,
+          end: pattern.end,
+          format: pattern.format.length === 1 ? pattern.format[0] : pattern.format
+        };
+      }
+    };
+    var createPatternSet = function (patterns) {
+      return {
+        inlinePatterns: filter(patterns, isInlinePattern),
+        blockPatterns: sortPatterns(filter(patterns, isBlockPattern))
+      };
+    };
+
+    var get = function (patternsState) {
+      var setPatterns = function (newPatterns) {
+        var normalized = partition(map(newPatterns, normalizePattern));
+        if (normalized.errors.length > 0) {
+          var firstError = normalized.errors[0];
+          throw new Error(firstError.message + ':\n' + JSON.stringify(firstError.pattern, null, 2));
+        }
+        patternsState.set(createPatternSet(normalized.values));
+      };
+      var getPatterns = function () {
+        return __spreadArray(__spreadArray([], map(patternsState.get().inlinePatterns, denormalizePattern), true), map(patternsState.get().blockPatterns, denormalizePattern), true);
+      };
+      return {
+        setPatterns: setPatterns,
+        getPatterns: getPatterns
+      };
+    };
+
+    var Global = typeof window !== 'undefined' ? window : Function('return this;')();
+
+    var error = function () {
+      var args = [];
+      for (var _i = 0; _i < arguments.length; _i++) {
+        args[_i] = arguments[_i];
+      }
+      var console = Global.console;
+      if (console) {
+        if (console.error) {
+          console.error.apply(console, args);
+        } else {
+          console.log.apply(console, args);
+        }
+      }
+    };
+    var defaultPatterns = [
+      {
+        start: '*',
+        end: '*',
+        format: 'italic'
+      },
+      {
+        start: '**',
+        end: '**',
+        format: 'bold'
+      },
+      {
+        start: '#',
+        format: 'h1'
+      },
+      {
+        start: '##',
+        format: 'h2'
+      },
+      {
+        start: '###',
+        format: 'h3'
+      },
+      {
+        start: '####',
+        format: 'h4'
+      },
+      {
+        start: '#####',
+        format: 'h5'
+      },
+      {
+        start: '######',
+        format: 'h6'
+      },
+      {
+        start: '1. ',
+        cmd: 'InsertOrderedList'
+      },
+      {
+        start: '* ',
+        cmd: 'InsertUnorderedList'
+      },
+      {
+        start: '- ',
+        cmd: 'InsertUnorderedList'
+      }
+    ];
+    var getPatternSet = function (editor) {
+      var patterns = editor.getParam('textpattern_patterns', defaultPatterns, 'array');
+      if (!isArray(patterns)) {
+        error('The setting textpattern_patterns should be an array');
+        return {
+          inlinePatterns: [],
+          blockPatterns: []
+        };
+      }
+      var normalized = partition(map(patterns, normalizePattern));
+      each(normalized.errors, function (err) {
+        return error(err.message, err.pattern);
+      });
+      return createPatternSet(normalized.values);
+    };
+    var getForcedRootBlock = function (editor) {
+      var block = editor.getParam('forced_root_block', 'p');
+      if (block === false) {
+        return '';
+      } else if (block === true) {
+        return 'p';
+      } else {
+        return block;
+      }
+    };
+
+    var global$4 = tinymce.util.Tools.resolve('tinymce.util.Delay');
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.util.VK');
+
+    var zeroWidth = '\uFEFF';
+    var nbsp = '\xA0';
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.dom.DOMUtils');
+
+    var global = tinymce.util.Tools.resolve('tinymce.dom.TextSeeker');
+
+    var point = function (container, offset) {
+      return {
+        container: container,
+        offset: offset
+      };
+    };
+
+    var isText = function (node) {
+      return node.nodeType === Node.TEXT_NODE;
+    };
+    var cleanEmptyNodes = function (dom, node, isRoot) {
+      if (node && dom.isEmpty(node) && !isRoot(node)) {
+        var parent_1 = node.parentNode;
+        dom.remove(node);
+        cleanEmptyNodes(dom, parent_1, isRoot);
+      }
+    };
+    var deleteRng = function (dom, rng, isRoot, clean) {
+      if (clean === void 0) {
+        clean = true;
+      }
+      var startParent = rng.startContainer.parentNode;
+      var endParent = rng.endContainer.parentNode;
+      rng.deleteContents();
+      if (clean && !isRoot(rng.startContainer)) {
+        if (isText(rng.startContainer) && rng.startContainer.data.length === 0) {
+          dom.remove(rng.startContainer);
+        }
+        if (isText(rng.endContainer) && rng.endContainer.data.length === 0) {
+          dom.remove(rng.endContainer);
+        }
+        cleanEmptyNodes(dom, startParent, isRoot);
+        if (startParent !== endParent) {
+          cleanEmptyNodes(dom, endParent, isRoot);
+        }
+      }
+    };
+    var isBlockFormatName = function (name, formatter) {
+      var formatSet = formatter.get(name);
+      return isArray(formatSet) && head(formatSet).exists(function (format) {
+        return has(format, 'block');
+      });
+    };
+    var isReplacementPattern = function (pattern) {
+      return pattern.start.length === 0;
+    };
+    var getParentBlock = function (editor, rng) {
+      var parentBlockOpt = Optional.from(editor.dom.getParent(rng.startContainer, editor.dom.isBlock));
+      if (getForcedRootBlock(editor) === '') {
+        return parentBlockOpt.orThunk(function () {
+          return Optional.some(editor.getBody());
+        });
+      } else {
+        return parentBlockOpt;
+      }
+    };
+
+    var DOM = global$1.DOM;
+    var alwaysNext = function (startNode) {
+      return function (node) {
+        return startNode === node ? -1 : 0;
+      };
+    };
+    var isBoundary = function (dom) {
+      return function (node) {
+        return dom.isBlock(node) || contains([
+          'BR',
+          'IMG',
+          'HR',
+          'INPUT'
+        ], node.nodeName) || dom.getContentEditable(node) === 'false';
+      };
+    };
+    var textBefore = function (node, offset, rootNode) {
+      if (isText(node) && offset >= 0) {
+        return Optional.some(point(node, offset));
+      } else {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
+          return point(prev.container, prev.container.data.length);
+        });
+      }
+    };
+    var textAfter = function (node, offset, rootNode) {
+      if (isText(node) && offset >= node.length) {
+        return Optional.some(point(node, offset));
+      } else {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).map(function (prev) {
+          return point(prev.container, 0);
+        });
+      }
+    };
+    var scanLeft = function (node, offset, rootNode) {
+      if (!isText(node)) {
+        return Optional.none();
+      }
+      var text = node.textContent;
+      if (offset >= 0 && offset <= text.length) {
+        return Optional.some(point(node, offset));
+      } else {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.backwards(node, offset, alwaysNext(node), rootNode)).bind(function (prev) {
+          var prevText = prev.container.data;
+          return scanLeft(prev.container, offset + prevText.length, rootNode);
+        });
+      }
+    };
+    var scanRight = function (node, offset, rootNode) {
+      if (!isText(node)) {
+        return Optional.none();
+      }
+      var text = node.textContent;
+      if (offset <= text.length) {
+        return Optional.some(point(node, offset));
+      } else {
+        var textSeeker = global(DOM);
+        return Optional.from(textSeeker.forwards(node, offset, alwaysNext(node), rootNode)).bind(function (next) {
+          return scanRight(next.container, offset - text.length, rootNode);
+        });
+      }
+    };
+    var repeatLeft = function (dom, node, offset, process, rootNode) {
+      var search = global(dom, isBoundary(dom));
+      return Optional.from(search.backwards(node, offset, process, rootNode));
+    };
+
+    var generatePath = function (root, node, offset) {
+      if (isText(node) && (offset < 0 || offset > node.data.length)) {
+        return [];
+      }
+      var p = [offset];
+      var current = node;
+      while (current !== root && current.parentNode) {
+        var parent_1 = current.parentNode;
+        for (var i = 0; i < parent_1.childNodes.length; i++) {
+          if (parent_1.childNodes[i] === current) {
+            p.push(i);
+            break;
+          }
+        }
+        current = parent_1;
+      }
+      return current === root ? p.reverse() : [];
+    };
+    var generatePathRange = function (root, startNode, startOffset, endNode, endOffset) {
+      var start = generatePath(root, startNode, startOffset);
+      var end = generatePath(root, endNode, endOffset);
+      return {
+        start: start,
+        end: end
+      };
+    };
+    var resolvePath = function (root, path) {
+      var nodePath = path.slice();
+      var offset = nodePath.pop();
+      var resolvedNode = foldl(nodePath, function (optNode, index) {
+        return optNode.bind(function (node) {
+          return Optional.from(node.childNodes[index]);
+        });
+      }, Optional.some(root));
+      return resolvedNode.bind(function (node) {
+        if (isText(node) && (offset < 0 || offset > node.data.length)) {
+          return Optional.none();
+        } else {
+          return Optional.some({
+            node: node,
+            offset: offset
+          });
+        }
+      });
+    };
+    var resolvePathRange = function (root, range) {
+      return resolvePath(root, range.start).bind(function (_a) {
+        var startNode = _a.node, startOffset = _a.offset;
+        return resolvePath(root, range.end).map(function (_a) {
+          var endNode = _a.node, endOffset = _a.offset;
+          var rng = document.createRange();
+          rng.setStart(startNode, startOffset);
+          rng.setEnd(endNode, endOffset);
+          return rng;
+        });
+      });
+    };
+    var generatePathRangeFromRange = function (root, range) {
+      return generatePathRange(root, range.startContainer, range.startOffset, range.endContainer, range.endOffset);
+    };
+
+    var stripPattern = function (dom, block, pattern) {
+      var firstTextNode = textAfter(block, 0, block);
+      firstTextNode.each(function (spot) {
+        var node = spot.container;
+        scanRight(node, pattern.start.length, block).each(function (end) {
+          var rng = dom.createRng();
+          rng.setStart(node, 0);
+          rng.setEnd(end.container, end.offset);
+          deleteRng(dom, rng, function (e) {
+            return e === block;
+          });
+        });
+      });
+    };
+    var applyPattern$1 = function (editor, match) {
+      var dom = editor.dom;
+      var pattern = match.pattern;
+      var rng = resolvePathRange(dom.getRoot(), match.range).getOrDie('Unable to resolve path range');
+      getParentBlock(editor, rng).each(function (block) {
+        if (pattern.type === 'block-format') {
+          if (isBlockFormatName(pattern.format, editor.formatter)) {
+            editor.undoManager.transact(function () {
+              stripPattern(editor.dom, block, pattern);
+              editor.formatter.apply(pattern.format);
+            });
+          }
+        } else if (pattern.type === 'block-command') {
+          editor.undoManager.transact(function () {
+            stripPattern(editor.dom, block, pattern);
+            editor.execCommand(pattern.cmd, false, pattern.value);
+          });
+        }
+      });
+      return true;
+    };
+    var findPattern$1 = function (patterns, text) {
+      var nuText = text.replace(nbsp, ' ');
+      return find(patterns, function (pattern) {
+        return text.indexOf(pattern.start) === 0 || nuText.indexOf(pattern.start) === 0;
+      });
+    };
+    var findPatterns$1 = function (editor, patterns) {
+      var dom = editor.dom;
+      var rng = editor.selection.getRng();
+      return getParentBlock(editor, rng).filter(function (block) {
+        var forcedRootBlock = getForcedRootBlock(editor);
+        var matchesForcedRootBlock = forcedRootBlock === '' && dom.is(block, 'body') || dom.is(block, forcedRootBlock);
+        return block !== null && matchesForcedRootBlock;
+      }).bind(function (block) {
+        var blockText = block.textContent;
+        var matchedPattern = findPattern$1(patterns, blockText);
+        return matchedPattern.map(function (pattern) {
+          if (global$2.trim(blockText).length === pattern.start.length) {
+            return [];
+          }
+          return [{
+              pattern: pattern,
+              range: generatePathRange(dom.getRoot(), block, 0, block, 0)
+            }];
+        });
+      }).getOr([]);
+    };
+    var applyMatches$1 = function (editor, matches) {
+      if (matches.length === 0) {
+        return;
+      }
+      var bookmark = editor.selection.getBookmark();
+      each(matches, function (match) {
+        return applyPattern$1(editor, match);
+      });
+      editor.selection.moveToBookmark(bookmark);
+    };
+
+    var unique = 0;
+    var generate = function (prefix) {
+      var date = new Date();
+      var time = date.getTime();
+      var random = Math.floor(Math.random() * 1000000000);
+      unique++;
+      return prefix + '_' + random + unique + String(time);
+    };
+
+    var checkRange = function (str, substr, start) {
+      return substr === '' || str.length >= substr.length && str.substr(start, start + substr.length) === substr;
+    };
+    var endsWith = function (str, suffix) {
+      return checkRange(str, suffix, str.length - suffix.length);
+    };
+
+    var newMarker = function (dom, id) {
+      return dom.create('span', {
+        'data-mce-type': 'bookmark',
+        id: id
+      });
+    };
+    var rangeFromMarker = function (dom, marker) {
+      var rng = dom.createRng();
+      rng.setStartAfter(marker.start);
+      rng.setEndBefore(marker.end);
+      return rng;
+    };
+    var createMarker = function (dom, markerPrefix, pathRange) {
+      var rng = resolvePathRange(dom.getRoot(), pathRange).getOrDie('Unable to resolve path range');
+      var startNode = rng.startContainer;
+      var endNode = rng.endContainer;
+      var textEnd = rng.endOffset === 0 ? endNode : endNode.splitText(rng.endOffset);
+      var textStart = rng.startOffset === 0 ? startNode : startNode.splitText(rng.startOffset);
+      return {
+        prefix: markerPrefix,
+        end: textEnd.parentNode.insertBefore(newMarker(dom, markerPrefix + '-end'), textEnd),
+        start: textStart.parentNode.insertBefore(newMarker(dom, markerPrefix + '-start'), textStart)
+      };
+    };
+    var removeMarker = function (dom, marker, isRoot) {
+      cleanEmptyNodes(dom, dom.get(marker.prefix + '-end'), isRoot);
+      cleanEmptyNodes(dom, dom.get(marker.prefix + '-start'), isRoot);
+    };
+
+    var matchesPattern = function (dom, block, patternContent) {
+      return function (element, offset) {
+        var text = element.data;
+        var searchText = text.substring(0, offset);
+        var startEndIndex = searchText.lastIndexOf(patternContent.charAt(patternContent.length - 1));
+        var startIndex = searchText.lastIndexOf(patternContent);
+        if (startIndex !== -1) {
+          return startIndex + patternContent.length;
+        } else if (startEndIndex !== -1) {
+          return startEndIndex + 1;
+        } else {
+          return -1;
+        }
+      };
+    };
+    var findPatternStartFromSpot = function (dom, pattern, block, spot) {
+      var startPattern = pattern.start;
+      var startSpot = repeatLeft(dom, spot.container, spot.offset, matchesPattern(dom, block, startPattern), block);
+      return startSpot.bind(function (spot) {
+        if (spot.offset >= startPattern.length) {
+          var rng = dom.createRng();
+          rng.setStart(spot.container, spot.offset - startPattern.length);
+          rng.setEnd(spot.container, spot.offset);
+          return Optional.some(rng);
+        } else {
+          var offset = spot.offset - startPattern.length;
+          return scanLeft(spot.container, offset, block).map(function (nextSpot) {
+            var rng = dom.createRng();
+            rng.setStart(nextSpot.container, nextSpot.offset);
+            rng.setEnd(spot.container, spot.offset);
+            return rng;
+          }).filter(function (rng) {
+            return rng.toString() === startPattern;
+          }).orThunk(function () {
+            return findPatternStartFromSpot(dom, pattern, block, point(spot.container, 0));
+          });
+        }
+      });
+    };
+    var findPatternStart = function (dom, pattern, node, offset, block, requireGap) {
+      if (requireGap === void 0) {
+        requireGap = false;
+      }
+      if (pattern.start.length === 0 && !requireGap) {
+        var rng = dom.createRng();
+        rng.setStart(node, offset);
+        rng.setEnd(node, offset);
+        return Optional.some(rng);
+      }
+      return textBefore(node, offset, block).bind(function (spot) {
+        var start = findPatternStartFromSpot(dom, pattern, block, spot);
+        return start.bind(function (startRange) {
+          if (requireGap) {
+            if (startRange.endContainer === spot.container && startRange.endOffset === spot.offset) {
+              return Optional.none();
+            } else if (spot.offset === 0 && startRange.endContainer.textContent.length === startRange.endOffset) {
+              return Optional.none();
+            }
+          }
+          return Optional.some(startRange);
+        });
+      });
+    };
+    var findPattern = function (editor, block, details) {
+      var dom = editor.dom;
+      var root = dom.getRoot();
+      var pattern = details.pattern;
+      var endNode = details.position.container;
+      var endOffset = details.position.offset;
+      return scanLeft(endNode, endOffset - details.pattern.end.length, block).bind(function (spot) {
+        var endPathRng = generatePathRange(root, spot.container, spot.offset, endNode, endOffset);
+        if (isReplacementPattern(pattern)) {
+          return Optional.some({
+            matches: [{
+                pattern: pattern,
+                startRng: endPathRng,
+                endRng: endPathRng
+              }],
+            position: spot
+          });
+        } else {
+          var resultsOpt = findPatternsRec(editor, details.remainingPatterns, spot.container, spot.offset, block);
+          var results_1 = resultsOpt.getOr({
+            matches: [],
+            position: spot
+          });
+          var pos = results_1.position;
+          var start = findPatternStart(dom, pattern, pos.container, pos.offset, block, resultsOpt.isNone());
+          return start.map(function (startRng) {
+            var startPathRng = generatePathRangeFromRange(root, startRng);
+            return {
+              matches: results_1.matches.concat([{
+                  pattern: pattern,
+                  startRng: startPathRng,
+                  endRng: endPathRng
+                }]),
+              position: point(startRng.startContainer, startRng.startOffset)
+            };
+          });
+        }
+      });
+    };
+    var findPatternsRec = function (editor, patterns, node, offset, block) {
+      var dom = editor.dom;
+      return textBefore(node, offset, dom.getRoot()).bind(function (endSpot) {
+        var rng = dom.createRng();
+        rng.setStart(block, 0);
+        rng.setEnd(node, offset);
+        var text = rng.toString();
+        for (var i = 0; i < patterns.length; i++) {
+          var pattern = patterns[i];
+          if (!endsWith(text, pattern.end)) {
+            continue;
+          }
+          var patternsWithoutCurrent = patterns.slice();
+          patternsWithoutCurrent.splice(i, 1);
+          var result = findPattern(editor, block, {
+            pattern: pattern,
+            remainingPatterns: patternsWithoutCurrent,
+            position: endSpot
+          });
+          if (result.isSome()) {
+            return result;
+          }
+        }
+        return Optional.none();
+      });
+    };
+    var applyPattern = function (editor, pattern, patternRange) {
+      editor.selection.setRng(patternRange);
+      if (pattern.type === 'inline-format') {
+        each(pattern.format, function (format) {
+          editor.formatter.apply(format);
+        });
+      } else {
+        editor.execCommand(pattern.cmd, false, pattern.value);
+      }
+    };
+    var applyReplacementPattern = function (editor, pattern, marker, isRoot) {
+      var markerRange = rangeFromMarker(editor.dom, marker);
+      deleteRng(editor.dom, markerRange, isRoot);
+      applyPattern(editor, pattern, markerRange);
+    };
+    var applyPatternWithContent = function (editor, pattern, startMarker, endMarker, isRoot) {
+      var dom = editor.dom;
+      var markerEndRange = rangeFromMarker(dom, endMarker);
+      var markerStartRange = rangeFromMarker(dom, startMarker);
+      deleteRng(dom, markerStartRange, isRoot);
+      deleteRng(dom, markerEndRange, isRoot);
+      var patternMarker = {
+        prefix: startMarker.prefix,
+        start: startMarker.end,
+        end: endMarker.start
+      };
+      var patternRange = rangeFromMarker(dom, patternMarker);
+      applyPattern(editor, pattern, patternRange);
+    };
+    var addMarkers = function (dom, matches) {
+      var markerPrefix = generate('mce_textpattern');
+      var matchesWithEnds = foldr(matches, function (acc, match) {
+        var endMarker = createMarker(dom, markerPrefix + ('_end' + acc.length), match.endRng);
+        return acc.concat([__assign(__assign({}, match), { endMarker: endMarker })]);
+      }, []);
+      return foldr(matchesWithEnds, function (acc, match) {
+        var idx = matchesWithEnds.length - acc.length - 1;
+        var startMarker = isReplacementPattern(match.pattern) ? match.endMarker : createMarker(dom, markerPrefix + ('_start' + idx), match.startRng);
+        return acc.concat([__assign(__assign({}, match), { startMarker: startMarker })]);
+      }, []);
+    };
+    var findPatterns = function (editor, patterns, space) {
+      var rng = editor.selection.getRng();
+      if (rng.collapsed === false) {
+        return [];
+      }
+      return getParentBlock(editor, rng).bind(function (block) {
+        var offset = rng.startOffset - (space ? 1 : 0);
+        return findPatternsRec(editor, patterns, rng.startContainer, offset, block);
+      }).fold(function () {
+        return [];
+      }, function (result) {
+        return result.matches;
+      });
+    };
+    var applyMatches = function (editor, matches) {
+      if (matches.length === 0) {
+        return;
+      }
+      var dom = editor.dom;
+      var bookmark = editor.selection.getBookmark();
+      var matchesWithMarkers = addMarkers(dom, matches);
+      each(matchesWithMarkers, function (match) {
+        var block = dom.getParent(match.startMarker.start, dom.isBlock);
+        var isRoot = function (node) {
+          return node === block;
+        };
+        if (isReplacementPattern(match.pattern)) {
+          applyReplacementPattern(editor, match.pattern, match.endMarker, isRoot);
+        } else {
+          applyPatternWithContent(editor, match.pattern, match.startMarker, match.endMarker, isRoot);
+        }
+        removeMarker(dom, match.endMarker, isRoot);
+        removeMarker(dom, match.startMarker, isRoot);
+      });
+      editor.selection.moveToBookmark(bookmark);
+    };
+
+    var handleEnter = function (editor, patternSet) {
+      if (!editor.selection.isCollapsed()) {
+        return false;
+      }
+      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, false);
+      var blockMatches = findPatterns$1(editor, patternSet.blockPatterns);
+      if (blockMatches.length > 0 || inlineMatches.length > 0) {
+        editor.undoManager.add();
+        editor.undoManager.extra(function () {
+          editor.execCommand('mceInsertNewLine');
+        }, function () {
+          editor.insertContent(zeroWidth);
+          applyMatches(editor, inlineMatches);
+          applyMatches$1(editor, blockMatches);
+          var range = editor.selection.getRng();
+          var spot = textBefore(range.startContainer, range.startOffset, editor.dom.getRoot());
+          editor.execCommand('mceInsertNewLine');
+          spot.each(function (s) {
+            var node = s.container;
+            if (node.data.charAt(s.offset - 1) === zeroWidth) {
+              node.deleteData(s.offset - 1, 1);
+              cleanEmptyNodes(editor.dom, node.parentNode, function (e) {
+                return e === editor.dom.getRoot();
+              });
+            }
+          });
+        });
+        return true;
+      }
+      return false;
+    };
+    var handleInlineKey = function (editor, patternSet) {
+      var inlineMatches = findPatterns(editor, patternSet.inlinePatterns, true);
+      if (inlineMatches.length > 0) {
+        editor.undoManager.transact(function () {
+          applyMatches(editor, inlineMatches);
+        });
+      }
+    };
+    var checkKeyEvent = function (codes, event, predicate) {
+      for (var i = 0; i < codes.length; i++) {
+        if (predicate(codes[i], event)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    var checkKeyCode = function (codes, event) {
+      return checkKeyEvent(codes, event, function (code, event) {
+        return code === event.keyCode && global$3.modifierPressed(event) === false;
+      });
+    };
+    var checkCharCode = function (chars, event) {
+      return checkKeyEvent(chars, event, function (chr, event) {
+        return chr.charCodeAt(0) === event.charCode;
+      });
+    };
+
+    var setup = function (editor, patternsState) {
+      var charCodes = [
+        ',',
+        '.',
+        ';',
+        ':',
+        '!',
+        '?'
+      ];
+      var keyCodes = [32];
+      editor.on('keydown', function (e) {
+        if (e.keyCode === 13 && !global$3.modifierPressed(e)) {
+          if (handleEnter(editor, patternsState.get())) {
+            e.preventDefault();
+          }
+        }
+      }, true);
+      editor.on('keyup', function (e) {
+        if (checkKeyCode(keyCodes, e)) {
+          handleInlineKey(editor, patternsState.get());
+        }
+      });
+      editor.on('keypress', function (e) {
+        if (checkCharCode(charCodes, e)) {
+          global$4.setEditorTimeout(editor, function () {
+            handleInlineKey(editor, patternsState.get());
+          });
+        }
+      });
+    };
+
+    function Plugin () {
+      global$5.add('textpattern', function (editor) {
+        var patternsState = Cell(getPatternSet(editor));
+        setup(editor, patternsState);
+        return get(patternsState);
       });
     }
 

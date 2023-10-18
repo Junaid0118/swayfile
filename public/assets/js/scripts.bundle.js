@@ -7697,7 +7697,6 @@ var KTLayoutSearch = (function () {
 
         // Clear existing content in resultsElement
         resultsElement.innerHTML = "";
-        debugger;
 
         // Iterate through the data and create fragments
         data.forEach(function (item) {
