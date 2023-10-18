@@ -10,7 +10,6 @@ class User < ApplicationRecord
   has_many :teams
   has_many :projects, through: :teams
 
-  has_many :created_projects, class_name: 'Project', foreign_key: 'creator_id', dependent: :destroy
 
   def name
     "#{first_name} #{last_name}"

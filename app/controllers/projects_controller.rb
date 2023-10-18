@@ -40,6 +40,7 @@ class ProjectsController < ApplicationController
   def create
     project = build_project
     project.folder_id = params[:folder_id] if params.has_key?(:folder_id)
+    byebug
     if project.save
       create_teams(project)
 
@@ -56,7 +57,6 @@ class ProjectsController < ApplicationController
   end
 
   def create_teams(project)
-    byebug
     members = params[:members].split(',')
     signatory_ids = params[:sign_ids].split(',')
 
