@@ -21,6 +21,12 @@ Rails.application.routes.draw do
       get 'activity'
       get 'settings'
       get 'comments'
+
+      get 'details'
+      get 'team'
+      get 'signatories'
+      get 'contract'
+      get 'review'
     end
   end
 
