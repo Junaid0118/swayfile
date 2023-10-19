@@ -3,7 +3,6 @@
 	<script>var defaultThemeMode = "light"; var themeMode; if ( document.documentElement ) { if ( document.documentElement.hasAttribute("data-bs-theme-mode")) { themeMode = document.documentElement.getAttribute("data-bs-theme-mode"); } else { if ( localStorage.getItem("data-bs-theme") !== null ) { themeMode = localStorage.getItem("data-bs-theme"); } else { themeMode = defaultThemeMode; } } if (themeMode === "system") { themeMode = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"; } document.documentElement.setAttribute("data-bs-theme", themeMode); }</script>
 	<!--end::Theme mode setup on page load-->
 	<!--begin::App-->
-	<div id="folder-data" data-folder='<%= @folder.id %>'></div>
 	<div class="d-flex flex-column flex-root app-root" id="kt_app_root">
 		<!--begin::Page-->
 		<div class="app-page flex-column flex-column-fluid" id="kt_app_page">
@@ -23,13 +22,11 @@
 						<img alt="Logo" src="assets/media/logos/demo33.svg" class="h-30px" />
 					</a>
 					<!--end::Logo-->
-					<% if false %>
 					<!--begin::Sidebar toggle-->
 					<button id="kt_app_sidebar_secondary_toggle" class="btn btn-sm btn-icon bg-body btn-color-gray-400 btn-active-color-primary d-none d-lg-flex ms-2" data-kt-toggle="true" data-kt-toggle-state="active" data-kt-toggle-target="body" data-kt-toggle-name="app-sidebar-secondary-collapse">
 						<i class="ki-outline ki-menu fs-1"></i>
 					</button>
 					<!--end::Sidebar toggle-->
-					<% end %>
 				</div>
 				<!--end::Brand-->
 				<!--begin::Header wrapper-->
@@ -54,7 +51,7 @@
 									<i class="ki-outline ki-magnifier search-icon fs-2 text-gray-500 position-absolute top-50 translate-middle-y ms-5"></i>
 									<!--end::Icon-->
 									<!--begin::Input-->
-									<input type="text" class="search-input form-control form-control-solid ps-13" name="search" value="" placeholder="Search..." data-kt-search-element="input" disabled/>
+									<input type="text" class="search-input form-control form-control-solid ps-13" name="search" value="" placeholder="Search..." data-kt-search-element="input" />
 									<!--end::Input-->
 									<!--begin::Spinner-->
 									<span class="search-spinner position-absolute top-50 end-0 translate-middle-y lh-0 d-none me-5" data-kt-search-element="spinner">
@@ -657,7 +654,6 @@
 								<div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-30px h-30px w-md-40px h-md-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
 									<i class="ki-outline ki-calendar fs-1"></i>
 								</div>
-								<% if false %>
 								<!--begin::Menu-->
 								<div class="menu menu-sub menu-sub-dropdown menu-column w-350px w-lg-375px" data-kt-menu="true" id="kt_menu_notifications">
 									<!--begin::Heading-->
@@ -1115,7 +1111,6 @@
 									<!--end::Tab content-->
 								</div>
 								<!--end::Menu-->
-								<% end %>
 								<!--end::Menu wrapper-->
 							</div>
 							<!--end::Notifications-->
@@ -1125,7 +1120,6 @@
 								<div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-30px h-30px w-md-40px h-md-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
 									<i class="ki-outline ki-abstract-26 fs-1"></i>
 								</div>
-								<% if false %>
 								<!--begin::Menu-->
 								<div class="menu menu-sub menu-sub-dropdown menu-column w-250px w-lg-325px" data-kt-menu="true">
 									<!--begin::Heading-->
@@ -1186,21 +1180,230 @@
 									<!--end::View more-->
 								</div>
 								<!--end::Menu-->
-								<% end %>
 								<!--end::Menu wrapper-->
 							</div>
 							<!--end::Quick links-->
 							<!--begin::Chat-->
 							<div class="app-navbar-item">
 								<!--begin::Menu wrapper-->
-								<div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-30px h-30px w-md-40px h-md-40px ms-1 ms-md-3" id="kt_drawer_chat_toggles">
+								<div class="btn btn-icon btn-custom btn-icon-muted btn-active-light btn-active-color-primary w-30px h-30px w-md-40px h-md-40px ms-1 ms-md-3" id="kt_drawer_chat_toggle">
 									<i class="ki-outline ki-notification-on fs-1"></i>
 								</div>
 								<!--end::Menu wrapper-->
 							</div>
 							<!--end::Chat-->
 							<!--begin::User menu-->
-							<%= render partial: 'application/user_menu' %>
+							<div class="app-navbar-item ms-1 ms-md-3" id="kt_header_user_menu_toggle">
+								<!--begin::Menu wrapper-->
+								<div class="cursor-pointer symbol symbol-circle symbol-30px symbol-md-40px" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end">
+									<img src="assets/media/avatars/300-2.jpg" alt="user" />
+								</div>
+								<!--begin::User account menu-->
+								<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-color fw-semibold py-4 fs-6 w-275px" data-kt-menu="true">
+									<!--begin::Menu item-->
+									<div class="menu-item px-3">
+										<div class="menu-content d-flex align-items-center px-3">
+											<!--begin::Avatar-->
+											<div class="symbol symbol-50px me-5">
+												<img alt="Logo" src="assets/media/avatars/300-2.jpg" />
+											</div>
+											<!--end::Avatar-->
+											<!--begin::Username-->
+											<div class="d-flex flex-column">
+												<div class="fw-bold d-flex align-items-center fs-5">Max Smith
+												<span class="badge badge-light-success fw-bold fs-8 px-2 py-1 ms-2">Pro</span></div>
+												<a href="#" class="fw-semibold text-muted text-hover-primary fs-7">max@kt.com</a>
+											</div>
+											<!--end::Username-->
+										</div>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu separator-->
+									<div class="separator my-2"></div>
+									<!--end::Menu separator-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<a href="../../demo33/dist/account/overview.html" class="menu-link px-5">My Profile</a>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<a href="../../demo33/dist/apps/projects/list.html" class="menu-link px-5">
+											<span class="menu-text">My Projects</span>
+											<span class="menu-badge">
+												<span class="badge badge-light-danger badge-circle fw-bold fs-7">3</span>
+											</span>
+										</a>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+										<a href="#" class="menu-link px-5">
+											<span class="menu-title">My Subscription</span>
+											<span class="menu-arrow"></span>
+										</a>
+										<!--begin::Menu sub-->
+										<div class="menu-sub menu-sub-dropdown w-175px py-4">
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/referrals.html" class="menu-link px-5">Referrals</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/billing.html" class="menu-link px-5">Billing</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/statements.html" class="menu-link px-5">Payments</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/statements.html" class="menu-link d-flex flex-stack px-5">Statements
+												<span class="ms-2" data-bs-toggle="tooltip" title="View your statements">
+													<i class="ki-outline ki-information fs-7"></i>
+												</span></a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu separator-->
+											<div class="separator my-2"></div>
+											<!--end::Menu separator-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<div class="menu-content px-3">
+													<label class="form-check form-switch form-check-custom form-check-solid">
+														<input class="form-check-input w-30px h-20px" type="checkbox" value="1" checked="checked" name="notifications" />
+														<span class="form-check-label text-muted fs-7">Notifications</span>
+													</label>
+												</div>
+											</div>
+											<!--end::Menu item-->
+										</div>
+										<!--end::Menu sub-->
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<a href="../../demo33/dist/account/statements.html" class="menu-link px-5">My Statements</a>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu separator-->
+									<div class="separator my-2"></div>
+									<!--end::Menu separator-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+										<a href="#" class="menu-link px-5">
+											<span class="menu-title position-relative">Mode
+											<span class="ms-5 position-absolute translate-middle-y top-50 end-0">
+												<i class="ki-outline ki-night-day theme-light-show fs-2"></i>
+												<i class="ki-outline ki-moon theme-dark-show fs-2"></i>
+											</span></span>
+										</a>
+										<!--begin::Menu-->
+										<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-title-gray-700 menu-icon-gray-500 menu-active-bg menu-state-color fw-semibold py-4 fs-base w-150px" data-kt-menu="true" data-kt-element="theme-mode-menu">
+											<!--begin::Menu item-->
+											<div class="menu-item px-3 my-0">
+												<a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="light">
+													<span class="menu-icon" data-kt-element="icon">
+														<i class="ki-outline ki-night-day fs-2"></i>
+													</span>
+													<span class="menu-title">Light</span>
+												</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3 my-0">
+												<a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="dark">
+													<span class="menu-icon" data-kt-element="icon">
+														<i class="ki-outline ki-moon fs-2"></i>
+													</span>
+													<span class="menu-title">Dark</span>
+												</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3 my-0">
+												<a href="#" class="menu-link px-3 py-2" data-kt-element="mode" data-kt-value="system">
+													<span class="menu-icon" data-kt-element="icon">
+														<i class="ki-outline ki-screen fs-2"></i>
+													</span>
+													<span class="menu-title">System</span>
+												</a>
+											</div>
+											<!--end::Menu item-->
+										</div>
+										<!--end::Menu-->
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5" data-kt-menu-trigger="{default: 'click', lg: 'hover'}" data-kt-menu-placement="left-start" data-kt-menu-offset="-15px, 0">
+										<a href="#" class="menu-link px-5">
+											<span class="menu-title position-relative">Language
+											<span class="fs-8 rounded bg-light px-3 py-2 position-absolute translate-middle-y top-50 end-0">English
+											<img class="w-15px h-15px rounded-1 ms-2" src="assets/media/flags/united-states.svg" alt="" /></span></span>
+										</a>
+										<!--begin::Menu sub-->
+										<div class="menu-sub menu-sub-dropdown w-175px py-4">
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/settings.html" class="menu-link d-flex px-5 active">
+												<span class="symbol symbol-20px me-4">
+													<img class="rounded-1" src="assets/media/flags/united-states.svg" alt="" />
+												</span>English</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/settings.html" class="menu-link d-flex px-5">
+												<span class="symbol symbol-20px me-4">
+													<img class="rounded-1" src="assets/media/flags/spain.svg" alt="" />
+												</span>Spanish</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/settings.html" class="menu-link d-flex px-5">
+												<span class="symbol symbol-20px me-4">
+													<img class="rounded-1" src="assets/media/flags/germany.svg" alt="" />
+												</span>German</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/settings.html" class="menu-link d-flex px-5">
+												<span class="symbol symbol-20px me-4">
+													<img class="rounded-1" src="assets/media/flags/japan.svg" alt="" />
+												</span>Japanese</a>
+											</div>
+											<!--end::Menu item-->
+											<!--begin::Menu item-->
+											<div class="menu-item px-3">
+												<a href="../../demo33/dist/account/settings.html" class="menu-link d-flex px-5">
+												<span class="symbol symbol-20px me-4">
+													<img class="rounded-1" src="assets/media/flags/france.svg" alt="" />
+												</span>French</a>
+											</div>
+											<!--end::Menu item-->
+										</div>
+										<!--end::Menu sub-->
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5 my-1">
+										<a href="../../demo33/dist/account/settings.html" class="menu-link px-5">Account Settings</a>
+									</div>
+									<!--end::Menu item-->
+									<!--begin::Menu item-->
+									<div class="menu-item px-5">
+										<%= link_to "Sign Out", destroy_user_session_path, method: :delete, class: "menu-link px-5" %>
+									</div>
+									<!--end::Menu item-->
+								</div>
+								<!--end::User account menu-->
+								<!--end::Menu wrapper-->
+							</div>
 							<!--end::User menu-->
 						</div>
 						<!--end::Navbar-->
@@ -1236,11 +1439,11 @@
 												<a href="../../demo33/dist/index.html" class="text-muted text-hover-primary">Home</a>
 											</li>
 											<!--end::Item-->
-											<!--end::Item-->
 											<!--begin::Item-->
 											<li class="breadcrumb-item">
 												<span class="bullet bg-gray-400 w-5px h-2px"></span>
 											</li>
+											<!--end::Item-->
 											<!--end::Item-->
 											<!--begin::Item-->
 											<li class="breadcrumb-item text-muted">File Manager</li>
@@ -1249,6 +1452,14 @@
 										<!--end::Breadcrumb-->
 									</div>
 									<!--end::Page title-->
+									<!--begin::Actions-->
+									<% if false%>
+									<div class="d-flex align-items-center gap-2 gap-lg-3">
+										<a href="#" class="btn btn-flex btn-outline btn-color-gray-700 btn-active-color-primary bg-body h-40px fs-7 fw-bold" data-bs-toggle="modal" data-bs-target="#kt_modal_view_users">Add Member</a>
+										<a href="#" class="btn btn-flex btn-primary h-40px fs-7 fw-bold" data-bs-toggle="modal" data-bs-target="#kt_modal_create_campaign">New Campaign</a>
+									</div>
+									<% end %>
+									<!--end::Actions-->
 								</div>
 								<!--end::Toolbar wrapper-->
 							</div>
@@ -1292,7 +1503,7 @@
 											<ul class="nav nav-stretch nav-line-tabs nav-line-tabs-2x border-transparent fs-5 fw-semibold flex-nowrap">
 												<!--begin::Nav item-->
 												<li class="nav-item">
-													<a class="nav-link text-active-primary me-6 active" href="/file_manager">Files</a>
+													<a class="nav-link text-active-primary me-6 active" href="../../demo33/dist/apps/file-manager/folders.html">Files</a>
 												</li>
 												<!--end::Nav item-->
 												<!--begin::Nav item-->
@@ -1323,15 +1534,13 @@
 										<div class="card-toolbar">
 											<!--begin::Toolbar-->
 											<div class="d-flex justify-content-end" data-kt-filemanager-table-toolbar="base">
-												<!--begin::Back to folders-->
-												<!--end::Back to folders-->
 												<!--begin::Export-->
 												<button type="button" class="btn btn-flex btn-light-primary me-3" id="kt_file_manager_new_folder">
 												<i class="ki-outline ki-add-folder fs-2"></i>New Folder</button>
 												<!--end::Export-->
 												<!--begin::Add customer-->
 												<button type="button" class="btn btn-flex btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app">
-												<i class="ki-outline ki-folder-up fs-2"></i>Create Document</button>
+												<i class="ki-outline ki-folder-up fs-2"></i>Create Project</button>
 												<!--end::Add customer-->
 											</div>
 											<!--end::Toolbar-->
@@ -1353,17 +1562,14 @@
 											<!--begin::Folder path-->
 											<div class="badge badge-lg badge-light-primary">
 												<div class="d-flex align-items-center flex-wrap">
-												<i class="ki-outline ki-abstract-32 fs-2x text-primary me-3"></i>
-												<a href="../../demo33/dist/apps/file-manager/folders.html">StarterHouse</a>
-												<i class="ki-outline ki-right fs-2x text-primary mx-1"></i>
-												<a href="../../demo33/dist/apps/file-manager/folders.html">Projects</a>
-												<i class="ki-outline ki-right fs-2x text-primary mx-1"></i>
-												<a href="../../demo33/dist/apps/file-manager/folders.html"><%= @folder.full_path.html_safe %></a></div>
+												<i class="ki-outline ki-abstract-32 fs-2 text-primary me-3"></i>
+												<a href="#">StarterHouse</a>
+												<i class="ki-outline ki-right fs-2 text-primary mx-1"></i>Projects</div>
 											</div>
 											<!--end::Folder path-->
 											<!--begin::Folder Stats-->
 											<div class="badge badge-lg badge-primary">
-												<span id="kt_file_manager_items_counter">5 items</span>
+												<span id="kt_file_manager_items_counter">10 items</span>
 											</div>
 											<!--end::Folder Stats-->
 										</div>
@@ -1385,7 +1591,7 @@
 										</thead>
 										<tbody class="fw-semibold text-gray-600">
 											<% @folders.each do |folder| %>
-											<tr data-folder-id="<%= folder.id %>" %>
+											<tr>
 												<td>
 												<div class="form-check form-check-sm form-check-custom form-check-solid">
 													<input class="form-check-input" type="checkbox" value="1" />
@@ -1447,7 +1653,7 @@
 													<!--end::Share link-->
 													<!--begin::More-->
 													<div class="ms-2">
-													<button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary me-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-folder-id="<%= folder.id %>">
+													<button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary me-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
 														<i class="ki-outline ki-dots-square fs-5 m-0"></i>
 													</button>
 													<!--begin::Menu-->
@@ -1460,6 +1666,16 @@
 														<!--begin::Menu item-->
 														<div class="menu-item px-3">
 														<a href="#" class="menu-link px-3" data-kt-filemanager-table="rename">Rename</a>
+														</div>
+														<!--end::Menu item-->
+														<!--begin::Menu item-->
+														<div class="menu-item px-3">
+														<a href="#" class="menu-link px-3">Download Folder</a>
+														</div>
+														<!--end::Menu item-->
+														<!--begin::Menu item-->
+														<div class="menu-item px-3">
+														<a href="#" class="menu-link px-3" data-kt-filemanager-table-filter="move_row" data-bs-toggle="modal" data-bs-target="#kt_modal_move_to_folder">Move to folder</a>
 														</div>
 														<!--end::Menu item-->
 														<!--begin::Menu item-->
@@ -1475,94 +1691,26 @@
 												</td>
 											</tr>
 											<% end %>
-											<% @projects.each do |project| %>
-												<tr>
-												<td>
-													<div class="form-check form-check-sm form-check-custom form-check-solid">
-													<input class="form-check-input" type="checkbox" value="1" />
-													</div>
-												</td>
-												<td data-order="datatables">
-													<div class="d-flex align-items-center">
-													<a href="<%= "/projects/#{project.id}" %>" class="text-gray-800 text-hover-primary"><%= project[:name] %></a>
-													</div>
-												</td>
-												<td>-</td>
-												<td>-</td>
-												<td class="text-end" data-kt-filemanager-table="action_dropdown">
-												<div class="d-flex justify-content-end">
-													<!--begin::Share link-->
-													<div class="ms-2" data-kt-filemanger-table="copy_link">
-													<button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
-														<i class="ki-outline ki-fasten fs-5 m-0"></i>
-													</button>
-													<!--begin::Menu-->
-													<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-300px" data-kt-menu="true">
-														<!--begin::Card-->
-														<div class="card card-flush">
-														<div class="card-body p-5">
-															<!--begin::Loader-->
-															<div class="d-flex" data-kt-filemanger-table="copy_link_generator">
-															<!--begin::Spinner-->
-															<div class="me-5" data-kt-indicator="on">
-																<span class="indicator-progress">
-																<span class="spinner-border spinner-border-sm align-middle ms-2"></span>
-																</span>
-															</div>
-															<!--end::Spinner-->
-															<!--begin::Label-->
-															<div class="fs-6 text-dark">Generating Share Link...</div>
-															<!--end::Label-->
-															</div>
-															<!--end::Loader-->
-															<!--begin::Link-->
-															<div class="d-flex flex-column text-start d-none" data-kt-filemanger-table="copy_link_result">
-															<div class="d-flex mb-3">
-																<i class="ki-outline ki-check fs-2 text-success me-3"></i>
-																<div class="fs-6 text-dark">Share Link Generated</div>
-															</div>
-															<input type="text" class="form-control form-control-sm" value="https://path/to/file/or/folder/" />
-															<div class="text-muted fw-normal mt-2 fs-8 px-3">Read only.
-																<a href="../../demo33/dist/apps/file-manager/settings/.html" class="ms-2">Change permissions</a></div>
-															</div>
-															<!--end::Link-->
-														</div>
-														</div>
-														<!--end::Card-->
-													</div>
-													<!--end::Menu-->
-													</div>
-													<!--end::Share link-->
-													<!--begin::More-->
-													<div class="ms-2">
-													<button type="button" class="btn btn-sm btn-icon btn-light btn-active-light-primary me-2" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" data-project-id="<%= project.id %>">
-														<i class="ki-outline ki-dots-square fs-5 m-0"></i>
-													</button>
-													<!--begin::Menu-->
-													<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4" data-kt-menu="true">
-														<!--begin::Menu item-->
-														<div class="menu-item px-3">
-														<a href="../../demo33/dist/apps/file-manager/files.html" class="menu-link px-3">View</a>
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item px-3">
-														<a href="#" class="menu-link px-3" data-kt-filemanager-table="rename">Rename</a>
-														</div>
-														<!--end::Menu item-->
-														<!--begin::Menu item-->
-														<div class="menu-item px-3">
-														<a href="#" class="menu-link text-danger px-3" data-kt-filemanager-table-filter="delete_row">Delete</a>
-														</div>
-														<!--end::Menu item-->
-													</div>
-													<!--end::Menu-->
-													</div>
-													<!--end::More-->
+										<% @projects.each do |project| %>
+											<tr>
+											<td>
+												<div class="form-check form-check-sm form-check-custom form-check-solid">
+												<input class="form-check-input" type="checkbox" value="1" />
 												</div>
-												</td>
-												</tr>
-											<% end %>
+											</td>
+											<td data-order="datatables">
+												<div class="d-flex align-items-center">
+												<a href="<%= "/projects/#{project.id}" %>" class="text-gray-800 text-hover-primary"><%= project[:name] %></a>
+												</div>
+											</td>
+											<td>-</td>
+											<td>-</td>
+											<td class="text-end" data-kt-filemanager-table="action_dropdown">
+												<div class="d-flex justify-content-end">
+												</div>
+											</td>
+											</tr>
+										<% end %>
 										</tbody>
 										</table>
 										<!--end::Table-->
@@ -1687,6 +1835,11 @@
 											<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4" data-kt-menu="true">
 												<!--begin::Menu item-->
 												<div class="menu-item px-3">
+													<a href="#" class="menu-link px-3">Download File</a>
+												</div>
+												<!--end::Menu item-->
+												<!--begin::Menu item-->
+												<div class="menu-item px-3">
 													<a href="#" class="menu-link px-3" data-kt-filemanager-table="rename">Rename</a>
 												</div>
 												<!--end::Menu item-->
@@ -1726,7 +1879,7 @@
 												<!--begin::Modal header-->
 												<div class="modal-header">
 													<!--begin::Modal title-->
-													<h2 class="fw-bold">Upload files</h2>
+													<h2 class="fw-bold">Create Project</h2>
 													<!--end::Modal title-->
 													<!--begin::Close-->
 													<div class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
@@ -1822,7 +1975,187 @@
 												<!--begin::Modal body-->
 												<div class="modal-body pt-10 pb-15 px-lg-17">
 													<!--begin::Input group-->
-													<%= render partial: 'folder_selection' %>
+													<div class="form-group fv-row">
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="0" id="kt_modal_move_to_folder_0" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_0">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>account</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="1" id="kt_modal_move_to_folder_1" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_1">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>apps</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="2" id="kt_modal_move_to_folder_2" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_2">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>widgets</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="3" id="kt_modal_move_to_folder_3" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_3">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>assets</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="4" id="kt_modal_move_to_folder_4" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_4">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>documentation</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="5" id="kt_modal_move_to_folder_5" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_5">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>layouts</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="6" id="kt_modal_move_to_folder_6" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_6">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>modals</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="7" id="kt_modal_move_to_folder_7" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_7">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>authentication</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="8" id="kt_modal_move_to_folder_8" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_8">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>dashboards</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+														<div class='separator separator-dashed my-5'></div>
+														<!--begin::Item-->
+														<div class="d-flex">
+															<!--begin::Checkbox-->
+															<div class="form-check form-check-custom form-check-solid">
+																<!--begin::Input-->
+																<input class="form-check-input me-3" name="move_to_folder" type="radio" value="9" id="kt_modal_move_to_folder_9" />
+																<!--end::Input-->
+																<!--begin::Label-->
+																<label class="form-check-label" for="kt_modal_move_to_folder_9">
+																	<div class="fw-bold">
+																	<i class="ki-outline ki-folder fs-2 text-primary me-2"></i>pages</div>
+																</label>
+																<!--end::Label-->
+															</div>
+															<!--end::Checkbox-->
+														</div>
+														<!--end::Item-->
+													</div>
 													<!--end::Input group-->
 													<!--begin::Action buttons-->
 													<div class="d-flex flex-center mt-12">
@@ -1860,6 +2193,8 @@
 								<a href="https://StarterHouse.com" target="_blank" class="text-gray-800 text-hover-primary">StarterHouse</a>
 							</div>
 							<!--end::Copyright-->
+							<!--begin::Menu-->
+							<!--end::Menu-->
 						</div>
 						<!--end::Footer container-->
 					</div>
@@ -3075,6 +3410,915 @@
 	</div>
 	<!--end::Scrolltop-->
 	<!--begin::Modals-->
+	<!--begin::Modal - Upgrade plan-->
+	<div class="modal fade" id="kt_modal_upgrade_plan" tabindex="-1" aria-hidden="true">
+		<!--begin::Modal dialog-->
+		<div class="modal-dialog modal-xl">
+			<!--begin::Modal content-->
+			<div class="modal-content rounded">
+				<!--begin::Modal header-->
+				<div class="modal-header justify-content-end border-0 pb-0">
+					<!--begin::Close-->
+					<div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+						<i class="ki-outline ki-cross fs-1"></i>
+					</div>
+					<!--end::Close-->
+				</div>
+				<!--end::Modal header-->
+				<!--begin::Modal body-->
+				<div class="modal-body pt-0 pb-15 px-5 px-xl-20">
+					<!--begin::Heading-->
+					<div class="mb-13 text-center">
+						<h1 class="mb-3">Upgrade a Plan</h1>
+						<div class="text-muted fw-semibold fs-5">If you need more info, please check
+						<a href="#" class="link-primary fw-bold">Pricing Guidelines</a>.</div>
+					</div>
+					<!--end::Heading-->
+					<!--begin::Plans-->
+					<div class="d-flex flex-column">
+						<!--begin::Nav group-->
+						<div class="nav-group nav-group-outline mx-auto" data-kt-buttons="true">
+							<button class="btn btn-color-gray-400 btn-active btn-active-secondary px-6 py-3 me-2 active" data-kt-plan="month">Monthly</button>
+							<button class="btn btn-color-gray-400 btn-active btn-active-secondary px-6 py-3" data-kt-plan="annual">Annual</button>
+						</div>
+						<!--end::Nav group-->
+						<!--begin::Row-->
+						<div class="row mt-10">
+							<!--begin::Col-->
+							<div class="col-lg-6 mb-10 mb-lg-0">
+								<!--begin::Tabs-->
+								<div class="nav flex-column">
+									<!--begin::Tab link-->
+									<label class="nav-link btn btn-outline btn-outline-dashed btn-color-dark btn-active btn-active-primary d-flex flex-stack text-start p-6 active mb-6" data-bs-toggle="tab" data-bs-target="#kt_upgrade_plan_startup">
+										<!--end::Description-->
+										<div class="d-flex align-items-center me-2">
+											<!--begin::Radio-->
+											<div class="form-check form-check-custom form-check-solid form-check-success flex-shrink-0 me-6">
+												<input class="form-check-input" type="radio" name="plan" checked="checked" value="startup" />
+											</div>
+											<!--end::Radio-->
+											<!--begin::Info-->
+											<div class="flex-grow-1">
+												<div class="d-flex align-items-center fs-2 fw-bold flex-wrap">Startup</div>
+												<div class="fw-semibold opacity-75">Best for startups</div>
+											</div>
+											<!--end::Info-->
+										</div>
+										<!--end::Description-->
+										<!--begin::Price-->
+										<div class="ms-5">
+											<span class="mb-2">$</span>
+											<span class="fs-3x fw-bold" data-kt-plan-price-month="39" data-kt-plan-price-annual="399">39</span>
+											<span class="fs-7 opacity-50">/
+											<span data-kt-element="period">Mon</span></span>
+										</div>
+										<!--end::Price-->
+									</label>
+									<!--end::Tab link-->
+									<!--begin::Tab link-->
+									<label class="nav-link btn btn-outline btn-outline-dashed btn-color-dark btn-active btn-active-primary d-flex flex-stack text-start p-6 mb-6" data-bs-toggle="tab" data-bs-target="#kt_upgrade_plan_advanced">
+										<!--end::Description-->
+										<div class="d-flex align-items-center me-2">
+											<!--begin::Radio-->
+											<div class="form-check form-check-custom form-check-solid form-check-success flex-shrink-0 me-6">
+												<input class="form-check-input" type="radio" name="plan" value="advanced" />
+											</div>
+											<!--end::Radio-->
+											<!--begin::Info-->
+											<div class="flex-grow-1">
+												<div class="d-flex align-items-center fs-2 fw-bold flex-wrap">Advanced</div>
+												<div class="fw-semibold opacity-75">Best for 100+ team size</div>
+											</div>
+											<!--end::Info-->
+										</div>
+										<!--end::Description-->
+										<!--begin::Price-->
+										<div class="ms-5">
+											<span class="mb-2">$</span>
+											<span class="fs-3x fw-bold" data-kt-plan-price-month="339" data-kt-plan-price-annual="3399">339</span>
+											<span class="fs-7 opacity-50">/
+											<span data-kt-element="period">Mon</span></span>
+										</div>
+										<!--end::Price-->
+									</label>
+									<!--end::Tab link-->
+									<!--begin::Tab link-->
+									<label class="nav-link btn btn-outline btn-outline-dashed btn-color-dark btn-active btn-active-primary d-flex flex-stack text-start p-6 mb-6" data-bs-toggle="tab" data-bs-target="#kt_upgrade_plan_enterprise">
+										<!--end::Description-->
+										<div class="d-flex align-items-center me-2">
+											<!--begin::Radio-->
+											<div class="form-check form-check-custom form-check-solid form-check-success flex-shrink-0 me-6">
+												<input class="form-check-input" type="radio" name="plan" value="enterprise" />
+											</div>
+											<!--end::Radio-->
+											<!--begin::Info-->
+											<div class="flex-grow-1">
+												<div class="d-flex align-items-center fs-2 fw-bold flex-wrap">Enterprise
+												<span class="badge badge-light-success ms-2 py-2 px-3 fs-7">Popular</span></div>
+												<div class="fw-semibold opacity-75">Best value for 1000+ team</div>
+											</div>
+											<!--end::Info-->
+										</div>
+										<!--end::Description-->
+										<!--begin::Price-->
+										<div class="ms-5">
+											<span class="mb-2">$</span>
+											<span class="fs-3x fw-bold" data-kt-plan-price-month="999" data-kt-plan-price-annual="9999">999</span>
+											<span class="fs-7 opacity-50">/
+											<span data-kt-element="period">Mon</span></span>
+										</div>
+										<!--end::Price-->
+									</label>
+									<!--end::Tab link-->
+									<!--begin::Tab link-->
+									<label class="nav-link btn btn-outline btn-outline-dashed btn-color-dark btn-active btn-active-primary d-flex flex-stack text-start p-6 mb-6" data-bs-toggle="tab" data-bs-target="#kt_upgrade_plan_custom">
+										<!--end::Description-->
+										<div class="d-flex align-items-center me-2">
+											<!--begin::Radio-->
+											<div class="form-check form-check-custom form-check-solid form-check-success flex-shrink-0 me-6">
+												<input class="form-check-input" type="radio" name="plan" value="custom" />
+											</div>
+											<!--end::Radio-->
+											<!--begin::Info-->
+											<div class="flex-grow-1">
+												<div class="d-flex align-items-center fs-2 fw-bold flex-wrap">Custom</div>
+												<div class="fw-semibold opacity-75">Requet a custom license</div>
+											</div>
+											<!--end::Info-->
+										</div>
+										<!--end::Description-->
+										<!--begin::Price-->
+										<div class="ms-5">
+											<a href="#" class="btn btn-sm btn-success">Contact Us</a>
+										</div>
+										<!--end::Price-->
+									</label>
+									<!--end::Tab link-->
+								</div>
+								<!--end::Tabs-->
+							</div>
+							<!--end::Col-->
+							<!--begin::Col-->
+							<div class="col-lg-6">
+								<!--begin::Tab content-->
+								<div class="tab-content rounded h-100 bg-light p-10">
+									<!--begin::Tab Pane-->
+									<div class="tab-pane fade show active" id="kt_upgrade_plan_startup">
+										<!--begin::Heading-->
+										<div class="pb-5">
+											<h2 class="fw-bold text-dark">What’s in Startup Plan?</h2>
+											<div class="text-muted fw-semibold">Optimal for 10+ team size and new startup</div>
+										</div>
+										<!--end::Heading-->
+										<!--begin::Body-->
+										<div class="pt-1">
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 10 Active Users</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 30 Project Integrations</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Analytics Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Finance Module</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Accounting Module</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Network Platform</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Unlimited Cloud Space</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+										</div>
+										<!--end::Body-->
+									</div>
+									<!--end::Tab Pane-->
+									<!--begin::Tab Pane-->
+									<div class="tab-pane fade" id="kt_upgrade_plan_advanced">
+										<!--begin::Heading-->
+										<div class="pb-5">
+											<h2 class="fw-bold text-dark">What’s in Startup Plan?</h2>
+											<div class="text-muted fw-semibold">Optimal for 100+ team size and grown company</div>
+										</div>
+										<!--end::Heading-->
+										<!--begin::Body-->
+										<div class="pt-1">
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 10 Active Users</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 30 Project Integrations</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Analytics Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Finance Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Accounting Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Network Platform</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center">
+												<span class="fw-semibold fs-5 text-muted flex-grow-1">Unlimited Cloud Space</span>
+												<i class="ki-outline ki-cross-circle fs-1"></i>
+											</div>
+											<!--end::Item-->
+										</div>
+										<!--end::Body-->
+									</div>
+									<!--end::Tab Pane-->
+									<!--begin::Tab Pane-->
+									<div class="tab-pane fade" id="kt_upgrade_plan_enterprise">
+										<!--begin::Heading-->
+										<div class="pb-5">
+											<h2 class="fw-bold text-dark">What’s in Startup Plan?</h2>
+											<div class="text-muted fw-semibold">Optimal for 1000+ team and enterpise</div>
+										</div>
+										<!--end::Heading-->
+										<!--begin::Body-->
+										<div class="pt-1">
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 10 Active Users</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Up to 30 Project Integrations</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Analytics Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Finance Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Accounting Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Network Platform</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Unlimited Cloud Space</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+										</div>
+										<!--end::Body-->
+									</div>
+									<!--end::Tab Pane-->
+									<!--begin::Tab Pane-->
+									<div class="tab-pane fade" id="kt_upgrade_plan_custom">
+										<!--begin::Heading-->
+										<div class="pb-5">
+											<h2 class="fw-bold text-dark">What’s in Startup Plan?</h2>
+											<div class="text-muted fw-semibold">Optimal for corporations</div>
+										</div>
+										<!--end::Heading-->
+										<!--begin::Body-->
+										<div class="pt-1">
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Unlimited Users</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Unlimited Project Integrations</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Analytics Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Finance Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Accounting Module</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center mb-7">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Network Platform</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+											<!--begin::Item-->
+											<div class="d-flex align-items-center">
+												<span class="fw-semibold fs-5 text-gray-700 flex-grow-1">Unlimited Cloud Space</span>
+												<i class="ki-outline ki-check-circle fs-1 text-success"></i>
+											</div>
+											<!--end::Item-->
+										</div>
+										<!--end::Body-->
+									</div>
+									<!--end::Tab Pane-->
+								</div>
+								<!--end::Tab content-->
+							</div>
+							<!--end::Col-->
+						</div>
+						<!--end::Row-->
+					</div>
+					<!--end::Plans-->
+					<!--begin::Actions-->
+					<div class="d-flex flex-center flex-row-fluid pt-12">
+						<button type="reset" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+						<button type="submit" class="btn btn-primary" id="kt_modal_upgrade_plan_btn">
+							<!--begin::Indicator label-->
+							<span class="indicator-label">Upgrade Plan</span>
+							<!--end::Indicator label-->
+							<!--begin::Indicator progress-->
+							<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+							<!--end::Indicator progress-->
+						</button>
+					</div>
+					<!--end::Actions-->
+				</div>
+				<!--end::Modal body-->
+			</div>
+			<!--end::Modal content-->
+		</div>
+		<!--end::Modal dialog-->
+	</div>
+	<!--end::Modal - Upgrade plan-->
+	<!--begin::Modal - View Users-->
+	<div class="modal fade" id="kt_modal_view_users" tabindex="-1" aria-hidden="true">
+		<!--begin::Modal dialog-->
+		<div class="modal-dialog mw-650px">
+			<!--begin::Modal content-->
+			<div class="modal-content">
+				<!--begin::Modal header-->
+				<div class="modal-header pb-0 border-0 justify-content-end">
+					<!--begin::Close-->
+					<div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+						<i class="ki-outline ki-cross fs-1"></i>
+					</div>
+					<!--end::Close-->
+				</div>
+				<!--begin::Modal header-->
+				<!--begin::Modal body-->
+				<div class="modal-body scroll-y mx-5 mx-xl-18 pt-0 pb-15">
+					<!--begin::Heading-->
+					<div class="text-center mb-13">
+						<!--begin::Title-->
+						<h1 class="mb-3">Browse Users</h1>
+						<!--end::Title-->
+						<!--begin::Description-->
+						<div class="text-muted fw-semibold fs-5">If you need more info, please check out our
+						<a href="#" class="link-primary fw-bold">Users Directory</a>.</div>
+						<!--end::Description-->
+					</div>
+					<!--end::Heading-->
+					<!--begin::Users-->
+					<div class="mb-15">
+						<!--begin::List-->
+						<div class="mh-375px scroll-y me-n7 pe-7">
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-6.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Emma Smith
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Art Director</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">smith@kpmg.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$23,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-danger text-danger fw-semibold">M</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Melody Macy
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Marketing Analytic</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">melody@altbox.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$50,500</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-1.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Max Smith
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Software Enginer</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">max@kt.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$75,900</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-5.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Sean Bean
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Web Developer</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">sean@dellito.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$10,500</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-25.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Brian Cox
+										<span class="badge badge-light fs-8 fw-semibold ms-2">UI/UX Designer</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">brian@exchange.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$20,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-warning text-warning fw-semibold">C</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Mikaela Collins
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Head Of Marketing</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">mik@pex.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$9,300</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-9.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Francis Mitcham
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Software Arcitect</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">f.mit@kpmg.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$15,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-danger text-danger fw-semibold">O</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Olivia Wild
+										<span class="badge badge-light fs-8 fw-semibold ms-2">System Admin</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">olivia@corpmail.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$23,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-primary text-primary fw-semibold">N</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Neil Owen
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Account Manager</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">owen.neil@gmail.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$45,800</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-23.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Dan Wilson
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Web Desinger</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">dam@consilting.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$90,500</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-danger text-danger fw-semibold">E</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Emma Bold
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Corporate Finance</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">emma@intenso.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$5,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5 border-bottom border-gray-300 border-bottom-dashed">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<img alt="Pic" src="assets/media/avatars/300-12.jpg" />
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Ana Crown
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Customer Relationship</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">ana.cf@limtel.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$70,000</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+							<!--begin::User-->
+							<div class="d-flex flex-stack py-5">
+								<!--begin::Details-->
+								<div class="d-flex align-items-center">
+									<!--begin::Avatar-->
+									<div class="symbol symbol-35px symbol-circle">
+										<span class="symbol-label bg-light-info text-info fw-semibold">A</span>
+									</div>
+									<!--end::Avatar-->
+									<!--begin::Details-->
+									<div class="ms-6">
+										<!--begin::Name-->
+										<a href="#" class="d-flex align-items-center fs-5 fw-bold text-dark text-hover-primary">Robert Doe
+										<span class="badge badge-light fs-8 fw-semibold ms-2">Marketing Executive</span></a>
+										<!--end::Name-->
+										<!--begin::Email-->
+										<div class="fw-semibold text-muted">robert@benko.com</div>
+										<!--end::Email-->
+									</div>
+									<!--end::Details-->
+								</div>
+								<!--end::Details-->
+								<!--begin::Stats-->
+								<div class="d-flex">
+									<!--begin::Sales-->
+									<div class="text-end">
+										<div class="fs-5 fw-bold text-dark">$45,500</div>
+										<div class="fs-7 text-muted">Sales</div>
+									</div>
+									<!--end::Sales-->
+								</div>
+								<!--end::Stats-->
+							</div>
+							<!--end::User-->
+						</div>
+						<!--end::List-->
+					</div>
+					<!--end::Users-->
+					<!--begin::Notice-->
+					<div class="d-flex justify-content-between">
+						<!--begin::Label-->
+						<div class="fw-semibold">
+							<label class="fs-6">Adding Users by Team Members</label>
+							<div class="fs-7 text-muted">If you need more info, please check budget planning</div>
+						</div>
+						<!--end::Label-->
+						<!--begin::Switch-->
+						<label class="form-check form-switch form-check-custom form-check-solid">
+							<input class="form-check-input" type="checkbox" value="" checked="checked" />
+							<span class="form-check-label fw-semibold text-muted">Allowed</span>
+						</label>
+						<!--end::Switch-->
+					</div>
+					<!--end::Notice-->
+				</div>
+				<!--end::Modal body-->
+			</div>
+			<!--end::Modal content-->
+		</div>
+		<!--end::Modal dialog-->
+	</div>
+
+		<!--begin::Modals-->
 	<!--begin::Modal - Upgrade plan-->
 	<div class="modal fade" id="kt_modal_upgrade_plan" tabindex="-1" aria-hidden="true">
 		<!--begin::Modal dialog-->
@@ -10139,7 +11383,6 @@
 		<!--end::Modal - Invite Friend-->
 		<!--end::Modals-->
 	<!--end::Modal - Invite Friend-->
-	<!--end::Modals-->
 	<!--begin::Javascript-->
 	<script>var hostUrl = "assets/";</script>
 	<!--begin::Global Javascript Bundle(mandatory for all pages)-->
