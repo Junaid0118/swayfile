@@ -14,7 +14,6 @@ class FoldersController < ApplicationController
   end
 
   def rename
-    byebug
     @folder = Folder.find(params[:id])
     @folder.update_columns(name: params[:name])
     render json: @folder, status: :ok
