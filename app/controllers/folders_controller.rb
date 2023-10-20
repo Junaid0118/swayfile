@@ -7,6 +7,7 @@ class FoldersController < ApplicationController
   def show; end
 
   def create
+    byebug
     folder = Folder.new(name: params[:name], user_id: User.first.id)
     folder.parent_folder_id = params[:folder_id] if params.key?(:folder_id)
     folder.save!
