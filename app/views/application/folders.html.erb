@@ -1684,26 +1684,26 @@
 												</td>
 											</tr>
 											<% end %>
-										<% @projects.each do |project| %>
-											<tr>
-											<td>
-												<div class="form-check form-check-sm form-check-custom form-check-solid">
-												<input class="form-check-input" type="checkbox" value="1" />
-												</div>
-											</td>
-											<td data-order="datatables">
-												<div class="d-flex align-items-center">
-												<a href="<%= "/projects/#{project.id}" %>" class="text-gray-800 text-hover-primary"><%= project[:name] %></a>
-												</div>
-											</td>
-											<td>-</td>
-											<td>-</td>
-											<td class="text-end" data-kt-filemanager-table="action_dropdown">
-												<div class="d-flex justify-content-end">
-												</div>
-											</td>
-											</tr>
-										<% end %>
+											<% @projects.each do |project| %>
+												<tr>
+												<td>
+													<div class="form-check form-check-sm form-check-custom form-check-solid">
+													<input class="form-check-input" type="checkbox" value="1" />
+													</div>
+												</td>
+												<td data-order="datatables">
+													<div class="d-flex align-items-center">
+													<a href="<%= "/projects/#{project.id}/details" %>" class="text-gray-800 text-hover-primary"><%= project[:name] %></a>
+													</div>
+												</td>
+												<td>-</td>
+												<td>-</td>
+												<td class="text-end" data-kt-filemanager-table="action_dropdown">
+													<div class="d-flex justify-content-end">
+													</div>
+												</td>
+												</tr>
+											<% end %>
 										</tbody>
 										</table>
 										<!--end::Table-->
