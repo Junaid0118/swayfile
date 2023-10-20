@@ -2,7 +2,7 @@
 
 class ProjectsController < ApplicationController
   before_action :authenticate_user!, except: :create
-  before_action :set_project, only: :show
+  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show]
   before_action :set_avatars
 
   def index 
@@ -41,7 +41,7 @@ class ProjectsController < ApplicationController
     project = build_project
     project.folder_id = params[:folder_id] if params.has_key?(:folder_id)
     if project.save
-      create_teams(project)
+      create_teams(project)  if params.has_key?(:members) || params.has_key?(:sign_ids)
 
       return render json: project, status: :created
     else
