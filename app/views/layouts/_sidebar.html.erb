@@ -8,7 +8,7 @@
             <% @avatar_urls.each do |avatar_info| %>
                 <div class="app-navbar-item flex-center px-1 py-3">
                 <!--begin::Navbar link-->
-                <a href="/projects/<%= avatar_info[:id] %>" class="btn btn-icon btn-default">
+                <a href="/projects/<%= avatar_info[:id] %>/details" class="btn btn-icon btn-default">
                     <img src="<%= avatar_info[:url] %>" class="mw-25px" alt="" />
                 </a>
                 <!--end::Navbar link-->
@@ -18,7 +18,7 @@
             <!--begin::Navbar item-->
             <div class="app-navbar-item flex-center py-4">
                 <!--begin::Navbar link-->
-                <a href="#" class="btn btn-icon btn-accent" data-bs-toggle="modal" data-bs-target="#kt_modal_create_app">
+                <a href="#" class="btn btn-icon btn-accent" data-bs-toggle="modal" data-bs-target="#kt_modal_new_address">
                 <i class="ki-outline ki-plus fs-2"></i>
                 </a>
                 <!--end::Navbar link-->
@@ -3805,6 +3805,82 @@
 			</div>
 			<!--end::Modal dialog-->
 		</div>
+	<div class="modal fade" id="kt_modal_new_address" tabindex="-1" aria-hidden="true">
+		<!--begin::Modal dialog-->
+		<div class="modal-dialog modal-dialog-centered mw-650px">
+			<!--begin::Modal content-->
+			<div class="modal-content">
+				<!--begin::Form-->
+				<form class="form" action="#" id="kt_modal_new_address_form">
+					<!--begin::Modal header-->
+					<div class="modal-header" id="kt_modal_new_address_header">
+						<!--begin::Modal title-->
+						<h2>Create Contract</h2>
+						<!--end::Modal title-->
+						<!--begin::Close-->
+						<div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+							<i class="ki-outline ki-cross fs-1"></i>
+						</div>
+						<!--end::Close-->
+					</div>
+					<!--end::Modal header-->
+					<!--begin::Modal body-->
+					<div class="modal-body py-10 px-lg-17">
+						<!--begin::Scroll-->
+						<div class="scroll-y me-n7 pe-7" id="kt_modal_new_address_scroll" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_modal_new_address_header" data-kt-scroll-wrappers="#kt_modal_new_address_scroll" data-kt-scroll-offset="300px">
+							<!--begin::Notice-->
+							<!--begin::Notice-->
+							<div class="notice d-flex bg-light-success rounded border-success border border-dashed mb-9 p-6">
+								<!--begin::Icon-->
+								<i class="ki-outline ki-information fs-2tx text-success me-4"></i>
+								<!--end::Icon-->
+								<!--begin::Wrapper-->
+								<div class="d-flex flex-stack flex-grow-1">
+									<!--begin::Content-->
+									<div class="fw-semibold">
+										<h4 class="text-gray-900 fw-bold">Warning</h4>
+										<div class="fs-6 text-gray-700">Creating a new contract will cost
+										<a style="" class="">2</a> tokens.</div>
+									</div>
+									<!--end::Content-->
+								</div>
+								<!--end::Wrapper-->
+							</div>
+							<!--end::Notice-->
+							<!--end::Notice-->
+							<!--begin::Input group-->
+							<div class="d-flex flex-column mb-5 fv-row">
+								<!--begin::Label-->
+								<label class="required fs-5 fw-semibold mb-2">Contract Title</label>
+								<!--end::Label-->
+								<!--begin::Input-->
+								<input class="form-control form-control-solid" placeholder="" name="contract_name" />
+								<!--end::Input-->
+							</div>
+							<!--end::Input group-->
+						</div>
+						<!--end::Scroll-->
+					</div>
+					<!--end::Modal body-->
+					<!--begin::Modal footer-->
+					<div class="modal-footer flex-center">
+						<!--begin::Button-->
+						<button type="reset" id="kt_modal_new_address_cancel" class="btn btn-light me-3">Discard</button>
+						<!--end::Button-->
+						<!--begin::Button-->
+						<button type="submit" id="kt_modal_new_address_submit" class="btn btn-primary">
+							<span class="indicator-label">Submit</span>
+							<span class="indicator-progress">Please wait...
+							<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+						</button>
+						<!--end::Button-->
+					</div>
+					<!--end::Modal footer-->
+				</form>
+				<!--end::Form-->
+			</div>
+		</div>
+	</div>
         		<!--begin::Javascript-->
 		<script>var hostUrl = "assets/";</script>
         <!-- Add this script at the end of your HTML, just before the closing </body> tag -->
@@ -3841,31 +3917,7 @@
 		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
 		<script src="assets/js/custom/utilities/modals/create-app.js"></script>
 		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
-        <script>
-            document.addEventListener("DOMContentLoaded", function() {
-                var currentProjectId = getProjectIdFromURL();
-
-                var navbarItems = document.querySelectorAll(".app-navbar-item");
-
-                navbarItems.forEach(function(navbarItem) {
-                    var projectLink = navbarItem.querySelector("a");
-                    if (projectLink) {
-                        var projectId = projectLink.getAttribute("href").match(/\/projects\/(\d+)/)[1];
-
-                        if (projectId === currentProjectId) {
-                            navbarItem.classList.add("hover-scroll-overlay-y");
-                        }
-                    }
-                });
-            });
-
-            function getProjectIdFromURL() {
-                var url = window.location.pathname;
-                var projectId = url.match(/\/projects\/(\d+)/);
-                console.log(projectId);
-                return projectId ? projectId[1] : null;
-            }
-        </script>
+        <script src="assets/js/custom/utilities/modals/new-address.js"></script>
 
 
 		<!--end::Custom Javascript-->
