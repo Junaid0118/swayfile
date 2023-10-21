@@ -2,7 +2,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   protect_from_forgery with: :null_session
 
   before_action :configure_permitted_parameters, if: :devise_controller?
-  before_action :set_avatars, only: %i[empty_folder folders file_manager]
+  before_action :set_avatars, only: %i[empty_folder folders file_manager settings]
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
   before_action :authenticate_user!, only: :file_manager

@@ -10,9 +10,9 @@ class ProjectsController < ApplicationController
   end
 
   def search_projects
-    @projects = Project.where("name LIKE ?", "#{params[:query]}%")
+    @projects = Project.where("name ILIKE ?", "#{params[:query]}%")
     render json: @projects.pluck(:name, :id)
-  end
+  end  
 
   def show
   end
