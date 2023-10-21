@@ -2,7 +2,7 @@
 
 Rails.application.routes.draw do
   devise_for :users
-  
+
   root "application#file_manager"
 
   get '/dashboard', to: 'application#dashboard'
@@ -10,8 +10,8 @@ Rails.application.routes.draw do
   get '/project-icons', to: 'projects#projects_icon'
   get '/search_projects', to: 'projects#search_projects'
 
-  resources :compaigns, only: :show
-  
+  resources :compaigns, only: :show # It's a good idea to rename this to `campaigns` for consistency.
+
   resources :projects do
     resources :documents, only: :show
     member do
@@ -24,8 +24,9 @@ Rails.application.routes.draw do
     end
   end
 
-  resources :folders, only: [:create]
-  get 'folders/:slug', to: 'folders#show', as: :folder
+  resources :folders, only: [:create, :destroy]
+  get 'folders/:slug', to: 'folders#show'
+  get 'folders/:id/rename', to: 'folders#rename', as: :rename_folder
   put 'folders/:slug', to: 'folders#update'
 
   get '/folders', to: 'application#folders'
