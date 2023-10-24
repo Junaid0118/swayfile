@@ -1,5 +1,3 @@
-"use strict";
-
 const selectedGuests = [];
 const selectedSignotry = [];
 
@@ -84,108 +82,108 @@ var KTCreateApp = function () {
 			KTUtil.scrollTop();
 		});
 
-		formSubmitButton.addEventListener('click', function (e) {
-			// Validate form before changing stepper step
-			var validator = validations[3]; // get validator for the last form
+		// formSubmitButton.addEventListener('click', function (e) {
+		// 	// Validate form before changing stepper step
+		// 	var validator = validations[3]; // get validator for the last form
 		
-			validator.validate().then(function (status) {
-				console.log('validated!');
+		// 	validator.validate().then(function (status) {
+		// 		console.log('validated!');
 		
-				if (status == 'Valid') {
-					// Prevent default button action
-					e.preventDefault();
+		// 		if (status == 'Valid') {
+		// 			// Prevent default button action
+		// 			e.preventDefault();
 		
-					// Disable button to avoid multiple clicks
-					formSubmitButton.disabled = true;
+		// 			// Disable button to avoid multiple clicks
+		// 			formSubmitButton.disabled = true;
 		
-					const formData = new FormData();
-					const teamMembers = selectedGuests.map(item => item.value);
-					const sign_ids = selectedSignotry.map(item => item.value);
+		// 			const formData = new FormData();
+		// 			const teamMembers = selectedGuests.map(item => item.value);
+		// 			const sign_ids = selectedSignotry.map(item => item.value);
 
-					var fileInput = document.getElementById('kt_modal_create_campaign_files_upload');
-					var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
-					formData.append('file', file);
+		// 			var fileInput = document.getElementById('kt_modal_create_campaign_files_upload');
+		// 			var file = fileInput.dropzone.files[0]; // Assuming only one file is allowed
+		// 			formData.append('file', file);
 		
-					for (var i = 0; i < form.elements.length; i++) {
-						var fieldName = form.elements[i].name;
-						var fieldValue = form.elements[i].value;
+		// 			for (var i = 0; i < form.elements.length; i++) {
+		// 				var fieldName = form.elements[i].name;
+		// 				var fieldValue = form.elements[i].value;
 		
-						if (fieldName === 'email' || fieldName === 'phone') {
-							continue; // Skip this field
-						}
+		// 				if (fieldName === 'email' || fieldName === 'phone') {
+		// 					continue; // Skip this field
+		// 				}
 		
-						if (fieldName === 'status') {
-							fieldValue = form.elements[i].checked ? 'Active' : 'Inactive';
-						}
+		// 				if (fieldName === 'status') {
+		// 					fieldValue = form.elements[i].checked ? 'Active' : 'Inactive';
+		// 				}
 		
-						// Append key-value pairs to the FormData object
-						formData.append(fieldName, fieldValue);
-					}
+		// 				// Append key-value pairs to the FormData object
+		// 				formData.append(fieldName, fieldValue);
+		// 			}
 		
-					// Append the teamMembers and role parameters
-					formData.append("members", teamMembers.join(","));
-					formData.append("sign_ids", sign_ids.join(","));
+		// 			// Append the teamMembers and role parameters
+		// 			formData.append("members", teamMembers.join(","));
+		// 			formData.append("sign_ids", sign_ids.join(","));
 
-					const folderElement = document.getElementById('folder-data');
-					let folderID = null;
+		// 			const folderElement = document.getElementById('folder-data');
+		// 			let folderID = null;
 
-					if (folderElement) {
-						folderID = folderElement.getAttribute('data-folder');
-						formData.append("folder_id", folderID);
-					}
+		// 			if (folderElement) {
+		// 				folderID = folderElement.getAttribute('data-folder');
+		// 				formData.append("folder_id", folderID);
+		// 			}
 
-					// Now you can use the folderID variable, which will be null if the data-folder attribute is not present
+		// 			// Now you can use the folderID variable, which will be null if the data-folder attribute is not present
 
 		
-					// Now, 'formData' contains all the form data you need
+		// 			// Now, 'formData' contains all the form data you need
 
-					console.log("here:" ,window.location.pathname)
+		// 			console.log("here:" ,window.location.pathname)
 		
-					$.ajax({
-						url: '/projects',
-						type: 'POST',
-						data: formData, // Use the FormData object as the data
-						processData: false, // Prevent jQuery from processing the data
-						contentType: false, // Prevent jQuery from setting the content type
-						success: function (data) {
-							console.log("success")
-							window.location.replace(window.location.href);
-						},
-						error: function (data) {
-							console.log("error")
-							window.location.replace(window.location.href);
-						}
-					});
+		// 			$.ajax({
+		// 				url: '/projects',
+		// 				type: 'POST',
+		// 				data: formData, // Use the FormData object as the data
+		// 				processData: false, // Prevent jQuery from processing the data
+		// 				contentType: false, // Prevent jQuery from setting the content type
+		// 				success: function (data) {
+		// 					console.log("success")
+		// 					window.location.replace(window.location.href);
+		// 				},
+		// 				error: function (data) {
+		// 					console.log("error")
+		// 					window.location.replace(window.location.href);
+		// 				}
+		// 			});
 		
-					// Show loading indication
-					formSubmitButton.setAttribute('data-kt-indicator', 'on');
+		// 			// Show loading indication
+		// 			formSubmitButton.setAttribute('data-kt-indicator', 'on');
 		
-					// Simulate form submission
-					setTimeout(function () {
-						// Hide loading indication
-						formSubmitButton.removeAttribute('data-kt-indicator');
+		// 			// Simulate form submission
+		// 			setTimeout(function () {
+		// 				// Hide loading indication
+		// 				formSubmitButton.removeAttribute('data-kt-indicator');
 		
-						// Enable button
-						formSubmitButton.disabled = false;
+		// 				// Enable button
+		// 				formSubmitButton.disabled = false;
 		
-						stepperObj.goNext();
-						// KTUtil.scrollTop();
-					}, 2000);
-				} else {
-					Swal.fire({
-						text: "Sorry, looks like there are some errors detected, please try again.",
-						icon: "error",
-						buttonsStyling: false,
-						confirmButtonText: "Ok, got it!",
-						customClass: {
-							confirmButton: "btn btn-light"
-						}
-					}).then(function () {
-						// KTUtil.scrollTop();
-					});
-				}
-			});
-		});		
+		// 				stepperObj.goNext();
+		// 				// KTUtil.scrollTop();
+		// 			}, 2000);
+		// 		} else {
+		// 			Swal.fire({
+		// 				text: "Sorry, looks like there are some errors detected, please try again.",
+		// 				icon: "error",
+		// 				buttonsStyling: false,
+		// 				confirmButtonText: "Ok, got it!",
+		// 				customClass: {
+		// 					confirmButton: "btn btn-light"
+		// 				}
+		// 			}).then(function () {
+		// 				// KTUtil.scrollTop();
+		// 			});
+		// 		}
+		// 	});
+		// });		
 	}
 
 	// Init form inputs
@@ -277,6 +275,7 @@ const initTagify = (el) => {
             },
             whitelist: data // Use the combined user data
         });
+
 
         tagify.on('dropdown:show dropdown:updated', onDropdownShow);
         tagify.on('dropdown:select', onSelectSuggestion);
@@ -650,7 +649,7 @@ const initTagify = (el) => {
 		// Public Functions
 		init: function () {
 			// Elements
-			modalEl = document.querySelector('#kt_modal_create_app');
+			modalEl = document.querySelector('#kt_modal_build_team');
 
 			if (!modalEl) {
 				return;

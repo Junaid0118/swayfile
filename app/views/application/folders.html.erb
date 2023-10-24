@@ -1565,15 +1565,11 @@
 											<!--begin::Folder path-->
 											<div class="badge badge-lg badge-light-primary">
 												<div class="d-flex align-items-center flex-wrap">
-												<i class="ki-outline ki-abstract-32 fs-2 text-primary me-3"></i>
-												<a href="#">StarterHouse</a>
-												<i class="ki-outline ki-right fs-2 text-primary mx-1"></i>Projects</div>
-											</div>
+													<% @folder.full_path_string.split(',').each do |path| %>
+														<i class="ki-outline ki-right fs-2 text-primary mx-1"></i><%= path %></div>
+													<% end %>
 											<!--end::Folder path-->
 											<!--begin::Folder Stats-->
-											<div class="badge badge-lg badge-primary">
-												<span id="kt_file_manager_items_counter">10 items</span>
-											</div>
 											<!--end::Folder Stats-->
 										</div>
 										<!--end::Table header-->

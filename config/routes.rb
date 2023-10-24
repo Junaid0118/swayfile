@@ -27,6 +27,10 @@ Rails.application.routes.draw do
       get 'signatories'
       get 'contract'
       get 'review'
+
+      get 'add_member_to_project'
+      get 'add_signatory_to_project'
+      get 'remove_member_from_team'
     end
   end
 
