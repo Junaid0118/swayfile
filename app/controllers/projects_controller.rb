@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
 class ProjectsController < ApplicationController
-  before_action :authenticate_user!, except: :create
-  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team]
+  before_action :authenticate_user!, except: [:create, :update]
+  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update]
   before_action :set_avatars
 
   def index 
@@ -25,19 +25,13 @@ class ProjectsController < ApplicationController
     @team_members = @project.signatory_party_users
   end
 
-  def users
-    render layout: 'projects'
+  def update
+    @project.update_columns(name: params[:name])
+    return render json: @project, status: :ok
   end
 
-  def files
-    render layout: 'projects'
-  end
 
   def settings
-    render layout: 'projects'
-  end
-
-  def activity
     render layout: 'projects'
   end
 
@@ -80,7 +74,7 @@ class ProjectsController < ApplicationController
   private
 
   def build_project
-    Project.new(project_params)
+    Project.new(name: params[:name])
   end
 
   def set_project

@@ -15,10 +15,7 @@ Rails.application.routes.draw do
   resources :projects do
     resources :documents, only: :show
     member do
-      get 'users'
       get 'team'
-      get 'files'
-      get 'activity'
       get 'settings'
       get 'comments'
 

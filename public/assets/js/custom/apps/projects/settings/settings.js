@@ -24,27 +24,6 @@ var KTProjectSettings = function () {
                             }
                         }
                     },
-                    type: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Project type is required'
-                            }
-                        }
-                    },
-                    description: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Project Description is required'
-                            }
-                        }
-                    },
-                    date: {
-                        validators: {
-                            notEmpty: {
-                                message: 'Due Date is required'
-                            }
-                        }
-                    },
                 },
                 plugins: {
                     trigger: new FormValidation.plugins.Trigger(),
@@ -62,22 +41,13 @@ var KTProjectSettings = function () {
             var form = document.getElementById('kt_project_settings_form');
             validation.validate().then(function (status) {
                 if (status == 'Valid') {
+                    var newName = document.getElementById('project_name').value;
+                    var projectId = document.getElementById('project-data').getAttribute("data-project");
                     var params = '';
-                    for (var i = 0; i < form.elements.length; i++) {
-                        var fieldName = form.elements[i].name;
-                        var fieldValue = form.elements[i].value;                    
-                        if (fieldName === 'email' || fieldName === 'phone') {
-                            continue; // Skip this field
-                        }                    
-                        if (fieldName === 'status') {
-                            fieldValue = form.elements[i].checked ? 'Active' : 'Inactive';
-                        }
-                        params += encodeURIComponent(fieldName) + '=' + encodeURIComponent(fieldValue) + '&';
-                    }
-
+                    params += "name" + "=" + newName
                     $.ajax({
-                        url:'/projects?'+params,
-                        type:'POST',
+                        url:`/projects/${projectId}?`+params,
+                        type:'PUT',
                         dataType:'json',
                         success:function(data){
                             swal.fire({
@@ -89,7 +59,7 @@ var KTProjectSettings = function () {
                                     confirmButton: "btn fw-bold btn-light-primary"
                                 }
                             }).then(function () {
-                                window.location.replace("/projects/");
+                                window.location.replace(`/projects/${projectId}/details`);
                             });
                         },
                         error:function(data){
