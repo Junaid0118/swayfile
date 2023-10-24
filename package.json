@@ -1,5 +1,7 @@
 {
   "name": "starterhouse",
   "private": true,
-  "dependencies": {}
+  "dependencies": {
+    "gulp": "^4.0.2"
+  }
 }
