@@ -11,7 +11,6 @@ var KTFileManagerList = (function () {
   var renameTemplate;
   var actionTemplate;
   var checkboxTemplate;
-
   // Private functions
   const initTemplates = () => {
     uploadTemplate = document.querySelector(
@@ -957,10 +956,10 @@ var KTFileManagerList = (function () {
           console.log("validated!");
 
           if (status == "Valid") {
-            let presentFolder = getSlugFromURL();
-            let moveToFolder = getSelectedFolderId();
+            let moveToFolder = $('input[name="move_to_folder"]:checked').val();
+            let projectId = document.getElementById('selectedProjectID').value;
             $.ajax({
-              url: `/folders/${presentFolder}?parent_folder_id=${moveToFolder}`,
+              url: `/projects/${projectId}/move_to_folder?parent_folder_id=${moveToFolder}`,
               type: "PUT",
               processData: false, // Prevent jQuery from processing the data
               contentType: false, // Prevent jQuery from setting the content type
@@ -979,6 +978,7 @@ var KTFileManagerList = (function () {
                     },
                   }).then(function (result) {
                     if (result.isConfirmed) {
+                      window.location.replace("/");
                       form.reset(); // Reset form
                       moveModal.hide(); // Hide modal
 

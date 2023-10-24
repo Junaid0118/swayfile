@@ -28,6 +28,7 @@ Rails.application.routes.draw do
       get 'add_member_to_project'
       get 'add_signatory_to_project'
       get 'remove_member_from_team'
+      put 'move_to_folder' 
     end
   end
 
