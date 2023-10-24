@@ -1566,8 +1566,12 @@
 											<div class="badge badge-lg badge-light-primary">
 												<div class="d-flex align-items-center flex-wrap">
 													<% @folder.full_path_string.split(',').each do |path| %>
+													<i class="ki-outline ki-abstract-32 fs-2 text-primary me-3"></i>
+													<a href="<%= root_path %>">StarterHouse</a>
 														<i class="ki-outline ki-right fs-2 text-primary mx-1"></i><%= path %></div>
 													<% end %>
+
+											</div>
 											<!--end::Folder path-->
 											<!--begin::Folder Stats-->
 											<!--end::Folder Stats-->
