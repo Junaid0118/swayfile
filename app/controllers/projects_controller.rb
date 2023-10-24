@@ -31,7 +31,6 @@ class ProjectsController < ApplicationController
   end
 
   def move_to_folder
-    byebug
     @project = @project.update(folder_id: params[:parent_folder_id])
     return render json: @project, status: :ok
   end
