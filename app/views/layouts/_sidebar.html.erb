@@ -2,14 +2,14 @@
     <!--begin::Sidebar primary-->
     <div class="app-sidebar-primary">
         <!--begin::Sidebar navbar-->
-        <div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="5px">
+        <div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="px">
         <div class="app-navbar flex-column flex-center">
             <!--begin::Navbar item-->
             <% Project.all.each do |project| %>
                 <div class="app-navbar-item flex-center px-1 py-3">
                 <!--begin::Navbar link-->
-                <a href="/projects/<%= project.id %>/details" class="btn btn-icon btn-default">
-                    <div class="symbol symbol-50px me-5">
+                <a href="/projects/<%= project.id %>/details" class="btn btn-icon">
+                    <div class="symbol me-5">
                             <div class="symbol-label fs-1 fw-bold bg-light-success text-success"><%= project.name.split('').first.upcase %></div>
                     </div>
                 </a>
