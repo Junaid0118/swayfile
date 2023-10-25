@@ -5,11 +5,13 @@
         <div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="5px">
         <div class="app-navbar flex-column flex-center">
             <!--begin::Navbar item-->
-            <% @avatar_urls.each do |avatar_info| %>
+            <% Project.all.each do |project| %>
                 <div class="app-navbar-item flex-center px-1 py-3">
                 <!--begin::Navbar link-->
-                <a href="/projects/<%= avatar_info[:id] %>/details" class="btn btn-icon btn-default">
-                    <img src="<%= avatar_info[:url] %>" class="mw-25px" alt="" />
+                <a href="/projects/<%= project.id %>/details" class="btn btn-icon btn-default">
+                    <div class="symbol symbol-50px me-5">
+                            <div class="symbol-label fs-1 fw-bold bg-light-success text-success"><%= project.name.split('').first.upcase %></div>
+                    </div>
                 </a>
                 <!--end::Navbar link-->
                 </div>
