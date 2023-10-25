@@ -4,6 +4,7 @@ class Project < ApplicationRecord
   has_one_attached :avatar
 
   belongs_to :folder, optional: true
+  belongs_to :created_by, class_name: 'User', optional: true
 
   has_many :documents, dependent: :destroy
   has_many :teams

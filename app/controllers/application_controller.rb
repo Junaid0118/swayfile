@@ -6,9 +6,14 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
   before_action :authenticate_user!, only: :file_manager
+  before_action :set_notifications, unless: :devise_controller?
 
-  def after_sign_in_path_for(_resource)
-	  root_path
+  def after_sign_in_path_for(resource)
+    # Set the user-specific value in a cookie here
+    cookies[:user_value] = resource.user_value
+
+    # Redirect to the desired path
+    new_project_path
   end
 
   def application
@@ -78,4 +83,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     @all_folders = Folder.select(:name, :id)
   end
 
+  def set_notifications
+    @notifications = Notification.all.order(id: :desc)
+  end
 end

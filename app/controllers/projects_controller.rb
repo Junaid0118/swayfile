@@ -4,6 +4,7 @@ class ProjectsController < ApplicationController
   before_action :authenticate_user!, except: [:create, :update, :move_to_folder]
   before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder]
   before_action :set_avatars
+  # before_action :set_user, only: :create
 
   def index 
     render layout: 'projects'
@@ -48,6 +49,7 @@ class ProjectsController < ApplicationController
     project = build_project
     project.folder_id = params[:folder_id] if params.has_key?(:folder_id)
     if project.save
+      Notification.create!(notification_type: "New Project", user_id: User.first.id, text: "Project #{project.name} created", date:DateTime.now)
       return render json: project, status: :created
     else
       return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
@@ -93,5 +95,4 @@ class ProjectsController < ApplicationController
   
     @avatar_urls = @avatar_urls.sort_by! { |project_data| project_data[:created_at] }.reverse
   end
-  
 end

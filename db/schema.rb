@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_10_16_124035) do
+ActiveRecord::Schema.define(version: 2023_10_25_122510) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -80,6 +80,16 @@ ActiveRecord::Schema.define(version: 2023_10_16_124035) do
     t.index ["user_id"], name: "index_folders_on_user_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.string "notification_type"
+    t.string "text"
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.datetime "date"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
+  end
+
   create_table "projects", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
@@ -90,6 +100,8 @@ ActiveRecord::Schema.define(version: 2023_10_16_124035) do
     t.string "notifications"
     t.string "status"
     t.bigint "folder_id"
+    t.bigint "created_by_id"
+    t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["folder_id"], name: "index_projects_on_folder_id"
   end
 
@@ -135,7 +147,9 @@ ActiveRecord::Schema.define(version: 2023_10_16_124035) do
   add_foreign_key "documents", "projects"
   add_foreign_key "documents", "users"
   add_foreign_key "folders", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "projects", "folders"
+  add_foreign_key "projects", "users", column: "created_by_id"
   add_foreign_key "sections", "documents"
   add_foreign_key "sections", "users"
   add_foreign_key "teams", "projects"

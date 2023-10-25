@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: {
+    sessions: 'users/sessions'
+  }
 
   root "application#file_manager"
 
@@ -10,7 +12,8 @@ Rails.application.routes.draw do
   get '/project-icons', to: 'projects#projects_icon'
   get '/search_projects', to: 'projects#search_projects'
 
-  resources :compaigns, only: :show # It's a good idea to rename this to `campaigns` for consistency.
+  resources :compaigns, only: :show
+  resources :notifcations, only: :index
 
   resources :projects do
     resources :documents, only: :show
