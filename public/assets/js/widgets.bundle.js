@@ -15767,297 +15767,6 @@ KTUtil.onDOMContentLoaded(function() {
 "use strict";
 
 // Class definition
-var KTMapsWidget1 = (function () {
-    // Private methods
-    var initMap = function () {
-        // Check if amchart library is included
-        if (typeof am5 === 'undefined') {
-            return;
-        }
-
-        var element = document.getElementById("kt_maps_widget_1_map");
-
-        if (!element) {
-            return;
-        }
-
-        var root;
-
-        var init = function() {
-            // Create root element
-            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
-            root = am5.Root.new(element);
-
-            // Set themes
-            // https://www.amcharts.com/docs/v5/concepts/themes/
-            root.setThemes([am5themes_Animated.new(root)]);
-
-            // Create the map chart
-            // https://www.amcharts.com/docs/v5/charts/map-chart/
-            var chart = root.container.children.push(
-                am5map.MapChart.new(root, {
-                    panX: "translateX",
-                    panY: "translateY",
-                    projection: am5map.geoMercator(),
-					paddingLeft: 0,
-					paddingrIGHT: 0,
-					paddingBottom: 0
-                })
-            );
-
-            // Create main polygon series for countries
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
-            var polygonSeries = chart.series.push(
-                am5map.MapPolygonSeries.new(root, {
-                    geoJSON: am5geodata_worldLow,
-                    exclude: ["AQ"],
-                })
-            );
-
-            polygonSeries.mapPolygons.template.setAll({
-                tooltipText: "{name}",
-                toggleKey: "active",
-                interactive: true,
-				fill: am5.color(KTUtil.getCssVariableValue('--bs-gray-300')),
-            });
-
-            polygonSeries.mapPolygons.template.states.create("hover", {
-                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
-            });
-
-            polygonSeries.mapPolygons.template.states.create("active", {
-                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
-            });
-
-            // Highlighted Series
-            // Create main polygon series for countries
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
-            var polygonSeriesHighlighted = chart.series.push(
-                am5map.MapPolygonSeries.new(root, {
-                    //geoJSON: am5geodata_usaLow,
-					geoJSON: am5geodata_worldLow,
-					include: ['US', 'BR', 'DE', 'AU', 'JP']
-                })
-            );
-
-            polygonSeriesHighlighted.mapPolygons.template.setAll({
-                tooltipText: "{name}",
-                toggleKey: "active",
-                interactive: true,
-            });
-
-            var colors = am5.ColorSet.new(root, {});
-
-            polygonSeriesHighlighted.mapPolygons.template.set(
-                "fill",
-				am5.color(KTUtil.getCssVariableValue('--bs-primary')),
-            );
-
-            polygonSeriesHighlighted.mapPolygons.template.states.create("hover", {
-                fill: root.interfaceColors.get("primaryButtonHover"),
-            });
-
-            polygonSeriesHighlighted.mapPolygons.template.states.create("active", {
-                fill: root.interfaceColors.get("primaryButtonHover"),
-            });
-
-            // Add zoom control
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-pan-zoom/#Zoom_control
-            //chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
-
-            // Set clicking on "water" to zoom out
-            chart.chartContainer
-                .get("background")
-                .events.on("click", function () {
-                    chart.goHome();
-                });
-
-            // Make stuff animate on load
-            chart.appear(1000, 100);
-        }
-
-        // On amchart ready
-        am5.ready(function () {
-            init();
-        }); // end am5.ready()
-
-        // Update chart on theme mode change
-		KTThemeMode.on("kt.thememode.change", function() {     
-			// Destroy chart
-			root.dispose();
-
-			// Reinit chart
-			init();
-		});
-    };
-
-    // Public methods
-    return {
-        init: function () {
-            initMap();
-        },
-    };
-})();
-
-// Webpack support
-if (typeof module !== "undefined") {
-    module.exports = KTMapsWidget1;
-}
-
-// On document ready
-KTUtil.onDOMContentLoaded(function () {
-    KTMapsWidget1.init();
-});
-
-"use strict";
-
-// Class definition
-var KTMapsWidget2 = (function () {
-    // Private methods
-    var initMap = function () {
-        // Check if amchart library is included
-        if (typeof am5 === 'undefined') {
-            return;
-        }
-
-        var element = document.getElementById("kt_maps_widget_2_map");
-
-        if (!element) {
-            return;
-        }
-
-        // Root
-        var root;
-
-        var init = function() {
-            // Create root element
-            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
-            root = am5.Root.new(element);
-
-            // Set themes
-            // https://www.amcharts.com/docs/v5/concepts/themes/
-            root.setThemes([am5themes_Animated.new(root)]);
-
-            // Create the map chart
-            // https://www.amcharts.com/docs/v5/charts/map-chart/
-            var chart = root.container.children.push(
-                am5map.MapChart.new(root, {
-                    panX: "translateX",
-                    panY: "translateY",
-                    projection: am5map.geoMercator(),
-					paddingLeft: 0,
-					paddingrIGHT: 0,
-					paddingBottom: 0
-                })
-            );
-
-            // Create main polygon series for countries
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
-            var polygonSeries = chart.series.push(
-                am5map.MapPolygonSeries.new(root, {
-                    geoJSON: am5geodata_worldLow,
-                    exclude: ["AQ"],
-                })
-            );
-
-            polygonSeries.mapPolygons.template.setAll({
-                tooltipText: "{name}",
-                toggleKey: "active",
-                interactive: true,
-				fill: am5.color(KTUtil.getCssVariableValue('--bs-gray-300')),
-            });
-
-            polygonSeries.mapPolygons.template.states.create("hover", {
-                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
-            });
-
-            polygonSeries.mapPolygons.template.states.create("active", {
-                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
-            });
-
-            // Highlighted Series
-            // Create main polygon series for countries
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
-            var polygonSeriesHighlighted = chart.series.push(
-                am5map.MapPolygonSeries.new(root, {
-                    //geoJSON: am5geodata_usaLow,
-					geoJSON: am5geodata_worldLow,
-					include: ['US', 'BR', 'DE', 'AU', 'JP']
-                })
-            );
-
-            polygonSeriesHighlighted.mapPolygons.template.setAll({
-                tooltipText: "{name}",
-                toggleKey: "active",
-                interactive: true,
-            });
-
-            var colors = am5.ColorSet.new(root, {});
-
-            polygonSeriesHighlighted.mapPolygons.template.set(
-                "fill",
-				am5.color(KTUtil.getCssVariableValue('--bs-primary')),
-            );
-
-            polygonSeriesHighlighted.mapPolygons.template.states.create("hover", {
-                fill: root.interfaceColors.get("primaryButtonHover"),
-            });
-
-            polygonSeriesHighlighted.mapPolygons.template.states.create("active", {
-                fill: root.interfaceColors.get("primaryButtonHover"),
-            });
-
-            // Add zoom control
-            // https://www.amcharts.com/docs/v5/charts/map-chart/map-pan-zoom/#Zoom_control
-            //chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
-
-            // Set clicking on "water" to zoom out
-            chart.chartContainer
-                .get("background")
-                .events.on("click", function () {
-                    chart.goHome();
-                });
-
-            // Make stuff animate on load
-            chart.appear(1000, 100);
-        }
-
-        // On amchart ready
-        am5.ready(function () {
-            init();
-        }); // end am5.ready()
-
-        // Update chart on theme mode change
-		KTThemeMode.on("kt.thememode.change", function() {     
-			// Destroy chart
-			root.dispose();
-
-			// Reinit chart
-			init();
-		});
-    };
-
-    // Public methods
-    return {
-        init: function () {
-            initMap();
-        },
-    };
-})();
-
-// Webpack support
-if (typeof module !== "undefined") {
-    module.exports = KTMapsWidget2;
-}
-
-// On document ready
-KTUtil.onDOMContentLoaded(function () {
-    KTMapsWidget2.init();
-});
-
-"use strict";
-
-// Class definition
 var KTPlayersWidget1 = function () {
     // Private methods
     var initPlayers = function() {
@@ -16257,509 +15966,6 @@ if (typeof module !== 'undefined') {
 window.addEventListener("load", function() {
     KTPlayersWidget2.init();
 }); 
-"use strict";
-
-// Class definition
-var KTSlidersWidget1 = function() {
-    var chart1 = {
-        self: null,
-        rendered: false
-    };
-
-    var chart2 = {
-        self: null,
-        rendered: false
-    };
-
-    var chart3 = {
-        self: null,
-        rendered: false
-    };
-
-    // Private methods
-    var initChart = function(chart, query, data) {
-        var element = document.querySelector(query);
-
-        if ( !element) {
-            return;
-        }              
-        
-        if ( chart.rendered === true && element.classList.contains("initialized") ) {
-            return;
-        }
-
-        var height = parseInt(KTUtil.css(element, 'height'));
-        var baseColor = KTUtil.getCssVariableValue('--bs-' + 'primary');
-        var lightColor = KTUtil.getCssVariableValue('--bs-' + 'primary-light' );         
-
-        var options = {
-            series: [data],
-            chart: {
-                fontFamily: 'inherit',
-                height: height,
-                type: 'radialBar',
-                sparkline: {
-                    enabled: true,
-                }
-            },
-            plotOptions: {
-                radialBar: {
-                    hollow: {
-                        margin: 0,
-                        size: "45%"
-                    },
-                    dataLabels: {
-                        showOn: "always",
-                        name: {
-                            show: false                                 
-                        },
-                        value: {                                 
-                            show: false                              
-                        }
-                    },
-                    track: {
-                        background: lightColor,
-                        strokeWidth: '100%'
-                    }
-                }
-            },
-            colors: [baseColor],
-            stroke: {
-                lineCap: "round",
-            },
-            labels: ["Progress"]
-        };
-
-        chart.self = new ApexCharts(element, options);
-        chart.self.render();
-        chart.rendered = true;
-
-        element.classList.add('initialized');
-    }
-
-    // Public methods
-    return {
-        init: function () {
-            // Init default chart
-            initChart(chart1, '#kt_slider_widget_1_chart_1', 76);
-
-            var carousel = document.querySelector('#kt_sliders_widget_1_slider');
-            
-            if ( !carousel ) {
-                return;
-            }
-
-            // Init slide charts
-            carousel.addEventListener('slid.bs.carousel', function (e) {
-                if (e.to === 1) {
-                    // Init second chart
-                    initChart(chart2, '#kt_slider_widget_1_chart_2', 55);
-                }
-
-                if (e.to === 2) {
-                    // Init third chart
-                    initChart(chart3, '#kt_slider_widget_1_chart_3', 25);
-                }
-            });
-
-            // Update chart on theme mode change
-            KTThemeMode.on("kt.thememode.change", function() {                
-                if (chart1.rendered) {
-                    chart1.self.destroy();
-                    chart1.rendered = false;
-                }
-
-                if (chart2.rendered) {
-                    chart2.self.destroy();
-                    chart2.rendered = false;
-                }
-
-                if (chart3.rendered) {
-                    chart3.self.destroy();
-                    chart3.rendered = false;
-                }
-
-                initChart(chart1, '#kt_slider_widget_1_chart_1', 76);
-                initChart(chart2, '#kt_slider_widget_1_chart_2', 55);
-                initChart(chart3, '#kt_slider_widget_1_chart_3', 25);
-            });
-        }   
-    }        
-}();
-
-
-// Webpack support
-if (typeof module !== 'undefined') {
-    module.exports = KTSlidersWidget1;
-}
-
-// On document ready
-KTUtil.onDOMContentLoaded(function() {
-    KTSlidersWidget1.init();
-});
-   
-        
-        
-        
-           
-"use strict";
-
-// Class definition
-var KTSlidersWidget3 = function () {
-    var chart1 = {
-        self: null,
-        rendered: false
-    };
-
-    var chart2 = {
-        self: null,
-        rendered: false
-    };
-
-    // Private methods
-    var initChart = function(chart, query, color, data) {
-        var element = document.querySelector(query);
-
-        if (!element) {
-            return;
-        }
-        
-        if ( chart.rendered === true && element.classList.contains("initialized") ) {
-            return;
-        }
-
-        var height = parseInt(KTUtil.css(element, 'height'));
-        var labelColor = KTUtil.getCssVariableValue('--bs-gray-500');
-        var borderColor = KTUtil.getCssVariableValue('--bs-border-dashed-color');
-        var baseColor = KTUtil.getCssVariableValue('--bs-' + color);
-
-        var options = {
-            series: [{
-                name: 'Lessons',
-                data: data
-            }],            
-            chart: {
-                fontFamily: 'inherit',
-                type: 'area',
-                height: height,
-                toolbar: {
-                    show: false
-                }
-            },
-            plotOptions: {
-
-            },
-            legend: {
-                show: false
-            },
-            dataLabels: {
-                enabled: false
-            },
-            fill: {
-                type: "gradient",
-                gradient: {
-                    shadeIntensity: 1,
-                    opacityFrom: 0.4,
-                    opacityTo: 0,
-                    stops: [0, 80, 100]
-                }
-            },
-            stroke: {
-                curve: 'smooth',
-                show: true,
-                width: 3,
-                colors: [baseColor]
-            },
-            xaxis: {
-                categories: ['', 'Apr 05', 'Apr 06', 'Apr 07', 'Apr 08', 'Apr 09', 'Apr 11', 'Apr 12', 'Apr 14', 'Apr 15', 'Apr 16', 'Apr 17', 'Apr 18', ''],
-                axisBorder: {
-                    show: false,
-                },
-                axisTicks: {
-                    show: false
-                },
-                tickAmount: 6,
-                labels: {
-                    rotate: 0,
-                    rotateAlways: true,
-                    style: {
-                        colors: labelColor,
-                        fontSize: '12px'
-                    }
-                },
-                crosshairs: {
-                    position: 'front',
-                    stroke: {
-                        color: baseColor,
-                        width: 1,
-                        dashArray: 3
-                    }
-                },
-                tooltip: {
-                    enabled: true,
-                    formatter: undefined,
-                    offsetY: 0,
-                    style: {
-                        fontSize: '12px'
-                    }
-                }
-            },
-            yaxis: {
-                tickAmount: 4,
-                max: 24,
-                min: 10,
-                labels: {
-                    style: {
-                        colors: labelColor,
-                        fontSize: '12px'
-                    } 
-                }
-            },
-            states: {
-                normal: {
-                    filter: {
-                        type: 'none',
-                        value: 0
-                    }
-                },
-                hover: {
-                    filter: {
-                        type: 'none',
-                        value: 0
-                    }
-                },
-                active: {
-                    allowMultipleDataPointsSelection: false,
-                    filter: {
-                        type: 'none',
-                        value: 0
-                    }
-                }
-            },
-            tooltip: {
-                style: {
-                    fontSize: '12px'
-                } 
-            },
-            colors: [baseColor],
-            grid: {
-                borderColor: borderColor,
-                strokeDashArray: 4,
-                yaxis: {
-                    lines: {
-                        show: true
-                    }
-                }
-            },
-            markers: {
-                strokeColor: baseColor,
-                strokeWidth: 3
-            }
-        };
-
-        chart.self = new ApexCharts(element, options);
-        chart.self.render();
-        chart.rendered = true;
-
-        element.classList.add('initialized');   
-    }
-
-    // Public methods
-    return {
-        init: function () {
-            var data1 = [19, 21, 21, 20, 20, 18, 18, 20, 20, 22, 22, 21, 21, 22];
-            var data2 = [18, 22, 22, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 22];
-            
-            // Init default chart
-            initChart(chart1, '#kt_sliders_widget_3_chart_1', 'danger', data1);
-
-            var carousel = document.querySelector('#kt_sliders_widget_3_slider');
-
-            if ( !carousel ){
-                return;
-            }
-            
-            carousel.addEventListener('slid.bs.carousel', function (e) {
-                if (e.to === 1) {
-                    // Init second chart
-                    initChart(chart2, '#kt_sliders_widget_3_chart_2', 'primary', data2);
-                }                
-            });
-
-            // Update chart on theme mode change
-            KTThemeMode.on("kt.thememode.change", function() {                
-                if (chart1.rendered) {
-                    chart1.self.destroy();
-                    chart1.rendered = false;
-                }
-
-                if (chart2.rendered) {
-                    chart2.self.destroy();
-                    chart2.rendered = false;
-                }
-
-                initChart(chart1, '#kt_sliders_widget_3_chart_1', 'danger', data1);
-                initChart(chart2, '#kt_sliders_widget_3_chart_2', 'primary', data2);
-            });
-        }   
-    }
-}();
-
-// Webpack support
-if (typeof module !== 'undefined') {
-    module.exports = KTSlidersWidget3;
-}
-
-// On document ready
-KTUtil.onDOMContentLoaded(function() {
-    KTSlidersWidget3.init();
-});
-
-"use strict";
-
-// Class definition
-var KTSlidersWidget7 = function() {
-    var chart1 = {
-        self: null,
-        rendered: false
-    };
-
-    var chart2 = {
-        self: null,
-        rendered: false
-    };
-
-    var chart3 = {
-        self: null,
-        rendered: false
-    };
-
-    // Private methods
-    var initChart = function(chart, query, data) {
-        var element = document.querySelector(query);
-
-        if ( !element) {
-            return;
-        }              
-        
-        if ( chart.rendered === true && element.classList.contains("initialized") ) {
-            return;
-        }
-
-        var height = parseInt(KTUtil.css(element, 'height'));
-        var baseColor = KTUtil.getCssVariableValue('--bs-' + 'danger');
-        var lightColor = KTUtil.getCssVariableValue('--bs-' + 'white' );         
-
-        var options = {
-            series: [data],
-            chart: {
-                fontFamily: 'inherit',
-                height: height,
-                type: 'radialBar',
-                sparkline: {
-                    enabled: true,
-                }
-            },
-            plotOptions: {
-                radialBar: {
-                    hollow: {
-                        margin: 0,
-                        size: "45%"
-                    },
-                    dataLabels: {
-                        showOn: "always",
-                        name: {
-                            show: false                                 
-                        },
-                        value: {                                 
-                            show: false                              
-                        }
-                    },
-                    track: {
-                        background: lightColor,
-                        strokeWidth: '100%'
-                    }
-                }
-            },
-            colors: [baseColor],
-            stroke: {
-                lineCap: "round",
-            },
-            labels: ["Progress"]
-        };
-
-        chart.self = new ApexCharts(element, options);
-        chart.self.render();
-        chart.rendered = true;
-
-        element.classList.add('initialized');
-    }
-
-    // Public methods
-    return {
-        init: function () {
-            // Init default chart
-            initChart(chart1, '#kt_slider_widget_7_chart_1', 76);
-
-            var carousel = document.querySelector('#kt_sliders_widget_7_slider');
-            
-            if ( !carousel ) {
-                return;
-            }
-
-            // Init slide charts
-            carousel.addEventListener('slid.bs.carousel', function (e) {
-                if (e.to === 1) {
-                    // Init second chart
-                    initChart(chart2, '#kt_slider_widget_7_chart_2', 55);
-                }
-
-                if (e.to === 2) {
-                    // Init third chart
-                    initChart(chart3, '#kt_slider_widget_7_chart_3', 25);
-                }
-            });
-
-            // Update chart on theme mode change
-            KTThemeMode.on("kt.thememode.change", function() {                
-                if (chart1.rendered) {
-                    chart1.self.destroy();
-                    chart1.rendered = false;
-                }
-
-                if (chart2.rendered) {
-                    chart2.self.destroy();
-                    chart2.rendered = false;
-                }
-
-                if (chart3.rendered) {
-                    chart3.self.destroy();
-                    chart3.rendered = false;
-                }
-
-                initChart(chart1, '#kt_slider_widget_7_chart_1', 76);
-                initChart(chart2, '#kt_slider_widget_7_chart_2', 55);
-                initChart(chart3, '#kt_slider_widget_7_chart_3', 25);
-            });
-        }   
-    }        
-}();
-
-
-// Webpack support
-if (typeof module !== 'undefined') {
-    module.exports = KTSlidersWidget7;
-}
-
-// On document ready
-KTUtil.onDOMContentLoaded(function() {
-    KTSlidersWidget7.init();
-});
-   
-        
-        
-        
-           
 "use strict";
 
 // Class definition
@@ -18031,6 +17237,800 @@ if (typeof module !== 'undefined') {
 // On document ready
 KTUtil.onDOMContentLoaded(function () {
     KTTablesWidget5.init();
+});
+
+"use strict";
+
+// Class definition
+var KTSlidersWidget1 = function() {
+    var chart1 = {
+        self: null,
+        rendered: false
+    };
+
+    var chart2 = {
+        self: null,
+        rendered: false
+    };
+
+    var chart3 = {
+        self: null,
+        rendered: false
+    };
+
+    // Private methods
+    var initChart = function(chart, query, data) {
+        var element = document.querySelector(query);
+
+        if ( !element) {
+            return;
+        }              
+        
+        if ( chart.rendered === true && element.classList.contains("initialized") ) {
+            return;
+        }
+
+        var height = parseInt(KTUtil.css(element, 'height'));
+        var baseColor = KTUtil.getCssVariableValue('--bs-' + 'primary');
+        var lightColor = KTUtil.getCssVariableValue('--bs-' + 'primary-light' );         
+
+        var options = {
+            series: [data],
+            chart: {
+                fontFamily: 'inherit',
+                height: height,
+                type: 'radialBar',
+                sparkline: {
+                    enabled: true,
+                }
+            },
+            plotOptions: {
+                radialBar: {
+                    hollow: {
+                        margin: 0,
+                        size: "45%"
+                    },
+                    dataLabels: {
+                        showOn: "always",
+                        name: {
+                            show: false                                 
+                        },
+                        value: {                                 
+                            show: false                              
+                        }
+                    },
+                    track: {
+                        background: lightColor,
+                        strokeWidth: '100%'
+                    }
+                }
+            },
+            colors: [baseColor],
+            stroke: {
+                lineCap: "round",
+            },
+            labels: ["Progress"]
+        };
+
+        chart.self = new ApexCharts(element, options);
+        chart.self.render();
+        chart.rendered = true;
+
+        element.classList.add('initialized');
+    }
+
+    // Public methods
+    return {
+        init: function () {
+            // Init default chart
+            initChart(chart1, '#kt_slider_widget_1_chart_1', 76);
+
+            var carousel = document.querySelector('#kt_sliders_widget_1_slider');
+            
+            if ( !carousel ) {
+                return;
+            }
+
+            // Init slide charts
+            carousel.addEventListener('slid.bs.carousel', function (e) {
+                if (e.to === 1) {
+                    // Init second chart
+                    initChart(chart2, '#kt_slider_widget_1_chart_2', 55);
+                }
+
+                if (e.to === 2) {
+                    // Init third chart
+                    initChart(chart3, '#kt_slider_widget_1_chart_3', 25);
+                }
+            });
+
+            // Update chart on theme mode change
+            KTThemeMode.on("kt.thememode.change", function() {                
+                if (chart1.rendered) {
+                    chart1.self.destroy();
+                    chart1.rendered = false;
+                }
+
+                if (chart2.rendered) {
+                    chart2.self.destroy();
+                    chart2.rendered = false;
+                }
+
+                if (chart3.rendered) {
+                    chart3.self.destroy();
+                    chart3.rendered = false;
+                }
+
+                initChart(chart1, '#kt_slider_widget_1_chart_1', 76);
+                initChart(chart2, '#kt_slider_widget_1_chart_2', 55);
+                initChart(chart3, '#kt_slider_widget_1_chart_3', 25);
+            });
+        }   
+    }        
+}();
+
+
+// Webpack support
+if (typeof module !== 'undefined') {
+    module.exports = KTSlidersWidget1;
+}
+
+// On document ready
+KTUtil.onDOMContentLoaded(function() {
+    KTSlidersWidget1.init();
+});
+   
+        
+        
+        
+           
+"use strict";
+
+// Class definition
+var KTSlidersWidget3 = function () {
+    var chart1 = {
+        self: null,
+        rendered: false
+    };
+
+    var chart2 = {
+        self: null,
+        rendered: false
+    };
+
+    // Private methods
+    var initChart = function(chart, query, color, data) {
+        var element = document.querySelector(query);
+
+        if (!element) {
+            return;
+        }
+        
+        if ( chart.rendered === true && element.classList.contains("initialized") ) {
+            return;
+        }
+
+        var height = parseInt(KTUtil.css(element, 'height'));
+        var labelColor = KTUtil.getCssVariableValue('--bs-gray-500');
+        var borderColor = KTUtil.getCssVariableValue('--bs-border-dashed-color');
+        var baseColor = KTUtil.getCssVariableValue('--bs-' + color);
+
+        var options = {
+            series: [{
+                name: 'Lessons',
+                data: data
+            }],            
+            chart: {
+                fontFamily: 'inherit',
+                type: 'area',
+                height: height,
+                toolbar: {
+                    show: false
+                }
+            },
+            plotOptions: {
+
+            },
+            legend: {
+                show: false
+            },
+            dataLabels: {
+                enabled: false
+            },
+            fill: {
+                type: "gradient",
+                gradient: {
+                    shadeIntensity: 1,
+                    opacityFrom: 0.4,
+                    opacityTo: 0,
+                    stops: [0, 80, 100]
+                }
+            },
+            stroke: {
+                curve: 'smooth',
+                show: true,
+                width: 3,
+                colors: [baseColor]
+            },
+            xaxis: {
+                categories: ['', 'Apr 05', 'Apr 06', 'Apr 07', 'Apr 08', 'Apr 09', 'Apr 11', 'Apr 12', 'Apr 14', 'Apr 15', 'Apr 16', 'Apr 17', 'Apr 18', ''],
+                axisBorder: {
+                    show: false,
+                },
+                axisTicks: {
+                    show: false
+                },
+                tickAmount: 6,
+                labels: {
+                    rotate: 0,
+                    rotateAlways: true,
+                    style: {
+                        colors: labelColor,
+                        fontSize: '12px'
+                    }
+                },
+                crosshairs: {
+                    position: 'front',
+                    stroke: {
+                        color: baseColor,
+                        width: 1,
+                        dashArray: 3
+                    }
+                },
+                tooltip: {
+                    enabled: true,
+                    formatter: undefined,
+                    offsetY: 0,
+                    style: {
+                        fontSize: '12px'
+                    }
+                }
+            },
+            yaxis: {
+                tickAmount: 4,
+                max: 24,
+                min: 10,
+                labels: {
+                    style: {
+                        colors: labelColor,
+                        fontSize: '12px'
+                    } 
+                }
+            },
+            states: {
+                normal: {
+                    filter: {
+                        type: 'none',
+                        value: 0
+                    }
+                },
+                hover: {
+                    filter: {
+                        type: 'none',
+                        value: 0
+                    }
+                },
+                active: {
+                    allowMultipleDataPointsSelection: false,
+                    filter: {
+                        type: 'none',
+                        value: 0
+                    }
+                }
+            },
+            tooltip: {
+                style: {
+                    fontSize: '12px'
+                } 
+            },
+            colors: [baseColor],
+            grid: {
+                borderColor: borderColor,
+                strokeDashArray: 4,
+                yaxis: {
+                    lines: {
+                        show: true
+                    }
+                }
+            },
+            markers: {
+                strokeColor: baseColor,
+                strokeWidth: 3
+            }
+        };
+
+        chart.self = new ApexCharts(element, options);
+        chart.self.render();
+        chart.rendered = true;
+
+        element.classList.add('initialized');   
+    }
+
+    // Public methods
+    return {
+        init: function () {
+            var data1 = [19, 21, 21, 20, 20, 18, 18, 20, 20, 22, 22, 21, 21, 22];
+            var data2 = [18, 22, 22, 20, 20, 18, 18, 20, 20, 18, 18, 20, 20, 22];
+            
+            // Init default chart
+            initChart(chart1, '#kt_sliders_widget_3_chart_1', 'danger', data1);
+
+            var carousel = document.querySelector('#kt_sliders_widget_3_slider');
+
+            if ( !carousel ){
+                return;
+            }
+            
+            carousel.addEventListener('slid.bs.carousel', function (e) {
+                if (e.to === 1) {
+                    // Init second chart
+                    initChart(chart2, '#kt_sliders_widget_3_chart_2', 'primary', data2);
+                }                
+            });
+
+            // Update chart on theme mode change
+            KTThemeMode.on("kt.thememode.change", function() {                
+                if (chart1.rendered) {
+                    chart1.self.destroy();
+                    chart1.rendered = false;
+                }
+
+                if (chart2.rendered) {
+                    chart2.self.destroy();
+                    chart2.rendered = false;
+                }
+
+                initChart(chart1, '#kt_sliders_widget_3_chart_1', 'danger', data1);
+                initChart(chart2, '#kt_sliders_widget_3_chart_2', 'primary', data2);
+            });
+        }   
+    }
+}();
+
+// Webpack support
+if (typeof module !== 'undefined') {
+    module.exports = KTSlidersWidget3;
+}
+
+// On document ready
+KTUtil.onDOMContentLoaded(function() {
+    KTSlidersWidget3.init();
+});
+
+"use strict";
+
+// Class definition
+var KTSlidersWidget7 = function() {
+    var chart1 = {
+        self: null,
+        rendered: false
+    };
+
+    var chart2 = {
+        self: null,
+        rendered: false
+    };
+
+    var chart3 = {
+        self: null,
+        rendered: false
+    };
+
+    // Private methods
+    var initChart = function(chart, query, data) {
+        var element = document.querySelector(query);
+
+        if ( !element) {
+            return;
+        }              
+        
+        if ( chart.rendered === true && element.classList.contains("initialized") ) {
+            return;
+        }
+
+        var height = parseInt(KTUtil.css(element, 'height'));
+        var baseColor = KTUtil.getCssVariableValue('--bs-' + 'danger');
+        var lightColor = KTUtil.getCssVariableValue('--bs-' + 'white' );         
+
+        var options = {
+            series: [data],
+            chart: {
+                fontFamily: 'inherit',
+                height: height,
+                type: 'radialBar',
+                sparkline: {
+                    enabled: true,
+                }
+            },
+            plotOptions: {
+                radialBar: {
+                    hollow: {
+                        margin: 0,
+                        size: "45%"
+                    },
+                    dataLabels: {
+                        showOn: "always",
+                        name: {
+                            show: false                                 
+                        },
+                        value: {                                 
+                            show: false                              
+                        }
+                    },
+                    track: {
+                        background: lightColor,
+                        strokeWidth: '100%'
+                    }
+                }
+            },
+            colors: [baseColor],
+            stroke: {
+                lineCap: "round",
+            },
+            labels: ["Progress"]
+        };
+
+        chart.self = new ApexCharts(element, options);
+        chart.self.render();
+        chart.rendered = true;
+
+        element.classList.add('initialized');
+    }
+
+    // Public methods
+    return {
+        init: function () {
+            // Init default chart
+            initChart(chart1, '#kt_slider_widget_7_chart_1', 76);
+
+            var carousel = document.querySelector('#kt_sliders_widget_7_slider');
+            
+            if ( !carousel ) {
+                return;
+            }
+
+            // Init slide charts
+            carousel.addEventListener('slid.bs.carousel', function (e) {
+                if (e.to === 1) {
+                    // Init second chart
+                    initChart(chart2, '#kt_slider_widget_7_chart_2', 55);
+                }
+
+                if (e.to === 2) {
+                    // Init third chart
+                    initChart(chart3, '#kt_slider_widget_7_chart_3', 25);
+                }
+            });
+
+            // Update chart on theme mode change
+            KTThemeMode.on("kt.thememode.change", function() {                
+                if (chart1.rendered) {
+                    chart1.self.destroy();
+                    chart1.rendered = false;
+                }
+
+                if (chart2.rendered) {
+                    chart2.self.destroy();
+                    chart2.rendered = false;
+                }
+
+                if (chart3.rendered) {
+                    chart3.self.destroy();
+                    chart3.rendered = false;
+                }
+
+                initChart(chart1, '#kt_slider_widget_7_chart_1', 76);
+                initChart(chart2, '#kt_slider_widget_7_chart_2', 55);
+                initChart(chart3, '#kt_slider_widget_7_chart_3', 25);
+            });
+        }   
+    }        
+}();
+
+
+// Webpack support
+if (typeof module !== 'undefined') {
+    module.exports = KTSlidersWidget7;
+}
+
+// On document ready
+KTUtil.onDOMContentLoaded(function() {
+    KTSlidersWidget7.init();
+});
+   
+        
+        
+        
+           
+"use strict";
+
+// Class definition
+var KTMapsWidget1 = (function () {
+    // Private methods
+    var initMap = function () {
+        // Check if amchart library is included
+        if (typeof am5 === 'undefined') {
+            return;
+        }
+
+        var element = document.getElementById("kt_maps_widget_1_map");
+
+        if (!element) {
+            return;
+        }
+
+        var root;
+
+        var init = function() {
+            // Create root element
+            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+            root = am5.Root.new(element);
+
+            // Set themes
+            // https://www.amcharts.com/docs/v5/concepts/themes/
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            // Create the map chart
+            // https://www.amcharts.com/docs/v5/charts/map-chart/
+            var chart = root.container.children.push(
+                am5map.MapChart.new(root, {
+                    panX: "translateX",
+                    panY: "translateY",
+                    projection: am5map.geoMercator(),
+					paddingLeft: 0,
+					paddingrIGHT: 0,
+					paddingBottom: 0
+                })
+            );
+
+            // Create main polygon series for countries
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
+            var polygonSeries = chart.series.push(
+                am5map.MapPolygonSeries.new(root, {
+                    geoJSON: am5geodata_worldLow,
+                    exclude: ["AQ"],
+                })
+            );
+
+            polygonSeries.mapPolygons.template.setAll({
+                tooltipText: "{name}",
+                toggleKey: "active",
+                interactive: true,
+				fill: am5.color(KTUtil.getCssVariableValue('--bs-gray-300')),
+            });
+
+            polygonSeries.mapPolygons.template.states.create("hover", {
+                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
+            });
+
+            polygonSeries.mapPolygons.template.states.create("active", {
+                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
+            });
+
+            // Highlighted Series
+            // Create main polygon series for countries
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
+            var polygonSeriesHighlighted = chart.series.push(
+                am5map.MapPolygonSeries.new(root, {
+                    //geoJSON: am5geodata_usaLow,
+					geoJSON: am5geodata_worldLow,
+					include: ['US', 'BR', 'DE', 'AU', 'JP']
+                })
+            );
+
+            polygonSeriesHighlighted.mapPolygons.template.setAll({
+                tooltipText: "{name}",
+                toggleKey: "active",
+                interactive: true,
+            });
+
+            var colors = am5.ColorSet.new(root, {});
+
+            polygonSeriesHighlighted.mapPolygons.template.set(
+                "fill",
+				am5.color(KTUtil.getCssVariableValue('--bs-primary')),
+            );
+
+            polygonSeriesHighlighted.mapPolygons.template.states.create("hover", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+            });
+
+            polygonSeriesHighlighted.mapPolygons.template.states.create("active", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+            });
+
+            // Add zoom control
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-pan-zoom/#Zoom_control
+            //chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+
+            // Set clicking on "water" to zoom out
+            chart.chartContainer
+                .get("background")
+                .events.on("click", function () {
+                    chart.goHome();
+                });
+
+            // Make stuff animate on load
+            chart.appear(1000, 100);
+        }
+
+        // On amchart ready
+        am5.ready(function () {
+            init();
+        }); // end am5.ready()
+
+        // Update chart on theme mode change
+		KTThemeMode.on("kt.thememode.change", function() {     
+			// Destroy chart
+			root.dispose();
+
+			// Reinit chart
+			init();
+		});
+    };
+
+    // Public methods
+    return {
+        init: function () {
+            initMap();
+        },
+    };
+})();
+
+// Webpack support
+if (typeof module !== "undefined") {
+    module.exports = KTMapsWidget1;
+}
+
+// On document ready
+KTUtil.onDOMContentLoaded(function () {
+    KTMapsWidget1.init();
+});
+
+"use strict";
+
+// Class definition
+var KTMapsWidget2 = (function () {
+    // Private methods
+    var initMap = function () {
+        // Check if amchart library is included
+        if (typeof am5 === 'undefined') {
+            return;
+        }
+
+        var element = document.getElementById("kt_maps_widget_2_map");
+
+        if (!element) {
+            return;
+        }
+
+        // Root
+        var root;
+
+        var init = function() {
+            // Create root element
+            // https://www.amcharts.com/docs/v5/getting-started/#Root_element
+            root = am5.Root.new(element);
+
+            // Set themes
+            // https://www.amcharts.com/docs/v5/concepts/themes/
+            root.setThemes([am5themes_Animated.new(root)]);
+
+            // Create the map chart
+            // https://www.amcharts.com/docs/v5/charts/map-chart/
+            var chart = root.container.children.push(
+                am5map.MapChart.new(root, {
+                    panX: "translateX",
+                    panY: "translateY",
+                    projection: am5map.geoMercator(),
+					paddingLeft: 0,
+					paddingrIGHT: 0,
+					paddingBottom: 0
+                })
+            );
+
+            // Create main polygon series for countries
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
+            var polygonSeries = chart.series.push(
+                am5map.MapPolygonSeries.new(root, {
+                    geoJSON: am5geodata_worldLow,
+                    exclude: ["AQ"],
+                })
+            );
+
+            polygonSeries.mapPolygons.template.setAll({
+                tooltipText: "{name}",
+                toggleKey: "active",
+                interactive: true,
+				fill: am5.color(KTUtil.getCssVariableValue('--bs-gray-300')),
+            });
+
+            polygonSeries.mapPolygons.template.states.create("hover", {
+                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
+            });
+
+            polygonSeries.mapPolygons.template.states.create("active", {
+                fill: am5.color(KTUtil.getCssVariableValue('--bs-success')),
+            });
+
+            // Highlighted Series
+            // Create main polygon series for countries
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-polygon-series/
+            var polygonSeriesHighlighted = chart.series.push(
+                am5map.MapPolygonSeries.new(root, {
+                    //geoJSON: am5geodata_usaLow,
+					geoJSON: am5geodata_worldLow,
+					include: ['US', 'BR', 'DE', 'AU', 'JP']
+                })
+            );
+
+            polygonSeriesHighlighted.mapPolygons.template.setAll({
+                tooltipText: "{name}",
+                toggleKey: "active",
+                interactive: true,
+            });
+
+            var colors = am5.ColorSet.new(root, {});
+
+            polygonSeriesHighlighted.mapPolygons.template.set(
+                "fill",
+				am5.color(KTUtil.getCssVariableValue('--bs-primary')),
+            );
+
+            polygonSeriesHighlighted.mapPolygons.template.states.create("hover", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+            });
+
+            polygonSeriesHighlighted.mapPolygons.template.states.create("active", {
+                fill: root.interfaceColors.get("primaryButtonHover"),
+            });
+
+            // Add zoom control
+            // https://www.amcharts.com/docs/v5/charts/map-chart/map-pan-zoom/#Zoom_control
+            //chart.set("zoomControl", am5map.ZoomControl.new(root, {}));
+
+            // Set clicking on "water" to zoom out
+            chart.chartContainer
+                .get("background")
+                .events.on("click", function () {
+                    chart.goHome();
+                });
+
+            // Make stuff animate on load
+            chart.appear(1000, 100);
+        }
+
+        // On amchart ready
+        am5.ready(function () {
+            init();
+        }); // end am5.ready()
+
+        // Update chart on theme mode change
+		KTThemeMode.on("kt.thememode.change", function() {     
+			// Destroy chart
+			root.dispose();
+
+			// Reinit chart
+			init();
+		});
+    };
+
+    // Public methods
+    return {
+        init: function () {
+            initMap();
+        },
+    };
+})();
+
+// Webpack support
+if (typeof module !== "undefined") {
+    module.exports = KTMapsWidget2;
+}
+
+// On document ready
+KTUtil.onDOMContentLoaded(function () {
+    KTMapsWidget2.init();
 });
 
 "use strict";

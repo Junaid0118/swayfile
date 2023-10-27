@@ -10,6 +10,7 @@ class Project < ApplicationRecord
   has_many :documents, dependent: :destroy
   has_many :teams
   has_many :users, through: :teams
+  has_many :clauses, dependent: :destroy
 
   def time_difference_in_words
     from_time = created_at

@@ -206,7 +206,7 @@ var KTAppInboxCompose = function () {
                     ['image', 'code-block']
                 ]
             },
-            placeholder: 'Type your text here...',
+            placeholder: 'Type your clause details here...',
             theme: 'snow' // or 'bubble'
         });
 

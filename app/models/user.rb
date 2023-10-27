@@ -11,6 +11,8 @@ class User < ApplicationRecord
   has_many :teams
   has_many :projects, through: :teams
 
+  has_many :clauses, dependent: :destroy
+
 
   def name
     "#{first_name} #{last_name}"
