@@ -5139,7 +5139,7 @@
 															<!--begin::Comment-->
 															<div class="mb-9">
 																<!--begin::Card-->
-																<% @project.comments.order(id: :desc).where(parent_comment_id: nil).each do |comment| %>
+																<% @comments.order(id: :desc).where(parent_comment_id: nil).each do |comment| %>
 																 
 																<div class="card card-bordered w-100">
 																	<!--begin::Body-->
@@ -5250,35 +5250,35 @@
 														<!--end::Comments-->
 														<!--begin::Pagination-->
 														<ul class="pagination">
+														<% if @comments.total_pages > 1 %>
+															<% if @comments.current_page > 1 %>
+															<li class="page-item previous">
+																<%= link_to "<i class='previous'></i>".html_safe, discussions_project_path(@project, page: @comments.current_page - 1), class: "page-link" %>
+															</li>
+															<% else %>
 															<li class="page-item previous disabled">
-																<a href="#" class="page-link">
-																	<i class="previous"></i>
-																</a>
+																<a href="#" class="page-link"><i class='previous'></i></a>
 															</li>
-															<li class="page-item active">
-																<a href="#" class="page-link">1</a>
+															<% end %>
+
+															<% @comments.total_pages.times do |i| %>
+															<li class="page-item<%= ' active' if @comments.current_page == (i + 1) %>">
+																<%= link_to (i + 1), discussions_project_path(@project, page: (i + 1)), class: "page-link" %>
 															</li>
-															<li class="page-item">
-																<a href="#" class="page-link">2</a>
-															</li>
-															<li class="page-item">
-																<a href="#" class="page-link">3</a>
-															</li>
-															<li class="page-item">
-																<a href="#" class="page-link">4</a>
-															</li>
-															<li class="page-item">
-																<a href="#" class="page-link">5</a>
-															</li>
-															<li class="page-item">
-																<a href="#" class="page-link">6</a>
-															</li>
+															<% end %>
+
+															<% if @comments.current_page < @comments.total_pages %>
 															<li class="page-item next">
-																<a href="#" class="page-link">
-																	<i class="next"></i>
-																</a>
+																<%= link_to "<i class='next'></i>".html_safe, discussions_project_path(@project, page: @comments.current_page + 1), class: "page-link" %>
 															</li>
+															<% else %>
+															<li class="page-item next disabled">
+																<a href="#" class="page-link"><i class='next'></i></a>
+															</li>
+															<% end %>
+														<% end %>
 														</ul>
+
 														<!--end::Pagination-->
 													</div>
 													<!--end::Ticket view-->

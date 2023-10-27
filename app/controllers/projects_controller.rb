@@ -42,7 +42,7 @@ class ProjectsController < ApplicationController
   end
 
   def discussions
-    render layout: 'projects'
+    @comments = @project.comments.order(id: :desc).where(parent_comment_id: nil).paginate(page: params[:page], per_page: 1)
   end
 
   def create
