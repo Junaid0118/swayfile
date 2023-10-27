@@ -2,7 +2,7 @@
 
 class ProjectsController < ApplicationController
   before_action :authenticate_user!, except: [:create, :update, :move_to_folder]
-  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder]
+  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder, :discussions]
   before_action :set_avatars
   # before_action :set_user, only: :create
 
@@ -41,7 +41,7 @@ class ProjectsController < ApplicationController
     render layout: 'projects'
   end
 
-  def comments
+  def discussions
     render layout: 'projects'
   end
 

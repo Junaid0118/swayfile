@@ -18,9 +18,11 @@ Rails.application.routes.draw do
   resources :projects do
     resources :documents, only: :show
     member do
+      resources :comments, only: :create, shallow: true
+
       get 'team'
       get 'settings'
-      get 'comments'
+      get 'discussions'
 
       get 'details'
       get 'team'
