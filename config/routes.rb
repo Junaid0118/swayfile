@@ -19,7 +19,9 @@ Rails.application.routes.draw do
     resources :documents, only: :show
     member do
       resources :comments, only: :create, shallow: true
-      resources :clauses,  only: :create, shallow: true
+      resources :clauses,  only: [:create, :update], shallow: true do
+        resources :suggests
+      end
 
       get 'team'
       get 'settings'

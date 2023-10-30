@@ -330,6 +330,8 @@ const initTagify = (el) => {
 				accessSelect.setAttribute('data-control', 'select2');
 				accessSelect.setAttribute('data-hide-search', 'true');
 
+				accessSelect.id = 'roleSelect';
+
 				// Create the dropdown using your template
 				const dropdownOptions = [
 					{ value: '1', text: 'Guest' },
@@ -392,6 +394,8 @@ const initTagify = (el) => {
 				accessSelect.classList.add('form-select', 'form-select-solid', 'form-select-sm');
 				accessSelect.setAttribute('data-control', 'select2');
 				accessSelect.setAttribute('data-hide-search', 'true');
+
+				accessSelect.id = 'roleSelect';
 
 				// Create the dropdown using your template
 				const dropdownOptions = [

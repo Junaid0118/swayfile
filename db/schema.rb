@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_10_27_170524) do
+ActiveRecord::Schema.define(version: 2023_10_30_111815) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -138,6 +138,20 @@ ActiveRecord::Schema.define(version: 2023_10_27_170524) do
     t.index ["user_id"], name: "index_sections_on_user_id"
   end
 
+  create_table "suggests", force: :cascade do |t|
+    t.string "suggest_type"
+    t.integer "notify", default: -1
+    t.string "status"
+    t.string "priority"
+    t.string "comment"
+    t.integer "user_id"
+    t.boolean "accepted"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "clause_id", null: false
+    t.index ["clause_id"], name: "index_suggests_on_clause_id"
+  end
+
   create_table "teams", force: :cascade do |t|
     t.string "role"
     t.bigint "project_id", null: false
@@ -159,6 +173,7 @@ ActiveRecord::Schema.define(version: 2023_10_27_170524) do
     t.string "first_name"
     t.string "last_name"
     t.boolean "subscription", default: false
+    t.string "user_role"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -176,6 +191,7 @@ ActiveRecord::Schema.define(version: 2023_10_27_170524) do
   add_foreign_key "projects", "users", column: "created_by_id"
   add_foreign_key "sections", "documents"
   add_foreign_key "sections", "users"
+  add_foreign_key "suggests", "clauses"
   add_foreign_key "teams", "projects"
   add_foreign_key "teams", "users"
 end

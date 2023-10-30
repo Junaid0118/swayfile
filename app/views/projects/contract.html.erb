@@ -875,7 +875,7 @@
 											</div>
 											<!--begin::Button-->
 											
-											<a class="btn btn-success fw-bold w-75" style="margin-top:30px;margin-left:12.5%;">Submit</a>
+											<a class="btn btn-success fw-bold w-75" style="margin-top:30px;margin-left:12.5%;">Approve Clause</a>
 										</div>
 
 
@@ -1205,309 +1205,179 @@
 											<!--end::Form-->
 											<% end %>
 
-											<div class="card ">
-											    <div class="card-header card-header-stretch">
-											        <h3 class="card-title">Clause #1 - Introduction</h3>
-											        <div class="card-toolbar">
-											            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
-											                <li class="nav-item">
-											                    <a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7">View</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8">Edit</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9">Suggest</a>
-											                </li>
-											            </ul>
-											        </div>
-											    </div>
-											    <div class="card-body">
-											        <div class="tab-content" id="myTabContent">
-											            <div class="tab-pane fade show active" id="kt_tab_pane_7" role="tabpanel">
-											                <div class="">
-																<p>Welcome to BOILERPLATE Inc. (“Company”, “we”, “our”, “us”)! Our mission is to provide secure, efficient and organized file collection and storage systems that delight customers and optimize business operations. Please grab a cup of coffee and carefully read the following pages. It will take around 20 minutes.</p><p>
+											<% @project.clauses.order(id: :desc).each do |clause|%>
+												<div class="card ">
+													<div class="card-header card-header-stretch">
+														<h3 class="card-title"><%= clause.title %></h3>
+														<div class="card-toolbar">
+															<ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
+																<li class="nav-item">
+																	<a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7_<%= clause.id %>">View</a>
+																</li>
+																<li class="nav-item">
+																	<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8_<%= clause.id %>" >Edit</a>
+																</li>
+																<li class="nav-item">
+																	<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9_<%= clause.id %>" >Suggest</a>
+																</li>
+																<li class="nav-item">
+																	<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_10_<%= clause.id %>" >Suggestions</a>
+																	<span class="menu-link active mt-2">
+																	
+																		<span class="badge badge-light-success"><%= clause.suggests.where(accepted: nil).count %></span>
+																	</span>
+																</li>
+															</ul>
+														</div>
+													</div>
+													<div class="card-body">
+														<div class="tab-content" id="myTabContent">
+															<div class="tab-pane fade show active d-flex flex-column" id="kt_tab_pane_7_<%= clause.id %>" role="tabpanel">
+																<div class="flex-grow-1">
+																	<p><%= clause.content %></p>
+																</div>
 															</div>
-											            </div>
 
-											            <div class="tab-pane fade" id="kt_tab_pane_8" role="tabpanel">
-											                <!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control" rows="6" name="message" placeholder="Share Your Knowledge">Welcome to BOILERPLATE Inc. (“Company”, “we”, “our”, “us”)! Our mission is to provide secure, efficient and organized file collection and storage systems that delight customers and optimize business operations. Please grab a cup of coffee and carefully read the following pages. It will take around 20 minutes.</textarea>
-																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Submit Changes</button>
-																<!--end::Submit-->
-															</div>
-															<!--end::Input group-->
-											            </div>
 
-											            <div class="tab-pane fade" id="kt_tab_pane_9" role="tabpanel">
-											                <!--begin::Row-->
-															<div class="row mb-7">
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Suggestion Type</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" name="product">
-																		<option value="1">Question</option>
-																		<option value="1">Exhibit</option>
-																		<option value="1">Clause</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Notify</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" data-placeholder="Assign to" name="user">
-																		<option value="1" selected="selected">Everyone</option>
-																		<option value="2">Robert Doe</option>
-																		<option value="3">Niel Owen</option>
-																		<option value="4">Olivia Wild</option>
-																		<option value="5">Sean Bean</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Status</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Status" data-hide-search="true">
-																		<option value="1" selected="selected">Open</option>
-																		<option value="2">Pending</option>
-																		<option value="3">Resolved</option>
-																		<option value="3">Closed</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Priority</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Open" data-hide-search="true">
-																		<option value="1" selected="selected">Low</option>
-																		<option value="2">Medium</option>
-																		<option value="3">High</option>
-																		<option value="3">Urgent</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-															</div>
-															<!--end::Row-->
+															<div class="tab-pane fade" id="kt_tab_pane_8_<%= clause.id %>" role="tabpanel">
 															<!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control" rows="6" name="message" placeholder="Add your comments"></textarea>
-																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Send</button>
-																<!--end::Submit-->
-															</div>
+																<div class="mb-0">
+																	<%= form_for(clause, url: clause_path(clause, project_id: @project.id), method: :patch) do |f| %>
+																	<%= f.text_area :content, class: "form-control", rows: 6, placeholder: "Share Your Knowledge" %>
+																	<!-- Add a hidden field to send the textarea value as a parameter -->
+																	<%= f.hidden_field :textarea_value, value: clause.content %>
+																	<!--begin::Submit-->
+																	<%= f.submit "Edit Clause", class: "btn btn-primary mt-n20 mb-20 position-relative float-end me-7" %>
+																	<!--end::Submit-->
+																	<% end %>
+																</div>
 															<!--end::Input group-->
-											            </div>
-											        </div>
-											    </div>
-											</div>
-
-											<div class="separator my-6"></div>
-
-											<div class="card ">
-											    <div class="card-header card-header-stretch">
-											        <h3 class="card-title">Clause #2 - Foreword</h3>
-											        <div class="card-toolbar">
-											            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
-											                <li class="nav-item">
-											                    <a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7">View</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8">Edit</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9">Suggest</a>
-											                </li>
-											            </ul>
-											        </div>
-											    </div>
-											    <div class="card-body">
-											        <div class="tab-content" id="myTabContent2">
-											            <div class="tab-pane fade show active" id="kt_tab_pane_7" role="tabpanel">
-											                <div class="">
-																<p>Our Services allow you to post, link, store, scan, share and otherwise make available certain information, text, forms, graphics, files, or other material (“Content”).
-
-																When you use our Services, you provide us access to these Content. These Terms do not give us any rights to your Content except for the limited rights that enable us to offer our Services.</p><p>
 															</div>
-											            </div>
-
-											            <div class="tab-pane fade" id="kt_tab_pane_8" role="tabpanel">
-											                <!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control form-control-solid" rows="6" name="message" placeholder="Share Your Knowledge">Our Services allow you to post, link, store, scan, share and otherwise make available certain information, text, forms, graphics, files, or other material (“Content”).</textarea>
-																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Submit Changes</button>
-																<!--end::Submit-->
-															</div>
-															<!--end::Input group-->
-											            </div>
-
-											            <div class="tab-pane fade" id="kt_tab_pane_9" role="tabpanel">
-											                <!--begin::Row-->
-															<div class="row mb-7">
+															<div class="tab-pane fade" id="kt_tab_pane_9_<%= clause.id %>" role="tabpanel">
+															<%= form_for([clause, Suggest.new], url: clause_suggests_path(clause), method: :post) do |f| %>
+															
+																<!--begin::Row-->
+																<div class="row mb-7">
 																<!--begin::Col-->
 																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Suggestion Type</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" name="product">
-																		<option value="1">Question</option>
-																		<option value="1">Exhibit</option>
-																		<option value="1">Clause</option>
-																	</select>
+																	<%= f.label :suggest_type, "Suggestion Type", class: "fs-6 fw-semibold mb-2" %>
+																	<%= f.select :suggest_type, options_for_select([['Clause Details', 1], ['Clause Name', 2]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true' %>
 																</div>
 																<!--end::Col-->
 																<!--begin::Col-->
 																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Notify</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" data-placeholder="Assign to" name="user">
-																		<option value="1" selected="selected">Everyone</option>
-																		<option value="2">Robert Doe</option>
-																		<option value="3">Niel Owen</option>
-																		<option value="4">Olivia Wild</option>
-																		<option value="5">Sean Bean</option>
-																	</select>
+																	<%= f.label :user_id, "Notify", class: "fs-6 fw-semibold mb-2" %>
+																	<%= f.select :user_id, options_for_select([['Everyone', -1]] + User.pluck(:first_name, :id)), {}, { class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true', 'data-placeholder' => 'Assign to' } %>
+																</div>
+																<%= f.hidden_field :project_id, value: @project.id %>
+																<!--end::Col-->
+																<!--begin::Col-->
+																<div class="col-sm-3 fv-row mb-3">
+																	<%= f.label :status, "Status", class: "fs-6 fw-semibold mb-2" %>
+																	<%= f.select :status, options_for_select([['Open', 1], ['Pending', 2], ['Resolved', 3], ['Closed', 4]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-placeholder' => 'Status', 'data-hide-search' => 'true' %>
 																</div>
 																<!--end::Col-->
 																<!--begin::Col-->
 																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Status</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Status" data-hide-search="true">
-																		<option value="1" selected="selected">Open</option>
-																		<option value="2">Pending</option>
-																		<option value="3">Resolved</option>
-																		<option value="3">Closed</option>
-																	</select>
+																	<%= f.label :priority, "Priority", class: "fs-6 fw-semibold mb-2" %>
+																	<%= f.select :priority, options_for_select([['Low', 1], ['Medium', 2], ['High', 3], ['Urgent', 4]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-placeholder' => 'Open', 'data-hide-search' => 'true' %>
 																</div>
 																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Priority</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Open" data-hide-search="true">
-																		<option value="1" selected="selected">Low</option>
-																		<option value="2">Medium</option>
-																		<option value="3">High</option>
-																		<option value="3">Urgent</option>
-																	</select>
 																</div>
-																<!--end::Col-->
-															</div>
-															<!--end::Row-->
-															<!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control form-control-solid placeholder-gray-600 fw-bold fs-4 ps-9 pt-7" rows="6" name="message" placeholder="Share Your Knowledge"></textarea>
+																<!--end::Row-->
+																<!--begin::Input group-->
+																<div class="mb-0">
+																<%= f.text_area :comment, class: 'form-control form-control-solid placeholder-gray-600 fw-bold fs-4 ps-9 pt-7', rows: 6, placeholder: 'Share Your Knowledge' %>
 																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Send</button>
+																<%= f.submit 'Send', class: 'btn btn-primary mt-n20 mb-20 position-relative float-end me-7' %>
 																<!--end::Submit-->
-															</div>
-															<!--end::Input group-->
-											            </div>
-											        </div>
-											    </div>
-											</div>
-
-											<div class="separator my-6"></div>
-
-											<div class="card ">
-											    <div class="card-header card-header-stretch">
-											        <h3 class="card-title">Clause #3 - Disclaimer</h3>
-											        <div class="card-toolbar">
-											            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
-											                <li class="nav-item">
-											                    <a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7">View</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8">Edit</a>
-											                </li>
-											                <li class="nav-item">
-											                    <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9">Suggest</a>
-											                </li>
-											            </ul>
-											        </div>
-											    </div>
-											    <div class="card-body">
-											        <div class="tab-content" id="myTabContent">
-											            <div class="tab-pane fade show active" id="kt_tab_pane_7" role="tabpanel">
-											                <div class="">
-																<p>By transmitting Content on or through our Services, you represent and warrant that: (i) Content is yours (you own it) and/or you have the right to use it and (ii) that the posting of your Content on or through Service does not violate the privacy rights, publicity rights, copyrights, contract rights or any other rights of any person or entity. We reserve the right to terminate the account of anyone found to be infringing on a copyright.</p><p>
-
-																Boilerplate does not review any user generated content on our site unless you give us consent to. You are responsible for ensuring all Content transmitted through our Services are not in violation of any laws and do not wrongfully infringe upon the intellectual property of others. </p><p>
-															</div>
-											            </div>
-
-											            <div class="tab-pane fade" id="kt_tab_pane_8" role="tabpanel">
-											                <!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control form-control-solid placeholder-gray-600 fw-bold fs-4 ps-9 pt-7" rows="6" name="message" placeholder="Share Your Knowledge">By transmitting Content on or through our Services, you represent and warrant that: (i) Content is yours (you own it) and/or you have the right to use it and (ii) that the posting of your Content on or through Service does not violate the privacy rights, publicity rights, copyrights, contract rights or any other rights of any person or entity. We reserve the right to terminate the account of anyone found to be infringing on a copyright.
-
-																Boilerplate does not review any user generated content on our site unless you give us consent to. You are responsible for ensuring all Content transmitted through our Services are not in violation of any laws and do not wrongfully infringe upon the intellectual property of others.</textarea>
-																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Submit Changes</button>
-																<!--end::Submit-->
-															</div>
-															<!--end::Input group-->
-											            </div>
-
-											            <div class="tab-pane fade" id="kt_tab_pane_9" role="tabpanel">
-											                <!--begin::Row-->
-															<div class="row mb-7">
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Suggestion Type</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" name="product">
-																		<option value="1">Question</option>
-																		<option value="1">Exhibit</option>
-																		<option value="1">Clause</option>
-																	</select>
 																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Notify</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-hide-search="true" data-placeholder="Assign to" name="user">
-																		<option value="1" selected="selected">Everyone</option>
-																		<option value="2">Robert Doe</option>
-																		<option value="3">Niel Owen</option>
-																		<option value="4">Olivia Wild</option>
-																		<option value="5">Sean Bean</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Status</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Status" data-hide-search="true">
-																		<option value="1" selected="selected">Open</option>
-																		<option value="2">Pending</option>
-																		<option value="3">Resolved</option>
-																		<option value="3">Closed</option>
-																	</select>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<label class="fs-6 fw-semibold mb-2">Priority</label>
-																	<select class="form-select form-select-solid" data-control="select2" data-placeholder="Open" data-hide-search="true">
-																		<option value="1" selected="selected">Low</option>
-																		<option value="2">Medium</option>
-																		<option value="3">High</option>
-																		<option value="3">Urgent</option>
-																	</select>
-																</div>
-																<!--end::Col-->
+																<!--end::Input group-->
+
+															<% end %>
 															</div>
-															<!--end::Row-->
-															<!--begin::Input group-->
-															<div class="mb-0">
-																<textarea class="form-control form-control-solid placeholder-gray-600 fw-bold fs-4 ps-9 pt-7" rows="6" name="message" placeholder="Share Your Knowledge"></textarea>
-																<!--begin::Submit-->
-																<button type="submit" class="btn btn-primary mt-n20 mb-20 position-relative float-end me-7">Send</button>
-																<!--end::Submit-->
+
+
+															
+
+														
+
+
+
+
+															<div class="tab-pane fade" id="kt_tab_pane_10_<%= clause.id %>" role="tabpanel">
+																<% clause.suggests.order(id: :desc).each do |suggest| %>
+																	<div class="card card-bordered w-100">
+																		<!--begin::Body-->
+																		<div class="card-body">
+																			<!--begin::Wrapper-->
+																			<div class="w-100 d-flex flex-stack mb-8">
+																				<!--begin::Container-->
+																				<div class="d-flex align-items-center f">
+																					<!--begin::Author-->
+																					<div class="symbol symbol-50px me-5">
+																						<div class="symbol-label fs-1 fw-bold bg-light-success text-success">S</div>
+																					</div>
+																					<!--end::Author-->
+																					<!--begin::Info-->
+																					<div class="d-flex flex-column fw-semibold fs-5 text-gray-600 text-dark">
+																						<!--begin::Text-->
+																						<div class="d-flex align-items-center flex-column">
+																							<!--begin::Username-->
+																							<div style="align-self: flex-start;" class=>
+																								<a href="../../demo33/dist/pages/user-profile/overview.html" class="text-gray-800 fw-bold text-hover-primary fs-5 me-3 mb-2"><%= suggest.sType %></a>
+																									<span class="badge badge-light-danger"><%= "Rejected" if suggest.accepted == false %></span>
+																									<span class="badge badge-light-success"><%= "Accepted" if suggest.accepted == true %></span>
+																							</div>
+																							<div class="d-flex">					
+																								<span class="fw-semibold text-muted me-6">Notify:
+																								<a href="#" class="text-muted text-hover-primary">Everyone</a></span>
+																								<!--end::Label-->
+																								<!--begin::Label-->
+																								<span class="fw-semibold text-muted me-6">Status:
+																								<a href="#" class="text-muted text-hover-primary"><%= suggest.suggest_status %></a></span>
+																								<!--end::Label-->
+																								<!--begin::Label-->
+																								<span class="fw-semibold text-muted">Priority:
+																								<span class="fw-bold text-gray-600 me-1"><%= suggest.suggest_prority %></span></span>
+																								<!--end::Label-->
+																								<!--end::Username-->
+																								<span class="m-0"></span>
+																							</div>
+																						</div>
+																						<!--end::Text-->
+																						<!--begin::Date-->
+																						<!--end::Date-->
+																					</div>
+																					<!--end::Info-->
+																				</div>
+																				<!--end::Container-->
+																				<!--begin::Actions-->
+																				<div class="m-0">
+																					<% if suggest.accepted.nil? %>
+																						<%= button_to 'Accept', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "accepted"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
+																						<%= button_to 'Reject', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "rejected"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
+																					<% end %>
+																				</div>
+																				<!--end::Actions-->
+																			</div>
+																			<!--end::Wrapper-->
+																			<!--begin::Desc-->
+																			<p class="fw-normal fs-5 text-gray-700 m-0"><%= suggest.comment %></p>
+																			<!--end::Desc-->
+																		</div>
+																		<!--end::Body-->
+																	</div>
+																	<br>
+																<% end %>
 															</div>
-															<!--end::Input group-->
-											            </div>
-											        </div>
-											    </div>
-											</div>
+															
+														</div>
+													</div>
+												</div>
+
+												<div class="separator my-6"></div>
+											<% end %>
 
 											<!--begin::Form-->
 											<form id="kt_inbox_reply_form" class="rounded border mt-20">
@@ -5911,7 +5781,9 @@
 										<!--end::Wrapper-->
 									</div>
 									<!--end::Step 5-->
+									<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Approve Clause</a>
 								</div>
+								
 								<!--end::Nav-->
 							</div>
 							<!--begin::Aside-->

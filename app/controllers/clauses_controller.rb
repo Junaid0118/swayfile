@@ -1,14 +1,28 @@
+# frozen_string_literal: true
+
+# Clasue Controller
 class ClausesController < ApplicationController
-    before_action :set_project
-    def create
-        @clause = @project.clauses.build(content: params[:clause_content], title: params[:clause_title], user_id: params[:user_id])
-        @clause.save!
-        render json: @clause
-    end
+  before_action :set_project, only: :create
+  before_action :set_clause, only: :update
+  def create
+    @clause = @project.clauses.build(content: params[:clause_content], title: params[:clause_name],
+                                     user_id: params[:user_id])
+    @clause.save!
+    render json: @clause
+  end
 
-    private
+  def update
+    @clause.update(content: params[:clause][:content])
+    redirect_to "/projects/#{params[:project_id]}/contract"
+  end
 
-    def set_project
-        @project = Project.find(params[:project_id])
-    end
+  private
+
+  def set_project
+    @project = Project.find(params[:project_id])
+  end
+
+  def set_clause
+    @clause = Clause.find(params[:id])
+  end
 end
