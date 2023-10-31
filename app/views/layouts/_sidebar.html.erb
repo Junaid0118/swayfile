@@ -6,7 +6,7 @@
         <div class="app-sidebar-navbar flex-grow-1 hover-scroll-overlay-y my-5" id="kt_app_sidebar_primary_navbar" data-kt-scroll="true" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_app_sidebar_primary_footer" data-kt-scroll-wrappers="#kt_app_sidebar_primary_navbar" data-kt-scroll-offset="px">
         <div class="app-navbar flex-column flex-center">
             <!--begin::Navbar item-->
-            <% Project.where(created_by_id: @current_user.id).all.each do |project| %>
+            <% Project.joins('LEFT JOIN teams AS contract_teams ON projects.id = contract_teams.project_id').joins('LEFT JOIN teams AS signatory_teams ON projects.id = signatory_teams.project_id').where('projects.created_by_id = :user_id OR contract_teams.user_id = :user_id OR signatory_teams.user_id = :user_id', user_id: @current_user.id).all.each do |project| %>
                 <div class="app-navbar-item flex-center px-1 py-3">
                 <!--begin::Navbar link-->
                 <a href="/projects/<%= project.id %>/details" class="btn btn-icon">
