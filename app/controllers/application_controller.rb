@@ -1,12 +1,14 @@
 class ApplicationController < ActionController::Base # rubocop:disable Style/Documentation
+  include Pundit
   protect_from_forgery with: :null_session
 
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :set_avatars, only: %i[empty_folder folders file_manager settings]
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
-  before_action :authenticate_user!, only: :file_manager
+  before_action :authenticate_user!, only: [:file_manager, :folders]
   before_action :set_notifications, unless: :devise_controller?
+  before_action :set_user, only: [:file_manager, :folders]
 
   def after_sign_in_path_for(resource)
     # Set the user-specific value in a cookie here
@@ -76,7 +78,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def set_folder
-    @folder = Folder.find_by!(slug: params[:slug])
+    @folder = Folder.find_by(slug: params[:slug])
   end
 
   def set_folders
@@ -85,5 +87,9 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def set_notifications
     @notifications = Notification.all.order(id: :desc)
+  end
+
+  def set_user
+    @current_user = User.find(cookies.signed[:user_id])
   end
 end

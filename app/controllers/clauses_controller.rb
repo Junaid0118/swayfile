@@ -4,6 +4,8 @@
 class ClausesController < ApplicationController
   before_action :set_project, only: :create
   before_action :set_clause, only: :update
+  before_action :authenticate_user!, only: [:update]
+  
   def create
     @clause = @project.clauses.build(content: params[:clause_content], title: params[:clause_name],
                                      user_id: params[:user_id])

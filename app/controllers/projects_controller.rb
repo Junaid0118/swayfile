@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
 class ProjectsController < ApplicationController
-  before_action :authenticate_user!, except: [:create, :update, :move_to_folder]
   before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder, :discussions, :contract]
   before_action :set_avatars
-  before_action :set_user, only: :contract
+  before_action :set_user, only: [:contract, :team, :signatories, :discussions]
+  before_action :authenticate_user!, only: [:team, :signatories, :contract, :discussions]
 
   def index 
     render layout: 'projects'
@@ -66,9 +66,15 @@ class ProjectsController < ApplicationController
   end
 
   def add_signatory_to_project
-    member_attributes = params[:compose_to].split(",").map { |user_id| { user_id: user_id, role: 'signatory_party' } }
-    @project.teams.create!(member_attributes)
-    redirect_to "/projects/#{@project.id}/signatories"
+    member_attributes = params["_json"].map do |member|
+      {
+        user_id: member["user_id"],
+        role: 'signatory_party',
+        user_role: member["user_role"]
+      }
+    end
+    @project.teams.create!(member_attributes) 
+    render json: { "data" => "/projects/#{@project}/signatories" }, status: 200
   end
 
   def remove_member_from_team
@@ -84,11 +90,12 @@ class ProjectsController < ApplicationController
   private
 
   def build_project
-    Project.new(name: params[:name])
+    Project.new(name: params[:name], created_by_id: params[:user_id])
   end
 
   def set_project
     @project = Project.find(params[:id])
+    authorize @project
   end
 
   def set_avatars

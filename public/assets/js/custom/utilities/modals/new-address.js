@@ -114,6 +114,8 @@ var KTModalNewAddress = function () {
 							submitButton.removeAttribute('data-kt-indicator');
 							const formData = new FormData();
 							const contractValue = document.querySelector('input[name="contract_name"]').value;
+							const userId = document.getElementById('user-data').getAttribute("data-folder");
+							formData.append("user_id", userId);
 							formData.append('name', contractValue);
 
 							$.ajax({
