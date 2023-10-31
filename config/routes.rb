@@ -33,7 +33,7 @@ Rails.application.routes.draw do
       get 'contract'
       get 'review'
 
-      post 'add_member_to_project'
+      get 'add_member_to_project'
       post 'add_signatory_to_project'
       get 'remove_member_from_team'
       put 'move_to_folder' 
