@@ -60,9 +60,15 @@ class ProjectsController < ApplicationController
   end
 
   def add_member_to_project
-    member_attributes = params[:compose_to].split(",").map { |user_id| { user_id: user_id, role: 'contract_party' } }
-    @project.teams.create!(member_attributes)
-    redirect_to "/projects/#{@project.id}/team"
+    member_attributes = params["_json"].map do |member|
+      {
+        user_id: member["user_id"],
+        role: 'contract_party',
+        user_role: member["user_role"]
+      }
+    end
+    @project.teams.create!(member_attributes) 
+    render json: { "data" => "/projects/#{@project}/signatories" }, status: 200
   end
 
   def add_signatory_to_project

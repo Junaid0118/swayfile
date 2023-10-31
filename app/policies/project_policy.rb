@@ -37,11 +37,11 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def add_member_to_project?
-    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+    true
   end
 
   def add_signatory_to_project?
-    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+    true
   end
 
   def remove_member_from_team?

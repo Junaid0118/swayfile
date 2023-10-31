@@ -5853,28 +5853,60 @@
 
 		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
         <script src="assets/js/custom/utilities/modals/new-address.js"></script>
+				<script>
+			var projectId = <%= @project.id %>
 
-		<script>
-			document.addEventListener('DOMContentLoaded', function() {
-			
+		document.addEventListener('DOMContentLoaded', function() {
 			const addButton = document.getElementById('add_members');
 			
 			if (addButton) {
 				addButton.addEventListener('click', function(e) {
-				e.preventDefault();
-				const inputField = document.getElementById('compose_to');
-				let inputValue = JSON.parse(inputField.value);
-				inputValue = inputValue.map(item => item.value);
-				const link = this.href;
+					e.preventDefault();
 
-				if (inputValue) {
-					const updatedLink = link + `?compose_to=${encodeURIComponent(inputValue)}`;
-					window.location.href = updatedLink;
-				}
+					const usersRoleList = Array.from(document.querySelectorAll("#roleSelect"), element => {
+						const selectedOption = element.options[element.selectedIndex];
+						return selectedOption.textContent;
+					});
+
+					const inputField = document.getElementById('compose_to');
+					let inputValue = JSON.parse(inputField.value);
+					inputValue = inputValue.map(item => item.value);
+
+					const combinedData = inputValue.map((value, i) => ({
+						user_id: value,
+						user_role: usersRoleList[i]
+					}));
+
+					if (combinedData.length > 0) {
+						const dataToSend = JSON.stringify(combinedData);
+						const link = this.href;
+						// Use the fetch API to make a POST request
+						fetch(link, {
+							method: 'POST',
+							body: dataToSend,
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						})
+						.then(response => {
+							window.location.replace(`/projects/${projectId}/team`)
+						})
+						.then(data => {
+							
+							// Handle the response data here
+							console.log(data);
+						})
+						.catch(error => {
+							// Handle any errors here
+							console.error(error);
+						});
+					}
 				});
 			}
-			});
+		});
+
 		</script>
+
 
 
 <!--end::Custom Javascript-->
