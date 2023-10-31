@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 class ProjectsController < ApplicationController
-  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :remove_member_from_team, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder, :discussions, :contract]
+  before_action :set_project, only: [:details, :team, :signatories, :contract, :review, :show, :add_member_to_project, :add_signatory_to_project, :remove_member_from_team, :update, :move_to_folder, :discussions, :contract]
   before_action :set_avatars
   before_action :set_user, only: [:contract, :team, :signatories, :discussions]
   before_action :authenticate_user!, only: [:team, :signatories, :contract, :discussions]

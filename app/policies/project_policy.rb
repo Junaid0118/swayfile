@@ -36,6 +36,23 @@ class ProjectPolicy < ApplicationPolicy
     user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
   end
 
+  def add_member_to_project?
+    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+  end
+
+  def add_signatory_to_project?
+    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+  end
+
+  def remove_member_from_team?
+    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+  end
+
+
+  def move_to_folder?
+    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+  end
+
   def update?
     user == record.created_by
   end
