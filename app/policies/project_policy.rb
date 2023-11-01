@@ -9,7 +9,8 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def show?
-    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+    team = record.teams.find_by(user_id: user.id)
+    team.user_role == "Admin"
   end
 
   def signatories?
@@ -55,5 +56,10 @@ class ProjectPolicy < ApplicationPolicy
 
   def update?
     user == record.created_by
+  end
+
+  def index?
+    team = record.teams.find_by(user_id: user.id)
+    team.user_role == "Admin" || team.user_role == "Guest"
   end
 end

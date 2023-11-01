@@ -2457,16 +2457,18 @@
 															<!--end::Row-->
 															<% end %>
 															<!--begin::Input group-->
-															<div class="mb-0">
-																<%= form_for([@project, Comment.new], url: comments_path(@project)) do |f| %>
-																	<div class="form-group">
-																	<%= f.text_area :content, class: "form-control", rows: 6, name: "comment[message]", placeholder: "Add comments" %>
-																	</div>
-																	<!--begin::Submit-->
-																	<%= f.submit "Send", class: "btn btn-primary mt-n20 mb-20 position-relative float-end me-7", data: { disable_with: 'Sending...' } %>
-																	<!--end::Submit-->
-																<% end %>
-															</div>
+															<% if policy(@project).index? %>
+																<div class="mb-0">
+																	<%= form_for([@project, Comment.new], url: comments_path(@project)) do |f| %>
+																		<div class="form-group">
+																		<%= f.text_area :content, class: "form-control", rows: 6, name: "comment[message]", placeholder: "Add comments" %>
+																		</div>
+																		<!--begin::Submit-->
+																		<%= f.submit "Send", class: "btn btn-primary mt-n20 mb-20 position-relative float-end me-7", data: { disable_with: 'Sending...' } %>
+																		<!--end::Submit-->
+																	<% end %>
+																</div>
+															<% end %>
 															<!--end::Input group-->
 														</div>
 														<!--end::Details-->
@@ -2510,9 +2512,11 @@
 																	</div>
 																	<!--end::Container-->
 																	<!--begin::Actions-->
-																	<div class="m-0">
-																		<button class="btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton" data-id="<%= comment.id %>">Reply</button>
-																	</div>
+																	<% if policy(@project).index? %>
+																		<div class="m-0">
+																			<button class="btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton" data-id="<%= comment.id %>">Reply</button>
+																		</div>
+																	<% end %>
 																	<!--end::Actions-->
 																</div>
 																<!--end::Wrapper-->
@@ -2567,9 +2571,11 @@
 																		</div>
 																		<!--end::Container-->
 																		<!--begin::Actions-->
-																		<div class="m-0">
-																			<button class="btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold" id="replyButton">Reply</button>
-																		</div>
+																		<% if policy(@project).index? %>
+																			<div class="m-0">
+																				<button class="btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold" id="replyButton">Reply</button>
+																			</div>
+																		<% end %>
 																		<!--end::Actions-->
 																	</div>
 																	<!--end::Wrapper-->

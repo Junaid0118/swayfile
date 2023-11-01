@@ -9,6 +9,7 @@ class ClausesController < ApplicationController
   def create
     @clause = @project.clauses.build(content: params[:clause_content], title: params[:clause_name],
                                      user_id: params[:user_id])
+    authorize @clause
     @clause.save!
     render json: @clause
   end
@@ -26,5 +27,6 @@ class ClausesController < ApplicationController
 
   def set_clause
     @clause = Clause.find(params[:id])
+    authorize @clause
   end
 end
