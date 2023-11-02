@@ -17,4 +17,12 @@ class User < ApplicationRecord
   def name
     "#{first_name} #{last_name}"
   end
+
+  def generate_full_address
+    full_address = "#{address_line_1},\n"
+    full_address += "#{address_line_2},\n" unless address_line_2.blank?
+    full_address += "#{town} #{postal_code} #{state}\n"
+    full_address += "#{country}"
+    full_address
+  end
 end

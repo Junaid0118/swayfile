@@ -6,7 +6,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   before_action :set_avatars, only: %i[empty_folder folders file_manager settings]
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
-  before_action :authenticate_user!, only: [:file_manager, :folders]
+  before_action :authenticate_user!, only: [:file_manager, :folders, :profile]
   before_action :set_notifications, unless: :devise_controller?
   before_action :set_user, only: [:file_manager, :folders]
 
@@ -27,7 +27,6 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def profile
-    render json: { message: "Profile page" }
   end
 
   def folders

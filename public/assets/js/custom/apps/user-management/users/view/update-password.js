@@ -149,31 +149,41 @@ var KTUsersUpdatePassword = function () {
                         // Disable button to avoid multiple click 
                         submitButton.disabled = true;
 
-                        // Simulate form submission. For more info check the plugin's official documentation: https://sweetalert2.github.io/
-                        setTimeout(function () {
-                            // Remove loading indication
-                            submitButton.removeAttribute('data-kt-indicator');
+                        const data = {
+                            password: form.querySelector('input[name="new_password"]').value,
+                            password_confirmation: form.querySelector('input[name="new_password"]').value          
+                        };
+            
+                        const userID = document.getElementById("user-data").getAttribute('data-folder');
 
-                            // Enable button
-                            submitButton.disabled = false;
-
-                            // Show popup confirmation 
-                            Swal.fire({
-                                text: "Form has been successfully submitted!",
-                                icon: "success",
-                                buttonsStyling: false,
-                                confirmButtonText: "Ok, got it!",
-                                customClass: {
-                                    confirmButton: "btn btn-primary"
-                                }
-                            }).then(function (result) {
-                                if (result.isConfirmed) {
-                                    modal.hide();
-                                }
-                            });
-
-                            //form.submit(); // Submit form
-                        }, 2000);
+                        $.ajax({
+                            url: `/users/${userID}`, // Replace with your API endpoint
+                            method: 'PATCH',
+                            data: data,
+                            success: function (response) {
+                                submitButton.removeAttribute('data-kt-indicator');
+                                submitButton.disabled = false;
+                    
+                                Swal.fire({
+                                    text: "Form has been successfully submitted!",
+                                    icon: "success",
+                                    buttonsStyling: false,
+                                    confirmButtonText: "Ok, got it!",
+                                    customClass: {
+                                        confirmButton: "btn btn-primary"
+                                    }
+                                }).then(function (result) {
+                                    if (result.isConfirmed) {
+                                        modal.hide();
+                                    }
+                                });
+                                window.location.reload();
+                            },
+                            error: function (error) {
+                                console.error(error);
+                                // Handle error
+                            }
+                        });
                     }
                 });
             }

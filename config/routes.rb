@@ -14,6 +14,7 @@ Rails.application.routes.draw do
 
   resources :compaigns, only: :show
   resources :notifcations, only: :index
+  resources :users, only: :update
 
   resources :projects do
     resources :documents, only: :show
