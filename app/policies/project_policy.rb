@@ -60,6 +60,6 @@ class ProjectPolicy < ApplicationPolicy
 
   def index?
     team = record.teams.find_by(user_id: user.id)
-    team.user_role == "Admin" || team.user_role == "Guest"
+    user == record.created_by || team.user_role == "Admin" || team.user_role == "Guest"
   end
 end

@@ -12,6 +12,17 @@ Rails.application.configure do
   config.eager_load = false
   config.autoloader = :classic
 
+  config.action_mailer.delivery_method = :smtp
+  config.action_mailer.smtp_settings = {
+    address: 'smtp.example.com', 
+    port: 587,                   
+    user_name: 'your_username',
+    password: 'your_password',   
+    authentication: 'login',     
+    enable_starttls_auto: true   
+  }
+
+
 
   # Show full error reports.
   config.consider_all_requests_local = true
