@@ -1,5 +1,7 @@
 class ApplicationController < ActionController::Base # rubocop:disable Style/Documentation
   include Pundit
+
+  rescue_from Pundit::NotAuthorizedError, with: :user_not_authorized
   protect_from_forgery with: :null_session
 
   before_action :configure_permitted_parameters, if: :devise_controller?
@@ -90,5 +92,10 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def set_user
     @current_user = User.find(cookies.signed[:user_id])
+  end
+
+  def user_not_authorized
+    flash[:alert] = "You are not authorized to view this page."
+    redirect_to unauthorized_path
   end
 end

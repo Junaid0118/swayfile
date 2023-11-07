@@ -10,7 +10,7 @@ class ProjectPolicy < ApplicationPolicy
 
   def show?
     team = record.teams.find_by(user_id: user.id)
-    team.user_role == "Admin"
+    user == record.created_by || team.user_role == "Admin"
   end
 
   def signatories?

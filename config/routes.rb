@@ -12,6 +12,8 @@ Rails.application.routes.draw do
   get '/project-icons', to: 'projects#projects_icon'
   get '/search_projects', to: 'projects#search_projects'
 
+  get '/unauthorized', to: 'errors#unauthorized', as: :unauthorized
+
   resources :compaigns, only: :show
   resources :notifcations, only: :index
   resources :users, only: :update
