@@ -83,7 +83,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def set_folders
-    @all_folders = Folder.select(:name, :id)
+    @all_folders = Folder.select(:name, :id)  
   end
 
   def set_notifications
