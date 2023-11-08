@@ -7,7 +7,6 @@ class ClausePolicy < ApplicationPolicy
   end
 
   def create?
-    team = record.project.teams.find_by(user_id: user.id)
-    team.user_role == "Admin"
+    true
   end
 end
