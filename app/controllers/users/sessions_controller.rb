@@ -1,4 +1,7 @@
-class Users::SessionsController < Devise::SessionsController
+# frozen_string_literal: true
+
+module Users
+  class SessionsController < Devise::SessionsController
     def create
       super do |resource|
         if resource.persisted?
@@ -8,5 +11,11 @@ class Users::SessionsController < Devise::SessionsController
         end
       end
     end
+
+    def destroy
+      cookies.delete(:user_id)
+      cookies.delete(:project_id)
+      super
+    end
   end
-  
+end

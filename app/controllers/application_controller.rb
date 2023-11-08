@@ -38,6 +38,9 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def file_manager
+    project = Project.find_by(id: cookies.signed[:project_id])
+    return redirect_to send_invite_project_path(project) if project
+    
     @folders = Folder.where(parent_folder_id: nil)
     @projects = Project.where(folder_id: nil)
     render layout: "file_manager"

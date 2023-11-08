@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       get 'signatories'
       get 'contract'
       get 'review'
+      get 'send_invite'
 
       post 'add_member_to_project'
       post 'add_signatory_to_project'
