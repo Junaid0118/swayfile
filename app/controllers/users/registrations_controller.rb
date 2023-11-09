@@ -6,6 +6,7 @@ module Users
       super do |resource|
         if resource.persisted?
           cookies.signed[:user_id] = resource.id
+          #UserMailer.welcome(resource.id).deliver_now
         end
       end
     end

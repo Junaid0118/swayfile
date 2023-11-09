@@ -41,8 +41,8 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     project = Project.find_by(id: cookies.signed[:project_id])
     return redirect_to send_invite_project_path(project) if project
     
-    @folders = Folder.where(parent_folder_id: nil)
-    @projects = Project.where(folder_id: nil)
+    @folders = @current_user.folders.where(parent_folder_id: nil)
+    @projects = Project.joins('LEFT JOIN teams AS contract_teams ON projects.id = contract_teams.project_id').joins('LEFT JOIN teams AS signatory_teams ON projects.id = signatory_teams.project_id').where('projects.created_by_id = :user_id OR contract_teams.user_id = :user_id OR signatory_teams.user_id = :user_id', user_id: @current_user.id).order(id: :desc).uniq
     render layout: "file_manager"
   end
 
