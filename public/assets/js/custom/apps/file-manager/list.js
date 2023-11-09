@@ -389,8 +389,11 @@ var KTFileManagerList = (function () {
               let folderID = null;
               if (folderElement) {
                 folderID = folderElement.getAttribute("data-folder");
+              
                 formData.append("folder_id", folderID);
               }
+              const userId = document.getElementById('user-data').getAttribute("data-folder");
+              formData.append("user_id", userId);
               formData.append("name", rowInput.value);
               $.ajax({
                 url: "/folders",
