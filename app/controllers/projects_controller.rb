@@ -32,11 +32,11 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def show; end
 
   def team
-    @team_members = @project.contract_party_users
+    @team_members = @project.contract_party_users.uniq
   end
 
   def signatories
-    @team_members = @project.signatory_party_users
+    @team_members = @project.signatory_party_users.uniq
   end
 
   def update
