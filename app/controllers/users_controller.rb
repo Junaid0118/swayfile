@@ -16,12 +16,14 @@ class UsersController < ApplicationController
         params.delete(:name)
       end
 
+      params.delete(:controller)
+      params.delete(:action)
       # Loop through the params and update only the fields that are present
       params.each do |key, value|
-        @record[key] = value if @record.respond_to?(key)
+        @record[key] = value
       end
     end
-
+    
     if @record.save
       render json: @record, status: :ok
     else

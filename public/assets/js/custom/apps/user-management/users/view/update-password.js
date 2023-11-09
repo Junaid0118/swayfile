@@ -82,7 +82,8 @@ var KTUsersUpdatePassword = function () {
             }).then(function (result) {
                 if (result.value) {
                     form.reset(); // Reset form	
-                    modal.hide(); // Hide modal				
+                    modal.hide(); // Hide modal	
+                    window.location.reload();			
                 } else if (result.dismiss === 'cancel') {
                     Swal.fire({
                         text: "Your form has not been cancelled!.",

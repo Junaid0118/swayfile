@@ -3,11 +3,12 @@
 # Folders Class
 class FoldersController < ApplicationController
   before_action :set_folder, only: %i[show update]
+  before_action :set_user, only: %i[create]
 
   def show; end
 
   def create
-    folder = Folder.new(name: params[:name], user_id: User.first.id)
+    folder = Folder.new(name: params[:name], user_id: @current_user.id)
     folder.parent_folder_id = params[:folder_id] if params.key?(:folder_id)
     folder.save!
     render json: folder, status: :created
@@ -29,5 +30,10 @@ class FoldersController < ApplicationController
     @folder = Folder.find(params[:id])
     @folder.destroy
     render json: @folder, status: :ok
+  end
+
+  private
+  def set_user
+    @current_user = User.find_by(id: cookies.signed[:user_id])
   end
 end

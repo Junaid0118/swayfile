@@ -2848,7 +2848,7 @@ License: For each use you must have a valid license purchased only from above li
 																		<option value="da">Dansk - Danish</option>
 																		<option value="de">Deutsch - German</option>
 																		<option value="en">English</option>
-																		<option value="en-gb">English UK - British English</option>
+																		<option value="en-gb" selected>English UK - British English</option>
 																		<option value="es">Español - Spanish</option>
 																		<option value="fil">Filipino</option>
 																		<option value="fr">Français - French</option>
@@ -2907,7 +2907,7 @@ License: For each use you must have a valid license purchased only from above li
 																	<label class="fs-6 fw-semibold mb-2">Address Line 1</label>
 																	<!--end::Label-->
 																	<!--begin::Input-->
-																	<input class="form-control form-control-solid" placeholder="" name="address1" />
+																	<input class="form-control form-control-solid" placeholder="" name="address1" value="<%= @current_user.address_line_1 %>" />
 																	<!--end::Input-->
 																</div>
 																<!--end::Input group-->
@@ -2917,7 +2917,7 @@ License: For each use you must have a valid license purchased only from above li
 																	<label class="fs-6 fw-semibold mb-2">Address Line 2</label>
 																	<!--end::Label-->
 																	<!--begin::Input-->
-																	<input class="form-control form-control-solid" placeholder="" name="address2" />
+																	<input class="form-control form-control-solid" placeholder="" name="address2" value="<%= @current_user.address_line_2 %>"/>
 																	<!--end::Input-->
 																</div>
 																<!--end::Input group-->
@@ -2927,7 +2927,7 @@ License: For each use you must have a valid license purchased only from above li
 																	<label class="fs-6 fw-semibold mb-2">Town</label>
 																	<!--end::Label-->
 																	<!--begin::Input-->
-																	<input class="form-control form-control-solid" placeholder="" name="city" />
+																	<input class="form-control form-control-solid" placeholder="" name="city" value="<%= @current_user.town %>" />
 																	<!--end::Input-->
 																</div>
 																<!--end::Input group-->
@@ -2939,7 +2939,7 @@ License: For each use you must have a valid license purchased only from above li
 																		<label class="fs-6 fw-semibold mb-2">State / Province</label>
 																		<!--end::Label-->
 																		<!--begin::Input-->
-																		<input class="form-control form-control-solid" placeholder="" name="state"  />
+																		<input class="form-control form-control-solid" placeholder="" name="state"  value="<%= @current_user.state %>"/>
 																		<!--end::Input-->
 																	</div>
 																	<!--end::Col-->
@@ -2949,7 +2949,7 @@ License: For each use you must have a valid license purchased only from above li
 																		<label class="fs-6 fw-semibold mb-2">Post Code</label>
 																		<!--end::Label-->
 																		<!--begin::Input-->
-																		<input class="form-control form-control-solid" placeholder="" name="postcode"  />
+																		<input class="form-control form-control-solid" placeholder="" name="postcode"  value="<%= @current_user.postal_code %>" />
 																		<!--end::Input-->
 																	</div>
 																	<!--end::Col-->
@@ -3182,7 +3182,7 @@ License: For each use you must have a valid license purchased only from above li
 																		<option value="UA">Ukraine</option>
 																		<option value="AE">United Arab Emirates</option>
 																		<option value="GB">United Kingdom</option>
-																		<option value="US">United States</option>
+																		<option value="US" selected>United States</option>
 																		<option value="UY">Uruguay</option>
 																		<option value="UZ">Uzbekistan</option>
 																		<option value="VU">Vanuatu</option>

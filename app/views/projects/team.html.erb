@@ -725,10 +725,13 @@
 								</div>
 								<!--end::Page title-->
 								<!--begin::Actions-->
-							<div class="d-flex align-items-center gap-2 gap-lg-3">
+								<div class="d-flex align-items-center gap-2 gap-lg-3">
 									<%= link_to "Discussions", discussions_project_path(@project), class: "btn btn-flex btn-outline btn-color-gray-700 btn-active-color-primary bg-body h-40px fs-7 fw-bold" %>
-									<a class="btn btn-flex btn-outline btn-color-gray-700 btn-active-color-primary bg-body h-40px fs-7 fw-bold">Settings</a>
-									<a class="btn btn-flex btn-primary h-40px fs-7 fw-bold">Submit</a>
+									<% if policy(@project).show? %>
+										<a class="btn btn-flex btn-primary h-40px fs-7 fw-bold">Submit</a>
+										<a class="btn btn-flex btn-outline btn-color-gray-700 btn-active-color-primary bg-body h-40px fs-7 fw-bold">Settings</a>
+
+									<% end %>
 								</div>
 								<!--end::Actions-->
 							</div>
