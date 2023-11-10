@@ -6,6 +6,8 @@ class Project < ApplicationRecord
   belongs_to :folder, optional: true
   belongs_to :created_by, class_name: 'User', optional: true
 
+  validates :name, uniqueness: true
+
   has_many :comments, dependent: :destroy
   has_many :documents, dependent: :destroy
   has_many :teams

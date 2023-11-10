@@ -63,11 +63,14 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def create
     project = build_project
     project.folder_id = params[:folder_id] if params.key?(:folder_id)
-    return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity unless project.save
-
-    Notification.create!(notification_type: 'New Project', user_id: User.first.id,
-                         text: "Project #{project.name} created", date: DateTime.now)
-    render json: project, status: :created
+    @project = project.save
+    if @project
+      Notification.create!(notification_type: 'New Project', user_id: User.first.id,
+        text: "Project #{project.name} created", date: DateTime.now)  
+        return render json: project, status: :created
+    else
+      return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
+    end
   end
 
   def add_member_to_project

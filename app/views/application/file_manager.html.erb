@@ -699,8 +699,8 @@
 												<a href="#">StarterHouse</a>
 												<span class="mx-3">|</span>
 												<a href="#">File Manager</a>
-												<span class="mx-3">|</span><%= Folder.where(parent_folder_id: nil).size%> Projects
-												<span class="mx-3">|</span><%= Project.all.size%> Documents</div>
+												<span class="mx-3">|</span><%= @current_user.folders.where(parent_folder_id: nil).size%> Projects
+												<span class="mx-3">|</span><%= @projects.size%> Documents</div>
 											</div>
 											<!--end::Title-->
 										</div>

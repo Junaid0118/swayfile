@@ -95,58 +95,69 @@ var KTModalNewAddress = function () {
 			}
 		);
 
-		submitButton.addEventListener('click', function (e) {
-			e.preventDefault();
+		let apiCallInProgress = false; // Initialize a flag variable
+
+submitButton.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    // Check if an API call is already in progress
+    if (apiCallInProgress) {
+        return; // Do nothing if an API call is already in progress
+    }
+
+    // Validate form before submit
+    if (validator) {
+        validator.validate().then(function (status) {
+            console.log('validated!');
+
+            if (status == 'Valid') {
+                // Set the flag to indicate that an API call is in progress
+                apiCallInProgress = true;
+
+                // Simulate ajax process
+                const formData = new FormData();
+                const contractValue = document.querySelector('input[name="contract_name"]').value;
+                const userId = document.getElementById('user-data').getAttribute("data-folder");
+                formData.append("user_id", userId);
+                formData.append('name', contractValue);
+
+                $.ajax({
+                    url: '/projects',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        modal.hide();
+						window.location.reload();
+                        window.location.replace(`/projects/${data.id}/details`);
+                    },
+                    error: function (data) {
+                        console.log("error");
+						window.location.reload();
+                    },
+                    complete: function () {
+                        // Reset the flag when the API call is complete
+                        // apiCallInProgress = false;
+                    }
+                });
+            } else {
+                // Show error message.
+                Swal.fire({
+                    text: "Sorry, looks like there are some errors detected, please try again.",
+                    icon: "error",
+                    buttonsStyling: false,
+                    confirmButtonText: "Ok, got it!",
+                    customClass: {
+                        confirmButton: "btn btn-primary"
+                    }
+                });
+            }
+        });
+    }
+});
+
 		
-			// Validate form before submit
-			if (validator) {
-				validator.validate().then(function (status) {
-					console.log('validated!');
-					debugger;
-		
-					if (status == 'Valid') {
-						submitButton.setAttribute('data-kt-indicator', 'on');
-		
-						// Disable button to avoid multiple clicks
-						submitButton.disabled = true;
-		
-						// Simulate ajax process
-						submitButton.removeAttribute('data-kt-indicator');
-						const formData = new FormData();
-						const contractValue = document.querySelector('input[name="contract_name"]').value;
-						const userId = document.getElementById('user-data').getAttribute("data-folder");
-						formData.append("user_id", userId);
-						formData.append('name', contractValue);
-		
-						$.ajax({
-							url: '/projects',
-							type: 'POST',
-							data: formData, // Use the FormData object as the data
-							processData: false, // Prevent jQuery from processing the data
-							contentType: false, // Prevent jQuery from setting the content type
-							success: function (data) {
-								modal.hide();
-								window.location.replace(`/projects/${data.id}/details`);
-							},
-							error: function (data) {
-								console.log("error");
-							}
-						});
-					} else {
-						// Show error message.
-						Swal.fire({
-							text: "Sorry, looks like there are some errors detected, please try again.",
-							icon: "error",
-							buttonsStyling: false,
-							confirmButtonText: "Ok, got it!",
-							customClass: {
-								confirmButton: "btn btn-primary"
-							}
-						});
-					}
-				});
-			}
-		});
 		
 
 		cancelButton.addEventListener('click', function (e) {
@@ -167,6 +178,7 @@ var KTModalNewAddress = function () {
 				if (result.value) {
 					form.reset(); // Reset form	
 					modal.hide(); // Hide modal				
+					window.location.reload();
 				} else if (result.dismiss === 'cancel') {
 					Swal.fire({
 						text: "Your form has not been cancelled!.",
