@@ -46278,6 +46278,268 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
+    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var applyListFormat = function (editor, listName, styleValue) {
+      var cmd = listName === 'UL' ? 'InsertUnorderedList' : 'InsertOrderedList';
+      editor.execCommand(cmd, false, styleValue === false ? null : { 'list-style-type': styleValue });
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('ApplyUnorderedListStyle', function (ui, value) {
+        applyListFormat(editor, 'UL', value['list-style-type']);
+      });
+      editor.addCommand('ApplyOrderedListStyle', function (ui, value) {
+        applyListFormat(editor, 'OL', value['list-style-type']);
+      });
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
+
+    var getNumberStyles = function (editor) {
+      var styles = editor.getParam('advlist_number_styles', 'default,lower-alpha,lower-greek,lower-roman,upper-alpha,upper-roman');
+      return styles ? styles.split(/[ ,]/) : [];
+    };
+    var getBulletStyles = function (editor) {
+      var styles = editor.getParam('advlist_bullet_styles', 'default,circle,square');
+      return styles ? styles.split(/[ ,]/) : [];
+    };
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var isChildOfBody = function (editor, elm) {
+      return editor.$.contains(editor.getBody(), elm);
+    };
+    var isTableCellNode = function (node) {
+      return node && /^(TH|TD)$/.test(node.nodeName);
+    };
+    var isListNode = function (editor) {
+      return function (node) {
+        return node && /^(OL|UL|DL)$/.test(node.nodeName) && isChildOfBody(editor, node);
+      };
+    };
+    var getSelectedStyleType = function (editor) {
+      var listElm = editor.dom.getParent(editor.selection.getNode(), 'ol,ul');
+      var style = editor.dom.getStyle(listElm, 'listStyleType');
+      return Optional.from(style);
+    };
+
+    var findIndex = function (list, predicate) {
+      for (var index = 0; index < list.length; index++) {
+        var element = list[index];
+        if (predicate(element)) {
+          return index;
+        }
+      }
+      return -1;
+    };
+    var styleValueToText = function (styleValue) {
+      return styleValue.replace(/\-/g, ' ').replace(/\b\w/g, function (chr) {
+        return chr.toUpperCase();
+      });
+    };
+    var isWithinList = function (editor, e, nodeName) {
+      var tableCellIndex = findIndex(e.parents, isTableCellNode);
+      var parents = tableCellIndex !== -1 ? e.parents.slice(0, tableCellIndex) : e.parents;
+      var lists = global.grep(parents, isListNode(editor));
+      return lists.length > 0 && lists[0].nodeName === nodeName;
+    };
+    var makeSetupHandler = function (editor, nodeName) {
+      return function (api) {
+        var nodeChangeHandler = function (e) {
+          api.setActive(isWithinList(editor, e, nodeName));
+        };
+        editor.on('NodeChange', nodeChangeHandler);
+        return function () {
+          return editor.off('NodeChange', nodeChangeHandler);
+        };
+      };
+    };
+    var addSplitButton = function (editor, id, tooltip, cmd, nodeName, styles) {
+      editor.ui.registry.addSplitButton(id, {
+        tooltip: tooltip,
+        icon: nodeName === 'OL' ? 'ordered-list' : 'unordered-list',
+        presets: 'listpreview',
+        columns: 3,
+        fetch: function (callback) {
+          var items = global.map(styles, function (styleValue) {
+            var iconStyle = nodeName === 'OL' ? 'num' : 'bull';
+            var iconName = styleValue === 'disc' || styleValue === 'decimal' ? 'default' : styleValue;
+            var itemValue = styleValue === 'default' ? '' : styleValue;
+            var displayText = styleValueToText(styleValue);
+            return {
+              type: 'choiceitem',
+              value: itemValue,
+              icon: 'list-' + iconStyle + '-' + iconName,
+              text: displayText
+            };
+          });
+          callback(items);
+        },
+        onAction: function () {
+          return editor.execCommand(cmd);
+        },
+        onItemAction: function (_splitButtonApi, value) {
+          applyListFormat(editor, nodeName, value);
+        },
+        select: function (value) {
+          var listStyleType = getSelectedStyleType(editor);
+          return listStyleType.map(function (listStyle) {
+            return value === listStyle;
+          }).getOr(false);
+        },
+        onSetup: makeSetupHandler(editor, nodeName)
+      });
+    };
+    var addButton = function (editor, id, tooltip, cmd, nodeName, _styles) {
+      editor.ui.registry.addToggleButton(id, {
+        active: false,
+        tooltip: tooltip,
+        icon: nodeName === 'OL' ? 'ordered-list' : 'unordered-list',
+        onSetup: makeSetupHandler(editor, nodeName),
+        onAction: function () {
+          return editor.execCommand(cmd);
+        }
+      });
+    };
+    var addControl = function (editor, id, tooltip, cmd, nodeName, styles) {
+      if (styles.length > 1) {
+        addSplitButton(editor, id, tooltip, cmd, nodeName, styles);
+      } else {
+        addButton(editor, id, tooltip, cmd, nodeName);
+      }
+    };
+    var register = function (editor) {
+      addControl(editor, 'numlist', 'Numbered list', 'InsertOrderedList', 'OL', getNumberStyles(editor));
+      addControl(editor, 'bullist', 'Bullet list', 'InsertUnorderedList', 'UL', getBulletStyles(editor));
+    };
+
+    function Plugin () {
+      global$1.add('advlist', function (editor) {
+        if (editor.hasPlugin('lists')) {
+          register(editor);
+          register$1(editor);
+        } else {
+          console.error('Please use the Lists plugin together with the Advanced List plugin.');
+        }
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
     var Cell = function (initial) {
       var value = initial;
       var get = function () {
@@ -48455,98 +48717,6 @@ tinymce.IconManager.add('default', {
         register(editor);
         init(editor, charMap[0]);
         return get(editor);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var setContent = function (editor, html) {
-      editor.focus();
-      editor.undoManager.transact(function () {
-        editor.setContent(html);
-      });
-      editor.selection.setCursorLocation();
-      editor.nodeChanged();
-    };
-    var getContent = function (editor) {
-      return editor.getContent({ source_view: true });
-    };
-
-    var open = function (editor) {
-      var editorContent = getContent(editor);
-      editor.windowManager.open({
-        title: 'Source Code',
-        size: 'large',
-        body: {
-          type: 'panel',
-          items: [{
-              type: 'textarea',
-              name: 'code'
-            }]
-        },
-        buttons: [
-          {
-            type: 'cancel',
-            name: 'cancel',
-            text: 'Cancel'
-          },
-          {
-            type: 'submit',
-            name: 'save',
-            text: 'Save',
-            primary: true
-          }
-        ],
-        initialData: { code: editorContent },
-        onSubmit: function (api) {
-          setContent(editor, api.getData().code);
-          api.close();
-        }
-      });
-    };
-
-    var register$1 = function (editor) {
-      editor.addCommand('mceCodeEditor', function () {
-        open(editor);
-      });
-    };
-
-    var register = function (editor) {
-      var onAction = function () {
-        return editor.execCommand('mceCodeEditor');
-      };
-      editor.ui.registry.addButton('code', {
-        icon: 'sourcecode',
-        tooltip: 'Source code',
-        onAction: onAction
-      });
-      editor.ui.registry.addMenuItem('code', {
-        icon: 'sourcecode',
-        text: 'Source code',
-        onAction: onAction
-      });
-    };
-
-    function Plugin () {
-      global.add('code', function (editor) {
-        register$1(editor);
-        register(editor);
-        return {};
       });
     }
 
@@ -51072,6 +51242,552 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var typeOf = function (x) {
+      var t = typeof x;
+      if (x === null) {
+        return 'null';
+      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
+        return 'array';
+      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
+        return 'string';
+      } else {
+        return t;
+      }
+    };
+    var isType$1 = function (type) {
+      return function (value) {
+        return typeOf(value) === type;
+      };
+    };
+    var isSimpleType = function (type) {
+      return function (value) {
+        return typeof value === type;
+      };
+    };
+    var isString = isType$1('string');
+    var isBoolean = isSimpleType('boolean');
+    var isNullable = function (a) {
+      return a === null || a === undefined;
+    };
+    var isNonNullable = function (a) {
+      return !isNullable(a);
+    };
+    var isFunction = isSimpleType('function');
+    var isNumber = isSimpleType('number');
+
+    var noop = function () {
+    };
+    var compose1 = function (fbc, fab) {
+      return function (a) {
+        return fbc(fab(a));
+      };
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var each = function (xs, f) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        f(x, i);
+      }
+    };
+    var filter = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
+    };
+
+    var DOCUMENT = 9;
+    var DOCUMENT_FRAGMENT = 11;
+    var ELEMENT = 1;
+    var TEXT = 3;
+
+    var fromHtml = function (html, scope) {
+      var doc = scope || document;
+      var div = doc.createElement('div');
+      div.innerHTML = html;
+      if (!div.hasChildNodes() || div.childNodes.length > 1) {
+        console.error('HTML does not have a single root node', html);
+        throw new Error('HTML must have a single root node');
+      }
+      return fromDom(div.childNodes[0]);
+    };
+    var fromTag = function (tag, scope) {
+      var doc = scope || document;
+      var node = doc.createElement(tag);
+      return fromDom(node);
+    };
+    var fromText = function (text, scope) {
+      var doc = scope || document;
+      var node = doc.createTextNode(text);
+      return fromDom(node);
+    };
+    var fromDom = function (node) {
+      if (node === null || node === undefined) {
+        throw new Error('Node cannot be null or undefined');
+      }
+      return { dom: node };
+    };
+    var fromPoint = function (docElm, x, y) {
+      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
+    };
+    var SugarElement = {
+      fromHtml: fromHtml,
+      fromTag: fromTag,
+      fromText: fromText,
+      fromDom: fromDom,
+      fromPoint: fromPoint
+    };
+
+    var is = function (element, selector) {
+      var dom = element.dom;
+      if (dom.nodeType !== ELEMENT) {
+        return false;
+      } else {
+        var elem = dom;
+        if (elem.matches !== undefined) {
+          return elem.matches(selector);
+        } else if (elem.msMatchesSelector !== undefined) {
+          return elem.msMatchesSelector(selector);
+        } else if (elem.webkitMatchesSelector !== undefined) {
+          return elem.webkitMatchesSelector(selector);
+        } else if (elem.mozMatchesSelector !== undefined) {
+          return elem.mozMatchesSelector(selector);
+        } else {
+          throw new Error('Browser lacks native selectors');
+        }
+      }
+    };
+
+    typeof window !== 'undefined' ? window : Function('return this;')();
+
+    var name = function (element) {
+      var r = element.dom.nodeName;
+      return r.toLowerCase();
+    };
+    var type = function (element) {
+      return element.dom.nodeType;
+    };
+    var isType = function (t) {
+      return function (element) {
+        return type(element) === t;
+      };
+    };
+    var isElement = isType(ELEMENT);
+    var isText = isType(TEXT);
+    var isDocument = isType(DOCUMENT);
+    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
+    var isTag = function (tag) {
+      return function (e) {
+        return isElement(e) && name(e) === tag;
+      };
+    };
+
+    var owner = function (element) {
+      return SugarElement.fromDom(element.dom.ownerDocument);
+    };
+    var documentOrOwner = function (dos) {
+      return isDocument(dos) ? dos : owner(dos);
+    };
+    var parent = function (element) {
+      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
+    };
+    var children$2 = function (element) {
+      return map(element.dom.childNodes, SugarElement.fromDom);
+    };
+
+    var rawSet = function (dom, key, value) {
+      if (isString(value) || isBoolean(value) || isNumber(value)) {
+        dom.setAttribute(key, value + '');
+      } else {
+        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
+        throw new Error('Attribute value was not simple');
+      }
+    };
+    var set = function (element, key, value) {
+      rawSet(element.dom, key, value);
+    };
+    var remove = function (element, key) {
+      element.dom.removeAttribute(key);
+    };
+
+    var isShadowRoot = function (dos) {
+      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
+    };
+    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
+    var getRootNode = supported ? function (e) {
+      return SugarElement.fromDom(e.dom.getRootNode());
+    } : documentOrOwner;
+    var getShadowRoot = function (e) {
+      var r = getRootNode(e);
+      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
+    };
+    var getShadowHost = function (e) {
+      return SugarElement.fromDom(e.dom.host);
+    };
+
+    var inBody = function (element) {
+      var dom = isText(element) ? element.dom.parentNode : element.dom;
+      if (dom === undefined || dom === null || dom.ownerDocument === null) {
+        return false;
+      }
+      var doc = dom.ownerDocument;
+      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
+        return doc.body.contains(dom);
+      }, compose1(inBody, getShadowHost));
+    };
+
+    var ancestor$1 = function (scope, predicate, isRoot) {
+      var element = scope.dom;
+      var stop = isFunction(isRoot) ? isRoot : never;
+      while (element.parentNode) {
+        element = element.parentNode;
+        var el = SugarElement.fromDom(element);
+        if (predicate(el)) {
+          return Optional.some(el);
+        } else if (stop(el)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+
+    var ancestor = function (scope, selector, isRoot) {
+      return ancestor$1(scope, function (e) {
+        return is(e, selector);
+      }, isRoot);
+    };
+
+    var isSupported = function (dom) {
+      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
+    };
+
+    var get = function (element, property) {
+      var dom = element.dom;
+      var styles = window.getComputedStyle(dom);
+      var r = styles.getPropertyValue(property);
+      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
+    };
+    var getUnsafeProperty = function (dom, property) {
+      return isSupported(dom) ? dom.style.getPropertyValue(property) : '';
+    };
+
+    var getDirection = function (element) {
+      return get(element, 'direction') === 'rtl' ? 'rtl' : 'ltr';
+    };
+
+    var children$1 = function (scope, predicate) {
+      return filter(children$2(scope), predicate);
+    };
+
+    var children = function (scope, selector) {
+      return children$1(scope, function (e) {
+        return is(e, selector);
+      });
+    };
+
+    var getParentElement = function (element) {
+      return parent(element).filter(isElement);
+    };
+    var getNormalizedBlock = function (element, isListItem) {
+      var normalizedElement = isListItem ? ancestor(element, 'ol,ul') : Optional.some(element);
+      return normalizedElement.getOr(element);
+    };
+    var isListItem = isTag('li');
+    var setDir = function (editor, dir) {
+      var selectedBlocks = editor.selection.getSelectedBlocks();
+      if (selectedBlocks.length > 0) {
+        each(selectedBlocks, function (block) {
+          var blockElement = SugarElement.fromDom(block);
+          var isBlockElementListItem = isListItem(blockElement);
+          var normalizedBlock = getNormalizedBlock(blockElement, isBlockElementListItem);
+          var normalizedBlockParent = getParentElement(normalizedBlock);
+          normalizedBlockParent.each(function (parent) {
+            var parentDirection = getDirection(parent);
+            if (parentDirection !== dir) {
+              set(normalizedBlock, 'dir', dir);
+            } else if (getDirection(normalizedBlock) !== dir) {
+              remove(normalizedBlock, 'dir');
+            }
+            if (isBlockElementListItem) {
+              var listItems = children(normalizedBlock, 'li[dir]');
+              each(listItems, function (listItem) {
+                return remove(listItem, 'dir');
+              });
+            }
+          });
+        });
+        editor.nodeChanged();
+      }
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceDirectionLTR', function () {
+        setDir(editor, 'ltr');
+      });
+      editor.addCommand('mceDirectionRTL', function () {
+        setDir(editor, 'rtl');
+      });
+    };
+
+    var getNodeChangeHandler = function (editor, dir) {
+      return function (api) {
+        var nodeChangeHandler = function (e) {
+          var element = SugarElement.fromDom(e.element);
+          api.setActive(getDirection(element) === dir);
+        };
+        editor.on('NodeChange', nodeChangeHandler);
+        return function () {
+          return editor.off('NodeChange', nodeChangeHandler);
+        };
+      };
+    };
+    var register = function (editor) {
+      editor.ui.registry.addToggleButton('ltr', {
+        tooltip: 'Left to right',
+        icon: 'ltr',
+        onAction: function () {
+          return editor.execCommand('mceDirectionLTR');
+        },
+        onSetup: getNodeChangeHandler(editor, 'ltr')
+      });
+      editor.ui.registry.addToggleButton('rtl', {
+        tooltip: 'Right to left',
+        icon: 'rtl',
+        onAction: function () {
+          return editor.execCommand('mceDirectionRTL');
+        },
+        onSetup: getNodeChangeHandler(editor, 'rtl')
+      });
+    };
+
+    function Plugin () {
+      global.add('directionality', function (editor) {
+        register$1(editor);
+        register(editor);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var setContent = function (editor, html) {
+      editor.focus();
+      editor.undoManager.transact(function () {
+        editor.setContent(html);
+      });
+      editor.selection.setCursorLocation();
+      editor.nodeChanged();
+    };
+    var getContent = function (editor) {
+      return editor.getContent({ source_view: true });
+    };
+
+    var open = function (editor) {
+      var editorContent = getContent(editor);
+      editor.windowManager.open({
+        title: 'Source Code',
+        size: 'large',
+        body: {
+          type: 'panel',
+          items: [{
+              type: 'textarea',
+              name: 'code'
+            }]
+        },
+        buttons: [
+          {
+            type: 'cancel',
+            name: 'cancel',
+            text: 'Cancel'
+          },
+          {
+            type: 'submit',
+            name: 'save',
+            text: 'Save',
+            primary: true
+          }
+        ],
+        initialData: { code: editorContent },
+        onSubmit: function (api) {
+          setContent(editor, api.getData().code);
+          api.close();
+        }
+      });
+    };
+
+    var register$1 = function (editor) {
+      editor.addCommand('mceCodeEditor', function () {
+        open(editor);
+      });
+    };
+
+    var register = function (editor) {
+      var onAction = function () {
+        return editor.execCommand('mceCodeEditor');
+      };
+      editor.ui.registry.addButton('code', {
+        icon: 'sourcecode',
+        tooltip: 'Source code',
+        onAction: onAction
+      });
+      editor.ui.registry.addMenuItem('code', {
+        icon: 'sourcecode',
+        text: 'Source code',
+        onAction: onAction
+      });
+    };
+
+    function Plugin () {
+      global.add('code', function (editor) {
+        register$1(editor);
+        register(editor);
+        return {};
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
     var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
 
     var eq = function (t) {
@@ -52236,6 +52952,859 @@ tinymce.IconManager.add('default', {
         register$1(editor, headState);
         register(editor);
         setup(editor, headState, footState);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var Cell = function (initial) {
+      var value = initial;
+      var get = function () {
+        return value;
+      };
+      var set = function (v) {
+        value = v;
+      };
+      return {
+        get: get,
+        set: set
+      };
+    };
+
+    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    var get$1 = function (customTabs) {
+      var addTab = function (spec) {
+        var currentCustomTabs = customTabs.get();
+        currentCustomTabs[spec.name] = spec;
+        customTabs.set(currentCustomTabs);
+      };
+      return { addTab: addTab };
+    };
+
+    var register$1 = function (editor, dialogOpener) {
+      editor.addCommand('mceHelp', dialogOpener);
+    };
+
+    var register = function (editor, dialogOpener) {
+      editor.ui.registry.addButton('help', {
+        icon: 'help',
+        tooltip: 'Help',
+        onAction: dialogOpener
+      });
+      editor.ui.registry.addMenuItem('help', {
+        text: 'Help',
+        icon: 'help',
+        shortcut: 'Alt+0',
+        onAction: dialogOpener
+      });
+    };
+
+    var __assign = function () {
+      __assign = Object.assign || function __assign(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+          s = arguments[i];
+          for (var p in s)
+            if (Object.prototype.hasOwnProperty.call(s, p))
+              t[p] = s[p];
+        }
+        return t;
+      };
+      return __assign.apply(this, arguments);
+    };
+
+    var noop = function () {
+    };
+    var constant = function (value) {
+      return function () {
+        return value;
+      };
+    };
+    var identity = function (x) {
+      return x;
+    };
+    var never = constant(false);
+    var always = constant(true);
+
+    var none = function () {
+      return NONE;
+    };
+    var NONE = function () {
+      var call = function (thunk) {
+        return thunk();
+      };
+      var id = identity;
+      var me = {
+        fold: function (n, _s) {
+          return n();
+        },
+        isSome: never,
+        isNone: always,
+        getOr: id,
+        getOrThunk: call,
+        getOrDie: function (msg) {
+          throw new Error(msg || 'error: getOrDie called on none.');
+        },
+        getOrNull: constant(null),
+        getOrUndefined: constant(undefined),
+        or: id,
+        orThunk: call,
+        map: none,
+        each: noop,
+        bind: none,
+        exists: never,
+        forall: always,
+        filter: function () {
+          return none();
+        },
+        toArray: function () {
+          return [];
+        },
+        toString: constant('none()')
+      };
+      return me;
+    }();
+    var some = function (a) {
+      var constant_a = constant(a);
+      var self = function () {
+        return me;
+      };
+      var bind = function (f) {
+        return f(a);
+      };
+      var me = {
+        fold: function (n, s) {
+          return s(a);
+        },
+        isSome: always,
+        isNone: never,
+        getOr: constant_a,
+        getOrThunk: constant_a,
+        getOrDie: constant_a,
+        getOrNull: constant_a,
+        getOrUndefined: constant_a,
+        or: self,
+        orThunk: self,
+        map: function (f) {
+          return some(f(a));
+        },
+        each: function (f) {
+          f(a);
+        },
+        bind: bind,
+        exists: bind,
+        forall: bind,
+        filter: function (f) {
+          return f(a) ? me : NONE;
+        },
+        toArray: function () {
+          return [a];
+        },
+        toString: function () {
+          return 'some(' + a + ')';
+        }
+      };
+      return me;
+    };
+    var from = function (value) {
+      return value === null || value === undefined ? NONE : some(value);
+    };
+    var Optional = {
+      some: some,
+      none: none,
+      from: from
+    };
+
+    var nativeIndexOf = Array.prototype.indexOf;
+    var rawIndexOf = function (ts, t) {
+      return nativeIndexOf.call(ts, t);
+    };
+    var contains = function (xs, x) {
+      return rawIndexOf(xs, x) > -1;
+    };
+    var map = function (xs, f) {
+      var len = xs.length;
+      var r = new Array(len);
+      for (var i = 0; i < len; i++) {
+        var x = xs[i];
+        r[i] = f(x, i);
+      }
+      return r;
+    };
+    var filter = function (xs, pred) {
+      var r = [];
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          r.push(x);
+        }
+      }
+      return r;
+    };
+    var findUntil = function (xs, pred, until) {
+      for (var i = 0, len = xs.length; i < len; i++) {
+        var x = xs[i];
+        if (pred(x, i)) {
+          return Optional.some(x);
+        } else if (until(x, i)) {
+          break;
+        }
+      }
+      return Optional.none();
+    };
+    var find = function (xs, pred) {
+      return findUntil(xs, pred, never);
+    };
+
+    var keys = Object.keys;
+    var hasOwnProperty = Object.hasOwnProperty;
+    var get = function (obj, key) {
+      return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
+    };
+    var has = function (obj, key) {
+      return hasOwnProperty.call(obj, key);
+    };
+
+    var cat = function (arr) {
+      var r = [];
+      var push = function (x) {
+        r.push(x);
+      };
+      for (var i = 0; i < arr.length; i++) {
+        arr[i].each(push);
+      }
+      return r;
+    };
+
+    var getHelpTabs = function (editor) {
+      return Optional.from(editor.getParam('help_tabs'));
+    };
+    var getForcedPlugins = function (editor) {
+      return editor.getParam('forced_plugins');
+    };
+
+    var description = '<h1>Editor UI keyboard navigation</h1>\n\n<h2>Activating keyboard navigation</h2>\n\n<p>The sections of the outer UI of the editor - the menubar, toolbar, sidebar and footer - are all keyboard navigable. As such, there are multiple ways to activate keyboard navigation:</p>\n<ul>\n  <li>Focus the menubar: Alt + F9 (Windows) or &#x2325;F9 (MacOS)</li>\n  <li>Focus the toolbar: Alt + F10 (Windows) or &#x2325;F10 (MacOS)</li>\n  <li>Focus the footer: Alt + F11 (Windows) or &#x2325;F11 (MacOS)</li>\n</ul>\n\n<p>Focusing the menubar or toolbar will start keyboard navigation at the first item in the menubar or toolbar, which will be highlighted with a gray background. Focusing the footer will start keyboard navigation at the first item in the element path, which will be highlighted with an underline. </p>\n\n<h2>Moving between UI sections</h2>\n\n<p>When keyboard navigation is active, pressing tab will move the focus to the next major section of the UI, where applicable. These sections are:</p>\n<ul>\n  <li>the menubar</li>\n  <li>each group of the toolbar </li>\n  <li>the sidebar</li>\n  <li>the element path in the footer </li>\n  <li>the wordcount toggle button in the footer </li>\n  <li>the branding link in the footer </li>\n  <li>the editor resize handle in the footer</li>\n</ul>\n\n<p>Pressing shift + tab will move backwards through the same sections, except when moving from the footer to the toolbar. Focusing the element path then pressing shift + tab will move focus to the first toolbar group, not the last.</p>\n\n<h2>Moving within UI sections</h2>\n\n<p>Keyboard navigation within UI sections can usually be achieved using the left and right arrow keys. This includes:</p>\n<ul>\n  <li>moving between menus in the menubar</li>\n  <li>moving between buttons in a toolbar group</li>\n  <li>moving between items in the element path</li>\n</ul>\n\n<p>In all these UI sections, keyboard navigation will cycle within the section. For example, focusing the last button in a toolbar group then pressing right arrow will move focus to the first item in the same toolbar group. </p>\n\n<h1>Executing buttons</h1>\n\n<p>To execute a button, navigate the selection to the desired button and hit space or enter.</p>\n\n<h1>Opening, navigating and closing menus</h1>\n\n<p>When focusing a menubar button or a toolbar button with a menu, pressing space, enter or down arrow will open the menu. When the menu opens the first item will be selected. To move up or down the menu, press the up or down arrow key respectively. This is the same for submenus, which can also be opened and closed using the left and right arrow keys.</p>\n\n<p>To close any active menu, hit the escape key. When a menu is closed the selection will be restored to its previous selection. This also works for closing submenus.</p>\n\n<h1>Context toolbars and menus</h1>\n\n<p>To focus an open context toolbar such as the table context toolbar, press Ctrl + F9 (Windows) or &#x2303;F9 (MacOS).</p>\n\n<p>Context toolbar navigation is the same as toolbar navigation, and context menu navigation is the same as standard menu navigation.</p>\n\n<h1>Dialog navigation</h1>\n\n<p>There are two types of dialog UIs in TinyMCE: tabbed dialogs and non-tabbed dialogs.</p>\n\n<p>When a non-tabbed dialog is opened, the first interactive component in the dialog will be focused. Users can navigate between interactive components by pressing tab. This includes any footer buttons. Navigation will cycle back to the first dialog component if tab is pressed while focusing the last component in the dialog. Pressing shift + tab will navigate backwards.</p>\n\n<p>When a tabbed dialog is opened, the first button in the tab menu is focused. Pressing tab will navigate to the first interactive component in that tab, and will cycle through the tab\u2019s components, the footer buttons, then back to the tab button. To switch to another tab, focus the tab button for the current tab, then use the arrow keys to cycle through the tab buttons.</p>';
+    var tab$3 = function () {
+      var body = {
+        type: 'htmlpanel',
+        presets: 'document',
+        html: description
+      };
+      return {
+        name: 'keyboardnav',
+        title: 'Keyboard Navigation',
+        items: [body]
+      };
+    };
+
+    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
+
+    var convertText = function (source) {
+      var mac = {
+        alt: '&#x2325;',
+        ctrl: '&#x2303;',
+        shift: '&#x21E7;',
+        meta: '&#x2318;',
+        access: '&#x2303;&#x2325;'
+      };
+      var other = {
+        meta: 'Ctrl ',
+        access: 'Shift + Alt '
+      };
+      var replace = global$2.mac ? mac : other;
+      var shortcut = source.split('+');
+      var updated = map(shortcut, function (segment) {
+        var search = segment.toLowerCase().trim();
+        return has(replace, search) ? replace[search] : segment;
+      });
+      return global$2.mac ? updated.join('').replace(/\s/, '') : updated.join('+');
+    };
+
+    var shortcuts = [
+      {
+        shortcuts: ['Meta + B'],
+        action: 'Bold'
+      },
+      {
+        shortcuts: ['Meta + I'],
+        action: 'Italic'
+      },
+      {
+        shortcuts: ['Meta + U'],
+        action: 'Underline'
+      },
+      {
+        shortcuts: ['Meta + A'],
+        action: 'Select all'
+      },
+      {
+        shortcuts: [
+          'Meta + Y',
+          'Meta + Shift + Z'
+        ],
+        action: 'Redo'
+      },
+      {
+        shortcuts: ['Meta + Z'],
+        action: 'Undo'
+      },
+      {
+        shortcuts: ['Access + 1'],
+        action: 'Heading 1'
+      },
+      {
+        shortcuts: ['Access + 2'],
+        action: 'Heading 2'
+      },
+      {
+        shortcuts: ['Access + 3'],
+        action: 'Heading 3'
+      },
+      {
+        shortcuts: ['Access + 4'],
+        action: 'Heading 4'
+      },
+      {
+        shortcuts: ['Access + 5'],
+        action: 'Heading 5'
+      },
+      {
+        shortcuts: ['Access + 6'],
+        action: 'Heading 6'
+      },
+      {
+        shortcuts: ['Access + 7'],
+        action: 'Paragraph'
+      },
+      {
+        shortcuts: ['Access + 8'],
+        action: 'Div'
+      },
+      {
+        shortcuts: ['Access + 9'],
+        action: 'Address'
+      },
+      {
+        shortcuts: ['Alt + 0'],
+        action: 'Open help dialog'
+      },
+      {
+        shortcuts: ['Alt + F9'],
+        action: 'Focus to menubar'
+      },
+      {
+        shortcuts: ['Alt + F10'],
+        action: 'Focus to toolbar'
+      },
+      {
+        shortcuts: ['Alt + F11'],
+        action: 'Focus to element path'
+      },
+      {
+        shortcuts: ['Ctrl + F9'],
+        action: 'Focus to contextual toolbar'
+      },
+      {
+        shortcuts: ['Shift + Enter'],
+        action: 'Open popup menu for split buttons'
+      },
+      {
+        shortcuts: ['Meta + K'],
+        action: 'Insert link (if link plugin activated)'
+      },
+      {
+        shortcuts: ['Meta + S'],
+        action: 'Save (if save plugin activated)'
+      },
+      {
+        shortcuts: ['Meta + F'],
+        action: 'Find (if searchreplace plugin activated)'
+      },
+      {
+        shortcuts: ['Meta + Shift + F'],
+        action: 'Switch to or from fullscreen mode'
+      }
+    ];
+
+    var tab$2 = function () {
+      var shortcutList = map(shortcuts, function (shortcut) {
+        var shortcutText = map(shortcut.shortcuts, convertText).join(' or ');
+        return [
+          shortcut.action,
+          shortcutText
+        ];
+      });
+      var tablePanel = {
+        type: 'table',
+        header: [
+          'Action',
+          'Shortcut'
+        ],
+        cells: shortcutList
+      };
+      return {
+        name: 'shortcuts',
+        title: 'Handy Shortcuts',
+        items: [tablePanel]
+      };
+    };
+
+    var global$1 = tinymce.util.Tools.resolve('tinymce.util.I18n');
+
+    var urls = map([
+      {
+        key: 'advlist',
+        name: 'Advanced List'
+      },
+      {
+        key: 'anchor',
+        name: 'Anchor'
+      },
+      {
+        key: 'autolink',
+        name: 'Autolink'
+      },
+      {
+        key: 'autoresize',
+        name: 'Autoresize'
+      },
+      {
+        key: 'autosave',
+        name: 'Autosave'
+      },
+      {
+        key: 'bbcode',
+        name: 'BBCode'
+      },
+      {
+        key: 'charmap',
+        name: 'Character Map'
+      },
+      {
+        key: 'code',
+        name: 'Code'
+      },
+      {
+        key: 'codesample',
+        name: 'Code Sample'
+      },
+      {
+        key: 'colorpicker',
+        name: 'Color Picker'
+      },
+      {
+        key: 'directionality',
+        name: 'Directionality'
+      },
+      {
+        key: 'emoticons',
+        name: 'Emoticons'
+      },
+      {
+        key: 'fullpage',
+        name: 'Full Page'
+      },
+      {
+        key: 'fullscreen',
+        name: 'Full Screen'
+      },
+      {
+        key: 'help',
+        name: 'Help'
+      },
+      {
+        key: 'hr',
+        name: 'Horizontal Rule'
+      },
+      {
+        key: 'image',
+        name: 'Image'
+      },
+      {
+        key: 'imagetools',
+        name: 'Image Tools'
+      },
+      {
+        key: 'importcss',
+        name: 'Import CSS'
+      },
+      {
+        key: 'insertdatetime',
+        name: 'Insert Date/Time'
+      },
+      {
+        key: 'legacyoutput',
+        name: 'Legacy Output'
+      },
+      {
+        key: 'link',
+        name: 'Link'
+      },
+      {
+        key: 'lists',
+        name: 'Lists'
+      },
+      {
+        key: 'media',
+        name: 'Media'
+      },
+      {
+        key: 'nonbreaking',
+        name: 'Nonbreaking'
+      },
+      {
+        key: 'noneditable',
+        name: 'Noneditable'
+      },
+      {
+        key: 'pagebreak',
+        name: 'Page Break'
+      },
+      {
+        key: 'paste',
+        name: 'Paste'
+      },
+      {
+        key: 'preview',
+        name: 'Preview'
+      },
+      {
+        key: 'print',
+        name: 'Print'
+      },
+      {
+        key: 'quickbars',
+        name: 'Quick Toolbars'
+      },
+      {
+        key: 'save',
+        name: 'Save'
+      },
+      {
+        key: 'searchreplace',
+        name: 'Search and Replace'
+      },
+      {
+        key: 'spellchecker',
+        name: 'Spell Checker'
+      },
+      {
+        key: 'tabfocus',
+        name: 'Tab Focus'
+      },
+      {
+        key: 'table',
+        name: 'Table'
+      },
+      {
+        key: 'template',
+        name: 'Template'
+      },
+      {
+        key: 'textcolor',
+        name: 'Text Color'
+      },
+      {
+        key: 'textpattern',
+        name: 'Text Pattern'
+      },
+      {
+        key: 'toc',
+        name: 'Table of Contents'
+      },
+      {
+        key: 'visualblocks',
+        name: 'Visual Blocks'
+      },
+      {
+        key: 'visualchars',
+        name: 'Visual Characters'
+      },
+      {
+        key: 'wordcount',
+        name: 'Word Count'
+      },
+      {
+        key: 'a11ychecker',
+        name: 'Accessibility Checker',
+        type: 'premium'
+      },
+      {
+        key: 'advcode',
+        name: 'Advanced Code Editor',
+        type: 'premium'
+      },
+      {
+        key: 'advtable',
+        name: 'Advanced Tables',
+        type: 'premium'
+      },
+      {
+        key: 'autocorrect',
+        name: 'Autocorrect',
+        type: 'premium'
+      },
+      {
+        key: 'casechange',
+        name: 'Case Change',
+        type: 'premium'
+      },
+      {
+        key: 'checklist',
+        name: 'Checklist',
+        type: 'premium'
+      },
+      {
+        key: 'export',
+        name: 'Export',
+        type: 'premium'
+      },
+      {
+        key: 'mediaembed',
+        name: 'Enhanced Media Embed',
+        type: 'premium'
+      },
+      {
+        key: 'formatpainter',
+        name: 'Format Painter',
+        type: 'premium'
+      },
+      {
+        key: 'linkchecker',
+        name: 'Link Checker',
+        type: 'premium'
+      },
+      {
+        key: 'mentions',
+        name: 'Mentions',
+        type: 'premium'
+      },
+      {
+        key: 'pageembed',
+        name: 'Page Embed',
+        type: 'premium'
+      },
+      {
+        key: 'permanentpen',
+        name: 'Permanent Pen',
+        type: 'premium'
+      },
+      {
+        key: 'powerpaste',
+        name: 'PowerPaste',
+        type: 'premium'
+      },
+      {
+        key: 'rtc',
+        name: 'Real-Time Collaboration',
+        type: 'premium'
+      },
+      {
+        key: 'tinymcespellchecker',
+        name: 'Spell Checker Pro',
+        type: 'premium'
+      },
+      {
+        key: 'tinycomments',
+        name: 'Tiny Comments',
+        type: 'premium',
+        slug: 'comments'
+      },
+      {
+        key: 'tinydrive',
+        name: 'Tiny Drive',
+        type: 'premium'
+      }
+    ], function (item) {
+      return __assign(__assign({}, item), {
+        type: item.type || 'opensource',
+        slug: item.slug || item.key
+      });
+    });
+
+    var tab$1 = function (editor) {
+      var availablePlugins = function () {
+        var premiumPlugins = filter(urls, function (_a) {
+          var key = _a.key, type = _a.type;
+          return key !== 'autocorrect' && type === 'premium';
+        });
+        var premiumPluginList = map(premiumPlugins, function (plugin) {
+          return '<li>' + global$1.translate(plugin.name) + '</li>';
+        }).join('');
+        return '<div data-mce-tabstop="1" tabindex="-1">' + '<p><b>' + global$1.translate('Premium plugins:') + '</b></p>' + '<ul>' + premiumPluginList + '<li class="tox-help__more-link" "><a href="https://www.tiny.cloud/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' + global$1.translate('Learn more...') + '</a></li>' + '</ul>' + '</div>';
+      };
+      var makeLink = function (p) {
+        return '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.name + '</a>';
+      };
+      var maybeUrlize = function (editor, key) {
+        return find(urls, function (x) {
+          return x.key === key;
+        }).fold(function () {
+          var getMetadata = editor.plugins[key].getMetadata;
+          return typeof getMetadata === 'function' ? makeLink(getMetadata()) : key;
+        }, function (x) {
+          var name = x.type === 'premium' ? x.name + '*' : x.name;
+          return makeLink({
+            name: name,
+            url: 'https://www.tiny.cloud/docs/plugins/' + x.type + '/' + x.slug
+          });
+        });
+      };
+      var getPluginKeys = function (editor) {
+        var keys$1 = keys(editor.plugins);
+        var forced_plugins = getForcedPlugins(editor);
+        return forced_plugins === undefined ? keys$1 : filter(keys$1, function (k) {
+          return !contains(forced_plugins, k);
+        });
+      };
+      var pluginLister = function (editor) {
+        var pluginKeys = getPluginKeys(editor);
+        var pluginLis = map(pluginKeys, function (key) {
+          return '<li>' + maybeUrlize(editor, key) + '</li>';
+        });
+        var count = pluginLis.length;
+        var pluginsString = pluginLis.join('');
+        var html = '<p><b>' + global$1.translate([
+          'Plugins installed ({0}):',
+          count
+        ]) + '</b></p>' + '<ul>' + pluginsString + '</ul>';
+        return html;
+      };
+      var installedPlugins = function (editor) {
+        if (editor == null) {
+          return '';
+        }
+        return '<div data-mce-tabstop="1" tabindex="-1">' + pluginLister(editor) + '</div>';
+      };
+      var htmlPanel = {
+        type: 'htmlpanel',
+        presets: 'document',
+        html: [
+          installedPlugins(editor),
+          availablePlugins()
+        ].join('')
+      };
+      return {
+        name: 'plugins',
+        title: 'Plugins',
+        items: [htmlPanel]
+      };
+    };
+
+    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
+
+    var tab = function () {
+      var getVersion = function (major, minor) {
+        return major.indexOf('@') === 0 ? 'X.X.X' : major + '.' + minor;
+      };
+      var version = getVersion(global.majorVersion, global.minorVersion);
+      var changeLogLink = '<a href="https://www.tiny.cloud/docs/changelog/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">TinyMCE ' + version + '</a>';
+      var htmlPanel = {
+        type: 'htmlpanel',
+        html: '<p>' + global$1.translate([
+          'You are using {0}',
+          changeLogLink
+        ]) + '</p>',
+        presets: 'document'
+      };
+      return {
+        name: 'versions',
+        title: 'Version',
+        items: [htmlPanel]
+      };
+    };
+
+    var parseHelpTabsSetting = function (tabsFromSettings, tabs) {
+      var newTabs = {};
+      var names = map(tabsFromSettings, function (t) {
+        if (typeof t === 'string') {
+          if (has(tabs, t)) {
+            newTabs[t] = tabs[t];
+          }
+          return t;
+        } else {
+          newTabs[t.name] = t;
+          return t.name;
+        }
+      });
+      return {
+        tabs: newTabs,
+        names: names
+      };
+    };
+    var getNamesFromTabs = function (tabs) {
+      var names = keys(tabs);
+      var idx = names.indexOf('versions');
+      if (idx !== -1) {
+        names.splice(idx, 1);
+        names.push('versions');
+      }
+      return {
+        tabs: tabs,
+        names: names
+      };
+    };
+    var parseCustomTabs = function (editor, customTabs) {
+      var _a;
+      var shortcuts = tab$2();
+      var nav = tab$3();
+      var plugins = tab$1(editor);
+      var versions = tab();
+      var tabs = __assign((_a = {}, _a[shortcuts.name] = shortcuts, _a[nav.name] = nav, _a[plugins.name] = plugins, _a[versions.name] = versions, _a), customTabs.get());
+      return getHelpTabs(editor).fold(function () {
+        return getNamesFromTabs(tabs);
+      }, function (tabsFromSettings) {
+        return parseHelpTabsSetting(tabsFromSettings, tabs);
+      });
+    };
+    var init = function (editor, customTabs) {
+      return function () {
+        var _a = parseCustomTabs(editor, customTabs), tabs = _a.tabs, names = _a.names;
+        var foundTabs = map(names, function (name) {
+          return get(tabs, name);
+        });
+        var dialogTabs = cat(foundTabs);
+        var body = {
+          type: 'tabpanel',
+          tabs: dialogTabs
+        };
+        editor.windowManager.open({
+          title: 'Help',
+          size: 'medium',
+          body: body,
+          buttons: [{
+              type: 'cancel',
+              name: 'close',
+              text: 'Close',
+              primary: true
+            }],
+          initialData: {}
+        });
+      };
+    };
+
+    function Plugin () {
+      global$3.add('help', function (editor) {
+        var customTabs = Cell({});
+        var api = get$1(customTabs);
+        var dialogOpener = init(editor, customTabs);
+        register(editor, dialogOpener);
+        register$1(editor, dialogOpener);
+        editor.shortcuts.add('Alt+0', 'Open help dialog', 'mceHelp');
+        return api;
       });
     }
 
@@ -53584,1313 +55153,6 @@ tinymce.IconManager.add('default', {
         register(editor, fullscreenState);
         editor.addShortcut('Meta+Shift+F', '', 'mceFullScreen');
         return get$5(fullscreenState);
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var Cell = function (initial) {
-      var value = initial;
-      var get = function () {
-        return value;
-      };
-      var set = function (v) {
-        value = v;
-      };
-      return {
-        get: get,
-        set: set
-      };
-    };
-
-    var global$3 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var get$1 = function (customTabs) {
-      var addTab = function (spec) {
-        var currentCustomTabs = customTabs.get();
-        currentCustomTabs[spec.name] = spec;
-        customTabs.set(currentCustomTabs);
-      };
-      return { addTab: addTab };
-    };
-
-    var register$1 = function (editor, dialogOpener) {
-      editor.addCommand('mceHelp', dialogOpener);
-    };
-
-    var register = function (editor, dialogOpener) {
-      editor.ui.registry.addButton('help', {
-        icon: 'help',
-        tooltip: 'Help',
-        onAction: dialogOpener
-      });
-      editor.ui.registry.addMenuItem('help', {
-        text: 'Help',
-        icon: 'help',
-        shortcut: 'Alt+0',
-        onAction: dialogOpener
-      });
-    };
-
-    var __assign = function () {
-      __assign = Object.assign || function __assign(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-          s = arguments[i];
-          for (var p in s)
-            if (Object.prototype.hasOwnProperty.call(s, p))
-              t[p] = s[p];
-        }
-        return t;
-      };
-      return __assign.apply(this, arguments);
-    };
-
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var nativeIndexOf = Array.prototype.indexOf;
-    var rawIndexOf = function (ts, t) {
-      return nativeIndexOf.call(ts, t);
-    };
-    var contains = function (xs, x) {
-      return rawIndexOf(xs, x) > -1;
-    };
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var filter = function (xs, pred) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          r.push(x);
-        }
-      }
-      return r;
-    };
-    var findUntil = function (xs, pred, until) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          return Optional.some(x);
-        } else if (until(x, i)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-    var find = function (xs, pred) {
-      return findUntil(xs, pred, never);
-    };
-
-    var keys = Object.keys;
-    var hasOwnProperty = Object.hasOwnProperty;
-    var get = function (obj, key) {
-      return has(obj, key) ? Optional.from(obj[key]) : Optional.none();
-    };
-    var has = function (obj, key) {
-      return hasOwnProperty.call(obj, key);
-    };
-
-    var cat = function (arr) {
-      var r = [];
-      var push = function (x) {
-        r.push(x);
-      };
-      for (var i = 0; i < arr.length; i++) {
-        arr[i].each(push);
-      }
-      return r;
-    };
-
-    var getHelpTabs = function (editor) {
-      return Optional.from(editor.getParam('help_tabs'));
-    };
-    var getForcedPlugins = function (editor) {
-      return editor.getParam('forced_plugins');
-    };
-
-    var description = '<h1>Editor UI keyboard navigation</h1>\n\n<h2>Activating keyboard navigation</h2>\n\n<p>The sections of the outer UI of the editor - the menubar, toolbar, sidebar and footer - are all keyboard navigable. As such, there are multiple ways to activate keyboard navigation:</p>\n<ul>\n  <li>Focus the menubar: Alt + F9 (Windows) or &#x2325;F9 (MacOS)</li>\n  <li>Focus the toolbar: Alt + F10 (Windows) or &#x2325;F10 (MacOS)</li>\n  <li>Focus the footer: Alt + F11 (Windows) or &#x2325;F11 (MacOS)</li>\n</ul>\n\n<p>Focusing the menubar or toolbar will start keyboard navigation at the first item in the menubar or toolbar, which will be highlighted with a gray background. Focusing the footer will start keyboard navigation at the first item in the element path, which will be highlighted with an underline. </p>\n\n<h2>Moving between UI sections</h2>\n\n<p>When keyboard navigation is active, pressing tab will move the focus to the next major section of the UI, where applicable. These sections are:</p>\n<ul>\n  <li>the menubar</li>\n  <li>each group of the toolbar </li>\n  <li>the sidebar</li>\n  <li>the element path in the footer </li>\n  <li>the wordcount toggle button in the footer </li>\n  <li>the branding link in the footer </li>\n  <li>the editor resize handle in the footer</li>\n</ul>\n\n<p>Pressing shift + tab will move backwards through the same sections, except when moving from the footer to the toolbar. Focusing the element path then pressing shift + tab will move focus to the first toolbar group, not the last.</p>\n\n<h2>Moving within UI sections</h2>\n\n<p>Keyboard navigation within UI sections can usually be achieved using the left and right arrow keys. This includes:</p>\n<ul>\n  <li>moving between menus in the menubar</li>\n  <li>moving between buttons in a toolbar group</li>\n  <li>moving between items in the element path</li>\n</ul>\n\n<p>In all these UI sections, keyboard navigation will cycle within the section. For example, focusing the last button in a toolbar group then pressing right arrow will move focus to the first item in the same toolbar group. </p>\n\n<h1>Executing buttons</h1>\n\n<p>To execute a button, navigate the selection to the desired button and hit space or enter.</p>\n\n<h1>Opening, navigating and closing menus</h1>\n\n<p>When focusing a menubar button or a toolbar button with a menu, pressing space, enter or down arrow will open the menu. When the menu opens the first item will be selected. To move up or down the menu, press the up or down arrow key respectively. This is the same for submenus, which can also be opened and closed using the left and right arrow keys.</p>\n\n<p>To close any active menu, hit the escape key. When a menu is closed the selection will be restored to its previous selection. This also works for closing submenus.</p>\n\n<h1>Context toolbars and menus</h1>\n\n<p>To focus an open context toolbar such as the table context toolbar, press Ctrl + F9 (Windows) or &#x2303;F9 (MacOS).</p>\n\n<p>Context toolbar navigation is the same as toolbar navigation, and context menu navigation is the same as standard menu navigation.</p>\n\n<h1>Dialog navigation</h1>\n\n<p>There are two types of dialog UIs in TinyMCE: tabbed dialogs and non-tabbed dialogs.</p>\n\n<p>When a non-tabbed dialog is opened, the first interactive component in the dialog will be focused. Users can navigate between interactive components by pressing tab. This includes any footer buttons. Navigation will cycle back to the first dialog component if tab is pressed while focusing the last component in the dialog. Pressing shift + tab will navigate backwards.</p>\n\n<p>When a tabbed dialog is opened, the first button in the tab menu is focused. Pressing tab will navigate to the first interactive component in that tab, and will cycle through the tab\u2019s components, the footer buttons, then back to the tab button. To switch to another tab, focus the tab button for the current tab, then use the arrow keys to cycle through the tab buttons.</p>';
-    var tab$3 = function () {
-      var body = {
-        type: 'htmlpanel',
-        presets: 'document',
-        html: description
-      };
-      return {
-        name: 'keyboardnav',
-        title: 'Keyboard Navigation',
-        items: [body]
-      };
-    };
-
-    var global$2 = tinymce.util.Tools.resolve('tinymce.Env');
-
-    var convertText = function (source) {
-      var mac = {
-        alt: '&#x2325;',
-        ctrl: '&#x2303;',
-        shift: '&#x21E7;',
-        meta: '&#x2318;',
-        access: '&#x2303;&#x2325;'
-      };
-      var other = {
-        meta: 'Ctrl ',
-        access: 'Shift + Alt '
-      };
-      var replace = global$2.mac ? mac : other;
-      var shortcut = source.split('+');
-      var updated = map(shortcut, function (segment) {
-        var search = segment.toLowerCase().trim();
-        return has(replace, search) ? replace[search] : segment;
-      });
-      return global$2.mac ? updated.join('').replace(/\s/, '') : updated.join('+');
-    };
-
-    var shortcuts = [
-      {
-        shortcuts: ['Meta + B'],
-        action: 'Bold'
-      },
-      {
-        shortcuts: ['Meta + I'],
-        action: 'Italic'
-      },
-      {
-        shortcuts: ['Meta + U'],
-        action: 'Underline'
-      },
-      {
-        shortcuts: ['Meta + A'],
-        action: 'Select all'
-      },
-      {
-        shortcuts: [
-          'Meta + Y',
-          'Meta + Shift + Z'
-        ],
-        action: 'Redo'
-      },
-      {
-        shortcuts: ['Meta + Z'],
-        action: 'Undo'
-      },
-      {
-        shortcuts: ['Access + 1'],
-        action: 'Heading 1'
-      },
-      {
-        shortcuts: ['Access + 2'],
-        action: 'Heading 2'
-      },
-      {
-        shortcuts: ['Access + 3'],
-        action: 'Heading 3'
-      },
-      {
-        shortcuts: ['Access + 4'],
-        action: 'Heading 4'
-      },
-      {
-        shortcuts: ['Access + 5'],
-        action: 'Heading 5'
-      },
-      {
-        shortcuts: ['Access + 6'],
-        action: 'Heading 6'
-      },
-      {
-        shortcuts: ['Access + 7'],
-        action: 'Paragraph'
-      },
-      {
-        shortcuts: ['Access + 8'],
-        action: 'Div'
-      },
-      {
-        shortcuts: ['Access + 9'],
-        action: 'Address'
-      },
-      {
-        shortcuts: ['Alt + 0'],
-        action: 'Open help dialog'
-      },
-      {
-        shortcuts: ['Alt + F9'],
-        action: 'Focus to menubar'
-      },
-      {
-        shortcuts: ['Alt + F10'],
-        action: 'Focus to toolbar'
-      },
-      {
-        shortcuts: ['Alt + F11'],
-        action: 'Focus to element path'
-      },
-      {
-        shortcuts: ['Ctrl + F9'],
-        action: 'Focus to contextual toolbar'
-      },
-      {
-        shortcuts: ['Shift + Enter'],
-        action: 'Open popup menu for split buttons'
-      },
-      {
-        shortcuts: ['Meta + K'],
-        action: 'Insert link (if link plugin activated)'
-      },
-      {
-        shortcuts: ['Meta + S'],
-        action: 'Save (if save plugin activated)'
-      },
-      {
-        shortcuts: ['Meta + F'],
-        action: 'Find (if searchreplace plugin activated)'
-      },
-      {
-        shortcuts: ['Meta + Shift + F'],
-        action: 'Switch to or from fullscreen mode'
-      }
-    ];
-
-    var tab$2 = function () {
-      var shortcutList = map(shortcuts, function (shortcut) {
-        var shortcutText = map(shortcut.shortcuts, convertText).join(' or ');
-        return [
-          shortcut.action,
-          shortcutText
-        ];
-      });
-      var tablePanel = {
-        type: 'table',
-        header: [
-          'Action',
-          'Shortcut'
-        ],
-        cells: shortcutList
-      };
-      return {
-        name: 'shortcuts',
-        title: 'Handy Shortcuts',
-        items: [tablePanel]
-      };
-    };
-
-    var global$1 = tinymce.util.Tools.resolve('tinymce.util.I18n');
-
-    var urls = map([
-      {
-        key: 'advlist',
-        name: 'Advanced List'
-      },
-      {
-        key: 'anchor',
-        name: 'Anchor'
-      },
-      {
-        key: 'autolink',
-        name: 'Autolink'
-      },
-      {
-        key: 'autoresize',
-        name: 'Autoresize'
-      },
-      {
-        key: 'autosave',
-        name: 'Autosave'
-      },
-      {
-        key: 'bbcode',
-        name: 'BBCode'
-      },
-      {
-        key: 'charmap',
-        name: 'Character Map'
-      },
-      {
-        key: 'code',
-        name: 'Code'
-      },
-      {
-        key: 'codesample',
-        name: 'Code Sample'
-      },
-      {
-        key: 'colorpicker',
-        name: 'Color Picker'
-      },
-      {
-        key: 'directionality',
-        name: 'Directionality'
-      },
-      {
-        key: 'emoticons',
-        name: 'Emoticons'
-      },
-      {
-        key: 'fullpage',
-        name: 'Full Page'
-      },
-      {
-        key: 'fullscreen',
-        name: 'Full Screen'
-      },
-      {
-        key: 'help',
-        name: 'Help'
-      },
-      {
-        key: 'hr',
-        name: 'Horizontal Rule'
-      },
-      {
-        key: 'image',
-        name: 'Image'
-      },
-      {
-        key: 'imagetools',
-        name: 'Image Tools'
-      },
-      {
-        key: 'importcss',
-        name: 'Import CSS'
-      },
-      {
-        key: 'insertdatetime',
-        name: 'Insert Date/Time'
-      },
-      {
-        key: 'legacyoutput',
-        name: 'Legacy Output'
-      },
-      {
-        key: 'link',
-        name: 'Link'
-      },
-      {
-        key: 'lists',
-        name: 'Lists'
-      },
-      {
-        key: 'media',
-        name: 'Media'
-      },
-      {
-        key: 'nonbreaking',
-        name: 'Nonbreaking'
-      },
-      {
-        key: 'noneditable',
-        name: 'Noneditable'
-      },
-      {
-        key: 'pagebreak',
-        name: 'Page Break'
-      },
-      {
-        key: 'paste',
-        name: 'Paste'
-      },
-      {
-        key: 'preview',
-        name: 'Preview'
-      },
-      {
-        key: 'print',
-        name: 'Print'
-      },
-      {
-        key: 'quickbars',
-        name: 'Quick Toolbars'
-      },
-      {
-        key: 'save',
-        name: 'Save'
-      },
-      {
-        key: 'searchreplace',
-        name: 'Search and Replace'
-      },
-      {
-        key: 'spellchecker',
-        name: 'Spell Checker'
-      },
-      {
-        key: 'tabfocus',
-        name: 'Tab Focus'
-      },
-      {
-        key: 'table',
-        name: 'Table'
-      },
-      {
-        key: 'template',
-        name: 'Template'
-      },
-      {
-        key: 'textcolor',
-        name: 'Text Color'
-      },
-      {
-        key: 'textpattern',
-        name: 'Text Pattern'
-      },
-      {
-        key: 'toc',
-        name: 'Table of Contents'
-      },
-      {
-        key: 'visualblocks',
-        name: 'Visual Blocks'
-      },
-      {
-        key: 'visualchars',
-        name: 'Visual Characters'
-      },
-      {
-        key: 'wordcount',
-        name: 'Word Count'
-      },
-      {
-        key: 'a11ychecker',
-        name: 'Accessibility Checker',
-        type: 'premium'
-      },
-      {
-        key: 'advcode',
-        name: 'Advanced Code Editor',
-        type: 'premium'
-      },
-      {
-        key: 'advtable',
-        name: 'Advanced Tables',
-        type: 'premium'
-      },
-      {
-        key: 'autocorrect',
-        name: 'Autocorrect',
-        type: 'premium'
-      },
-      {
-        key: 'casechange',
-        name: 'Case Change',
-        type: 'premium'
-      },
-      {
-        key: 'checklist',
-        name: 'Checklist',
-        type: 'premium'
-      },
-      {
-        key: 'export',
-        name: 'Export',
-        type: 'premium'
-      },
-      {
-        key: 'mediaembed',
-        name: 'Enhanced Media Embed',
-        type: 'premium'
-      },
-      {
-        key: 'formatpainter',
-        name: 'Format Painter',
-        type: 'premium'
-      },
-      {
-        key: 'linkchecker',
-        name: 'Link Checker',
-        type: 'premium'
-      },
-      {
-        key: 'mentions',
-        name: 'Mentions',
-        type: 'premium'
-      },
-      {
-        key: 'pageembed',
-        name: 'Page Embed',
-        type: 'premium'
-      },
-      {
-        key: 'permanentpen',
-        name: 'Permanent Pen',
-        type: 'premium'
-      },
-      {
-        key: 'powerpaste',
-        name: 'PowerPaste',
-        type: 'premium'
-      },
-      {
-        key: 'rtc',
-        name: 'Real-Time Collaboration',
-        type: 'premium'
-      },
-      {
-        key: 'tinymcespellchecker',
-        name: 'Spell Checker Pro',
-        type: 'premium'
-      },
-      {
-        key: 'tinycomments',
-        name: 'Tiny Comments',
-        type: 'premium',
-        slug: 'comments'
-      },
-      {
-        key: 'tinydrive',
-        name: 'Tiny Drive',
-        type: 'premium'
-      }
-    ], function (item) {
-      return __assign(__assign({}, item), {
-        type: item.type || 'opensource',
-        slug: item.slug || item.key
-      });
-    });
-
-    var tab$1 = function (editor) {
-      var availablePlugins = function () {
-        var premiumPlugins = filter(urls, function (_a) {
-          var key = _a.key, type = _a.type;
-          return key !== 'autocorrect' && type === 'premium';
-        });
-        var premiumPluginList = map(premiumPlugins, function (plugin) {
-          return '<li>' + global$1.translate(plugin.name) + '</li>';
-        }).join('');
-        return '<div data-mce-tabstop="1" tabindex="-1">' + '<p><b>' + global$1.translate('Premium plugins:') + '</b></p>' + '<ul>' + premiumPluginList + '<li class="tox-help__more-link" "><a href="https://www.tiny.cloud/pricing/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">' + global$1.translate('Learn more...') + '</a></li>' + '</ul>' + '</div>';
-      };
-      var makeLink = function (p) {
-        return '<a href="' + p.url + '" target="_blank" rel="noopener">' + p.name + '</a>';
-      };
-      var maybeUrlize = function (editor, key) {
-        return find(urls, function (x) {
-          return x.key === key;
-        }).fold(function () {
-          var getMetadata = editor.plugins[key].getMetadata;
-          return typeof getMetadata === 'function' ? makeLink(getMetadata()) : key;
-        }, function (x) {
-          var name = x.type === 'premium' ? x.name + '*' : x.name;
-          return makeLink({
-            name: name,
-            url: 'https://www.tiny.cloud/docs/plugins/' + x.type + '/' + x.slug
-          });
-        });
-      };
-      var getPluginKeys = function (editor) {
-        var keys$1 = keys(editor.plugins);
-        var forced_plugins = getForcedPlugins(editor);
-        return forced_plugins === undefined ? keys$1 : filter(keys$1, function (k) {
-          return !contains(forced_plugins, k);
-        });
-      };
-      var pluginLister = function (editor) {
-        var pluginKeys = getPluginKeys(editor);
-        var pluginLis = map(pluginKeys, function (key) {
-          return '<li>' + maybeUrlize(editor, key) + '</li>';
-        });
-        var count = pluginLis.length;
-        var pluginsString = pluginLis.join('');
-        var html = '<p><b>' + global$1.translate([
-          'Plugins installed ({0}):',
-          count
-        ]) + '</b></p>' + '<ul>' + pluginsString + '</ul>';
-        return html;
-      };
-      var installedPlugins = function (editor) {
-        if (editor == null) {
-          return '';
-        }
-        return '<div data-mce-tabstop="1" tabindex="-1">' + pluginLister(editor) + '</div>';
-      };
-      var htmlPanel = {
-        type: 'htmlpanel',
-        presets: 'document',
-        html: [
-          installedPlugins(editor),
-          availablePlugins()
-        ].join('')
-      };
-      return {
-        name: 'plugins',
-        title: 'Plugins',
-        items: [htmlPanel]
-      };
-    };
-
-    var global = tinymce.util.Tools.resolve('tinymce.EditorManager');
-
-    var tab = function () {
-      var getVersion = function (major, minor) {
-        return major.indexOf('@') === 0 ? 'X.X.X' : major + '.' + minor;
-      };
-      var version = getVersion(global.majorVersion, global.minorVersion);
-      var changeLogLink = '<a href="https://www.tiny.cloud/docs/changelog/?utm_campaign=editor_referral&utm_medium=help_dialog&utm_source=tinymce" target="_blank">TinyMCE ' + version + '</a>';
-      var htmlPanel = {
-        type: 'htmlpanel',
-        html: '<p>' + global$1.translate([
-          'You are using {0}',
-          changeLogLink
-        ]) + '</p>',
-        presets: 'document'
-      };
-      return {
-        name: 'versions',
-        title: 'Version',
-        items: [htmlPanel]
-      };
-    };
-
-    var parseHelpTabsSetting = function (tabsFromSettings, tabs) {
-      var newTabs = {};
-      var names = map(tabsFromSettings, function (t) {
-        if (typeof t === 'string') {
-          if (has(tabs, t)) {
-            newTabs[t] = tabs[t];
-          }
-          return t;
-        } else {
-          newTabs[t.name] = t;
-          return t.name;
-        }
-      });
-      return {
-        tabs: newTabs,
-        names: names
-      };
-    };
-    var getNamesFromTabs = function (tabs) {
-      var names = keys(tabs);
-      var idx = names.indexOf('versions');
-      if (idx !== -1) {
-        names.splice(idx, 1);
-        names.push('versions');
-      }
-      return {
-        tabs: tabs,
-        names: names
-      };
-    };
-    var parseCustomTabs = function (editor, customTabs) {
-      var _a;
-      var shortcuts = tab$2();
-      var nav = tab$3();
-      var plugins = tab$1(editor);
-      var versions = tab();
-      var tabs = __assign((_a = {}, _a[shortcuts.name] = shortcuts, _a[nav.name] = nav, _a[plugins.name] = plugins, _a[versions.name] = versions, _a), customTabs.get());
-      return getHelpTabs(editor).fold(function () {
-        return getNamesFromTabs(tabs);
-      }, function (tabsFromSettings) {
-        return parseHelpTabsSetting(tabsFromSettings, tabs);
-      });
-    };
-    var init = function (editor, customTabs) {
-      return function () {
-        var _a = parseCustomTabs(editor, customTabs), tabs = _a.tabs, names = _a.names;
-        var foundTabs = map(names, function (name) {
-          return get(tabs, name);
-        });
-        var dialogTabs = cat(foundTabs);
-        var body = {
-          type: 'tabpanel',
-          tabs: dialogTabs
-        };
-        editor.windowManager.open({
-          title: 'Help',
-          size: 'medium',
-          body: body,
-          buttons: [{
-              type: 'cancel',
-              name: 'close',
-              text: 'Close',
-              primary: true
-            }],
-          initialData: {}
-        });
-      };
-    };
-
-    function Plugin () {
-      global$3.add('help', function (editor) {
-        var customTabs = Cell({});
-        var api = get$1(customTabs);
-        var dialogOpener = init(editor, customTabs);
-        register(editor, dialogOpener);
-        register$1(editor, dialogOpener);
-        editor.shortcuts.add('Alt+0', 'Open help dialog', 'mceHelp');
-        return api;
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var typeOf = function (x) {
-      var t = typeof x;
-      if (x === null) {
-        return 'null';
-      } else if (t === 'object' && (Array.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'Array')) {
-        return 'array';
-      } else if (t === 'object' && (String.prototype.isPrototypeOf(x) || x.constructor && x.constructor.name === 'String')) {
-        return 'string';
-      } else {
-        return t;
-      }
-    };
-    var isType$1 = function (type) {
-      return function (value) {
-        return typeOf(value) === type;
-      };
-    };
-    var isSimpleType = function (type) {
-      return function (value) {
-        return typeof value === type;
-      };
-    };
-    var isString = isType$1('string');
-    var isBoolean = isSimpleType('boolean');
-    var isNullable = function (a) {
-      return a === null || a === undefined;
-    };
-    var isNonNullable = function (a) {
-      return !isNullable(a);
-    };
-    var isFunction = isSimpleType('function');
-    var isNumber = isSimpleType('number');
-
-    var noop = function () {
-    };
-    var compose1 = function (fbc, fab) {
-      return function (a) {
-        return fbc(fab(a));
-      };
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var map = function (xs, f) {
-      var len = xs.length;
-      var r = new Array(len);
-      for (var i = 0; i < len; i++) {
-        var x = xs[i];
-        r[i] = f(x, i);
-      }
-      return r;
-    };
-    var each = function (xs, f) {
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        f(x, i);
-      }
-    };
-    var filter = function (xs, pred) {
-      var r = [];
-      for (var i = 0, len = xs.length; i < len; i++) {
-        var x = xs[i];
-        if (pred(x, i)) {
-          r.push(x);
-        }
-      }
-      return r;
-    };
-
-    var DOCUMENT = 9;
-    var DOCUMENT_FRAGMENT = 11;
-    var ELEMENT = 1;
-    var TEXT = 3;
-
-    var fromHtml = function (html, scope) {
-      var doc = scope || document;
-      var div = doc.createElement('div');
-      div.innerHTML = html;
-      if (!div.hasChildNodes() || div.childNodes.length > 1) {
-        console.error('HTML does not have a single root node', html);
-        throw new Error('HTML must have a single root node');
-      }
-      return fromDom(div.childNodes[0]);
-    };
-    var fromTag = function (tag, scope) {
-      var doc = scope || document;
-      var node = doc.createElement(tag);
-      return fromDom(node);
-    };
-    var fromText = function (text, scope) {
-      var doc = scope || document;
-      var node = doc.createTextNode(text);
-      return fromDom(node);
-    };
-    var fromDom = function (node) {
-      if (node === null || node === undefined) {
-        throw new Error('Node cannot be null or undefined');
-      }
-      return { dom: node };
-    };
-    var fromPoint = function (docElm, x, y) {
-      return Optional.from(docElm.dom.elementFromPoint(x, y)).map(fromDom);
-    };
-    var SugarElement = {
-      fromHtml: fromHtml,
-      fromTag: fromTag,
-      fromText: fromText,
-      fromDom: fromDom,
-      fromPoint: fromPoint
-    };
-
-    var is = function (element, selector) {
-      var dom = element.dom;
-      if (dom.nodeType !== ELEMENT) {
-        return false;
-      } else {
-        var elem = dom;
-        if (elem.matches !== undefined) {
-          return elem.matches(selector);
-        } else if (elem.msMatchesSelector !== undefined) {
-          return elem.msMatchesSelector(selector);
-        } else if (elem.webkitMatchesSelector !== undefined) {
-          return elem.webkitMatchesSelector(selector);
-        } else if (elem.mozMatchesSelector !== undefined) {
-          return elem.mozMatchesSelector(selector);
-        } else {
-          throw new Error('Browser lacks native selectors');
-        }
-      }
-    };
-
-    typeof window !== 'undefined' ? window : Function('return this;')();
-
-    var name = function (element) {
-      var r = element.dom.nodeName;
-      return r.toLowerCase();
-    };
-    var type = function (element) {
-      return element.dom.nodeType;
-    };
-    var isType = function (t) {
-      return function (element) {
-        return type(element) === t;
-      };
-    };
-    var isElement = isType(ELEMENT);
-    var isText = isType(TEXT);
-    var isDocument = isType(DOCUMENT);
-    var isDocumentFragment = isType(DOCUMENT_FRAGMENT);
-    var isTag = function (tag) {
-      return function (e) {
-        return isElement(e) && name(e) === tag;
-      };
-    };
-
-    var owner = function (element) {
-      return SugarElement.fromDom(element.dom.ownerDocument);
-    };
-    var documentOrOwner = function (dos) {
-      return isDocument(dos) ? dos : owner(dos);
-    };
-    var parent = function (element) {
-      return Optional.from(element.dom.parentNode).map(SugarElement.fromDom);
-    };
-    var children$2 = function (element) {
-      return map(element.dom.childNodes, SugarElement.fromDom);
-    };
-
-    var rawSet = function (dom, key, value) {
-      if (isString(value) || isBoolean(value) || isNumber(value)) {
-        dom.setAttribute(key, value + '');
-      } else {
-        console.error('Invalid call to Attribute.set. Key ', key, ':: Value ', value, ':: Element ', dom);
-        throw new Error('Attribute value was not simple');
-      }
-    };
-    var set = function (element, key, value) {
-      rawSet(element.dom, key, value);
-    };
-    var remove = function (element, key) {
-      element.dom.removeAttribute(key);
-    };
-
-    var isShadowRoot = function (dos) {
-      return isDocumentFragment(dos) && isNonNullable(dos.dom.host);
-    };
-    var supported = isFunction(Element.prototype.attachShadow) && isFunction(Node.prototype.getRootNode);
-    var getRootNode = supported ? function (e) {
-      return SugarElement.fromDom(e.dom.getRootNode());
-    } : documentOrOwner;
-    var getShadowRoot = function (e) {
-      var r = getRootNode(e);
-      return isShadowRoot(r) ? Optional.some(r) : Optional.none();
-    };
-    var getShadowHost = function (e) {
-      return SugarElement.fromDom(e.dom.host);
-    };
-
-    var inBody = function (element) {
-      var dom = isText(element) ? element.dom.parentNode : element.dom;
-      if (dom === undefined || dom === null || dom.ownerDocument === null) {
-        return false;
-      }
-      var doc = dom.ownerDocument;
-      return getShadowRoot(SugarElement.fromDom(dom)).fold(function () {
-        return doc.body.contains(dom);
-      }, compose1(inBody, getShadowHost));
-    };
-
-    var ancestor$1 = function (scope, predicate, isRoot) {
-      var element = scope.dom;
-      var stop = isFunction(isRoot) ? isRoot : never;
-      while (element.parentNode) {
-        element = element.parentNode;
-        var el = SugarElement.fromDom(element);
-        if (predicate(el)) {
-          return Optional.some(el);
-        } else if (stop(el)) {
-          break;
-        }
-      }
-      return Optional.none();
-    };
-
-    var ancestor = function (scope, selector, isRoot) {
-      return ancestor$1(scope, function (e) {
-        return is(e, selector);
-      }, isRoot);
-    };
-
-    var isSupported = function (dom) {
-      return dom.style !== undefined && isFunction(dom.style.getPropertyValue);
-    };
-
-    var get = function (element, property) {
-      var dom = element.dom;
-      var styles = window.getComputedStyle(dom);
-      var r = styles.getPropertyValue(property);
-      return r === '' && !inBody(element) ? getUnsafeProperty(dom, property) : r;
-    };
-    var getUnsafeProperty = function (dom, property) {
-      return isSupported(dom) ? dom.style.getPropertyValue(property) : '';
-    };
-
-    var getDirection = function (element) {
-      return get(element, 'direction') === 'rtl' ? 'rtl' : 'ltr';
-    };
-
-    var children$1 = function (scope, predicate) {
-      return filter(children$2(scope), predicate);
-    };
-
-    var children = function (scope, selector) {
-      return children$1(scope, function (e) {
-        return is(e, selector);
-      });
-    };
-
-    var getParentElement = function (element) {
-      return parent(element).filter(isElement);
-    };
-    var getNormalizedBlock = function (element, isListItem) {
-      var normalizedElement = isListItem ? ancestor(element, 'ol,ul') : Optional.some(element);
-      return normalizedElement.getOr(element);
-    };
-    var isListItem = isTag('li');
-    var setDir = function (editor, dir) {
-      var selectedBlocks = editor.selection.getSelectedBlocks();
-      if (selectedBlocks.length > 0) {
-        each(selectedBlocks, function (block) {
-          var blockElement = SugarElement.fromDom(block);
-          var isBlockElementListItem = isListItem(blockElement);
-          var normalizedBlock = getNormalizedBlock(blockElement, isBlockElementListItem);
-          var normalizedBlockParent = getParentElement(normalizedBlock);
-          normalizedBlockParent.each(function (parent) {
-            var parentDirection = getDirection(parent);
-            if (parentDirection !== dir) {
-              set(normalizedBlock, 'dir', dir);
-            } else if (getDirection(normalizedBlock) !== dir) {
-              remove(normalizedBlock, 'dir');
-            }
-            if (isBlockElementListItem) {
-              var listItems = children(normalizedBlock, 'li[dir]');
-              each(listItems, function (listItem) {
-                return remove(listItem, 'dir');
-              });
-            }
-          });
-        });
-        editor.nodeChanged();
-      }
-    };
-
-    var register$1 = function (editor) {
-      editor.addCommand('mceDirectionLTR', function () {
-        setDir(editor, 'ltr');
-      });
-      editor.addCommand('mceDirectionRTL', function () {
-        setDir(editor, 'rtl');
-      });
-    };
-
-    var getNodeChangeHandler = function (editor, dir) {
-      return function (api) {
-        var nodeChangeHandler = function (e) {
-          var element = SugarElement.fromDom(e.element);
-          api.setActive(getDirection(element) === dir);
-        };
-        editor.on('NodeChange', nodeChangeHandler);
-        return function () {
-          return editor.off('NodeChange', nodeChangeHandler);
-        };
-      };
-    };
-    var register = function (editor) {
-      editor.ui.registry.addToggleButton('ltr', {
-        tooltip: 'Left to right',
-        icon: 'ltr',
-        onAction: function () {
-          return editor.execCommand('mceDirectionLTR');
-        },
-        onSetup: getNodeChangeHandler(editor, 'ltr')
-      });
-      editor.ui.registry.addToggleButton('rtl', {
-        tooltip: 'Right to left',
-        icon: 'rtl',
-        onAction: function () {
-          return editor.execCommand('mceDirectionRTL');
-        },
-        onSetup: getNodeChangeHandler(editor, 'rtl')
-      });
-    };
-
-    function Plugin () {
-      global.add('directionality', function (editor) {
-        register$1(editor);
-        register(editor);
       });
     }
 
@@ -80884,290 +81146,6 @@ tinymce.IconManager.add('default', {
 (function () {
     'use strict';
 
-    var global$1 = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    var applyListFormat = function (editor, listName, styleValue) {
-      var cmd = listName === 'UL' ? 'InsertUnorderedList' : 'InsertOrderedList';
-      editor.execCommand(cmd, false, styleValue === false ? null : { 'list-style-type': styleValue });
-    };
-
-    var register$1 = function (editor) {
-      editor.addCommand('ApplyUnorderedListStyle', function (ui, value) {
-        applyListFormat(editor, 'UL', value['list-style-type']);
-      });
-      editor.addCommand('ApplyOrderedListStyle', function (ui, value) {
-        applyListFormat(editor, 'OL', value['list-style-type']);
-      });
-    };
-
-    var global = tinymce.util.Tools.resolve('tinymce.util.Tools');
-
-    var getNumberStyles = function (editor) {
-      var styles = editor.getParam('advlist_number_styles', 'default,lower-alpha,lower-greek,lower-roman,upper-alpha,upper-roman');
-      return styles ? styles.split(/[ ,]/) : [];
-    };
-    var getBulletStyles = function (editor) {
-      var styles = editor.getParam('advlist_bullet_styles', 'default,circle,square');
-      return styles ? styles.split(/[ ,]/) : [];
-    };
-
-    var noop = function () {
-    };
-    var constant = function (value) {
-      return function () {
-        return value;
-      };
-    };
-    var identity = function (x) {
-      return x;
-    };
-    var never = constant(false);
-    var always = constant(true);
-
-    var none = function () {
-      return NONE;
-    };
-    var NONE = function () {
-      var call = function (thunk) {
-        return thunk();
-      };
-      var id = identity;
-      var me = {
-        fold: function (n, _s) {
-          return n();
-        },
-        isSome: never,
-        isNone: always,
-        getOr: id,
-        getOrThunk: call,
-        getOrDie: function (msg) {
-          throw new Error(msg || 'error: getOrDie called on none.');
-        },
-        getOrNull: constant(null),
-        getOrUndefined: constant(undefined),
-        or: id,
-        orThunk: call,
-        map: none,
-        each: noop,
-        bind: none,
-        exists: never,
-        forall: always,
-        filter: function () {
-          return none();
-        },
-        toArray: function () {
-          return [];
-        },
-        toString: constant('none()')
-      };
-      return me;
-    }();
-    var some = function (a) {
-      var constant_a = constant(a);
-      var self = function () {
-        return me;
-      };
-      var bind = function (f) {
-        return f(a);
-      };
-      var me = {
-        fold: function (n, s) {
-          return s(a);
-        },
-        isSome: always,
-        isNone: never,
-        getOr: constant_a,
-        getOrThunk: constant_a,
-        getOrDie: constant_a,
-        getOrNull: constant_a,
-        getOrUndefined: constant_a,
-        or: self,
-        orThunk: self,
-        map: function (f) {
-          return some(f(a));
-        },
-        each: function (f) {
-          f(a);
-        },
-        bind: bind,
-        exists: bind,
-        forall: bind,
-        filter: function (f) {
-          return f(a) ? me : NONE;
-        },
-        toArray: function () {
-          return [a];
-        },
-        toString: function () {
-          return 'some(' + a + ')';
-        }
-      };
-      return me;
-    };
-    var from = function (value) {
-      return value === null || value === undefined ? NONE : some(value);
-    };
-    var Optional = {
-      some: some,
-      none: none,
-      from: from
-    };
-
-    var isChildOfBody = function (editor, elm) {
-      return editor.$.contains(editor.getBody(), elm);
-    };
-    var isTableCellNode = function (node) {
-      return node && /^(TH|TD)$/.test(node.nodeName);
-    };
-    var isListNode = function (editor) {
-      return function (node) {
-        return node && /^(OL|UL|DL)$/.test(node.nodeName) && isChildOfBody(editor, node);
-      };
-    };
-    var getSelectedStyleType = function (editor) {
-      var listElm = editor.dom.getParent(editor.selection.getNode(), 'ol,ul');
-      var style = editor.dom.getStyle(listElm, 'listStyleType');
-      return Optional.from(style);
-    };
-
-    var findIndex = function (list, predicate) {
-      for (var index = 0; index < list.length; index++) {
-        var element = list[index];
-        if (predicate(element)) {
-          return index;
-        }
-      }
-      return -1;
-    };
-    var styleValueToText = function (styleValue) {
-      return styleValue.replace(/\-/g, ' ').replace(/\b\w/g, function (chr) {
-        return chr.toUpperCase();
-      });
-    };
-    var isWithinList = function (editor, e, nodeName) {
-      var tableCellIndex = findIndex(e.parents, isTableCellNode);
-      var parents = tableCellIndex !== -1 ? e.parents.slice(0, tableCellIndex) : e.parents;
-      var lists = global.grep(parents, isListNode(editor));
-      return lists.length > 0 && lists[0].nodeName === nodeName;
-    };
-    var makeSetupHandler = function (editor, nodeName) {
-      return function (api) {
-        var nodeChangeHandler = function (e) {
-          api.setActive(isWithinList(editor, e, nodeName));
-        };
-        editor.on('NodeChange', nodeChangeHandler);
-        return function () {
-          return editor.off('NodeChange', nodeChangeHandler);
-        };
-      };
-    };
-    var addSplitButton = function (editor, id, tooltip, cmd, nodeName, styles) {
-      editor.ui.registry.addSplitButton(id, {
-        tooltip: tooltip,
-        icon: nodeName === 'OL' ? 'ordered-list' : 'unordered-list',
-        presets: 'listpreview',
-        columns: 3,
-        fetch: function (callback) {
-          var items = global.map(styles, function (styleValue) {
-            var iconStyle = nodeName === 'OL' ? 'num' : 'bull';
-            var iconName = styleValue === 'disc' || styleValue === 'decimal' ? 'default' : styleValue;
-            var itemValue = styleValue === 'default' ? '' : styleValue;
-            var displayText = styleValueToText(styleValue);
-            return {
-              type: 'choiceitem',
-              value: itemValue,
-              icon: 'list-' + iconStyle + '-' + iconName,
-              text: displayText
-            };
-          });
-          callback(items);
-        },
-        onAction: function () {
-          return editor.execCommand(cmd);
-        },
-        onItemAction: function (_splitButtonApi, value) {
-          applyListFormat(editor, nodeName, value);
-        },
-        select: function (value) {
-          var listStyleType = getSelectedStyleType(editor);
-          return listStyleType.map(function (listStyle) {
-            return value === listStyle;
-          }).getOr(false);
-        },
-        onSetup: makeSetupHandler(editor, nodeName)
-      });
-    };
-    var addButton = function (editor, id, tooltip, cmd, nodeName, _styles) {
-      editor.ui.registry.addToggleButton(id, {
-        active: false,
-        tooltip: tooltip,
-        icon: nodeName === 'OL' ? 'ordered-list' : 'unordered-list',
-        onSetup: makeSetupHandler(editor, nodeName),
-        onAction: function () {
-          return editor.execCommand(cmd);
-        }
-      });
-    };
-    var addControl = function (editor, id, tooltip, cmd, nodeName, styles) {
-      if (styles.length > 1) {
-        addSplitButton(editor, id, tooltip, cmd, nodeName, styles);
-      } else {
-        addButton(editor, id, tooltip, cmd, nodeName);
-      }
-    };
-    var register = function (editor) {
-      addControl(editor, 'numlist', 'Numbered list', 'InsertOrderedList', 'OL', getNumberStyles(editor));
-      addControl(editor, 'bullist', 'Bullet list', 'InsertUnorderedList', 'UL', getBulletStyles(editor));
-    };
-
-    function Plugin () {
-      global$1.add('advlist', function (editor) {
-        if (editor.hasPlugin('lists')) {
-          register(editor);
-          register$1(editor);
-        } else {
-          console.error('Please use the Lists plugin together with the Advanced List plugin.');
-        }
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
-    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
-
-    function Plugin () {
-      global.add('textcolor', function () {
-      });
-    }
-
-    Plugin();
-
-}());
-
-/**
- * Copyright (c) Tiny Technologies, Inc. All rights reserved.
- * Licensed under the LGPL or a commercial license.
- * For LGPL see License.txt in the project root for license information.
- * For commercial licenses see https://www.tiny.cloud/
- *
- * Version: 5.10.6 (2022-10-19)
- */
-(function () {
-    'use strict';
-
     var Cell = function (initial) {
       var value = initial;
       var get = function () {
@@ -82525,6 +82503,28 @@ tinymce.IconManager.add('default', {
         var patternsState = Cell(getPatternSet(editor));
         setup(editor, patternsState);
         return get(patternsState);
+      });
+    }
+
+    Plugin();
+
+}());
+
+/**
+ * Copyright (c) Tiny Technologies, Inc. All rights reserved.
+ * Licensed under the LGPL or a commercial license.
+ * For LGPL see License.txt in the project root for license information.
+ * For commercial licenses see https://www.tiny.cloud/
+ *
+ * Version: 5.10.6 (2022-10-19)
+ */
+(function () {
+    'use strict';
+
+    var global = tinymce.util.Tools.resolve('tinymce.PluginManager');
+
+    function Plugin () {
+      global.add('textcolor', function () {
       });
     }
 

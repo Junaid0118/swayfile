@@ -13,6 +13,32 @@ class FoldersController < ApplicationController
     render json: folder, status: :created
   end
 
+  def send_invite
+    @folder = Folder.find(params[:id])
+    cookies.signed[:folder_id] = @folder.id
+    if user_signed_in?
+      @folder.invitees << current_user
+      @folder.projects.each do |project|
+        project.teams.create!(role: 'signatory_party', user_id: current_user.id, user_role: 'Guest')
+      end
+      redirect_to "/folders?slug=#{@folder.slug}"
+    else
+      redirect_to new_user_session_path
+    end
+  end
+
+  def bulk_delete
+    request_body = JSON.parse(request.body.read)
+    request_body.each do |item|
+      if item['item_type'] == 'folder'
+        Folder.find(item['item_id']).destroy
+      else
+        Project.find(item['item_id']).destroy
+      end
+    end
+    render json: {}, status: :ok
+  end
+
   def rename
     @folder = Folder.find(params[:id])
     @folder.update_columns(name: params[:name])

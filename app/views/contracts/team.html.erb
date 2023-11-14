@@ -3,8 +3,6 @@
 		<!--end::Theme mode setup on page load-->
 
 <!--begin::App-->
-<div id="user-data" data-folder='<%= @current_user.id %>'></div>
-<div id="project-data" data-folder='<%= @project.id %>'></div>
 <div class="d-flex flex-column flex-root app-root" id="kt_app_root">
 	<!--begin::Page-->
 	<div class="app-page flex-column flex-column-fluid" id="kt_app_page">
@@ -13,8 +11,9 @@
 		<!--end::Header-->
 		<!--begin::Wrapper-->
 		<div class="app-wrapper flex-column flex-row-fluid" id="kt_app_wrapper">
-			<!--begin::Sidebar-->
 			<%= render 'layouts/sidebar' %>
+			<!--begin::Sidebar-->
+
 					<!--end::Sidebar-->
 			<!--begin::Main-->
 			<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
@@ -65,6 +64,8 @@
 									<%= link_to "Discussions", discussions_project_path(@project), class: "btn btn-flex btn-outline btn-color-gray-700 btn-active-color-primary bg-body h-40px fs-7 fw-bold" %>
 									<% if policy(@project).show? %>
 										<a class="btn btn-flex btn-primary h-40px fs-7 fw-bold">Submit</a>
+
+
 									<% end %>
 								</div>
 								<!--end::Actions-->
@@ -119,7 +120,7 @@
 													</div>
 													<!--end::Step 1-->
 													<!--begin::Step 2-->
-													<div class="stepper-item" data-kt-stepper-element="nav">
+													<div class="stepper-item current" data-kt-stepper-element="nav">
 														<!--begin::Wrapper-->
 														<div class="stepper-wrapper">
 															<!--begin::Icon-->
@@ -147,7 +148,7 @@
 													
 													<!--end::Step 3-->
 													<!--begin::Step 4-->
-													<div class="stepper-item current" data-kt-stepper-element="nav">
+													<div class="stepper-item" data-kt-stepper-element="nav">
 														<!--begin::Wrapper-->
 														<div class="stepper-wrapper">
 															<!--begin::Icon-->
@@ -159,7 +160,7 @@
 															<!--begin::Label-->
 															<div class="stepper-label">
 																<a href="<%= "/projects/#{@project.id}/contract" %>" >
-																	<h3 class="stepper-title">Contract Details</h3>
+																	<h3 class="stepper-title">Details</h3>
 																	<div class="stepper-desc">Add & Edit Clauses</div>
 																</a>
 															</div>
@@ -198,11 +199,8 @@
 											</div>
 											<!--begin::Button-->
 											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Approve Clause</a>
-										</div>
-
-
-										
+											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;" href="<%= project_projectject_path(@project) %>">Next</a>
+										</div>						
 								
 								</div>
 								<!--end::Sidebar-->
@@ -211,6 +209,463 @@
 								<div class="flex-lg-row-fluid ms-lg-7 ms-xl-10">
 									<!--begin::Card-->
 									<div class="card">
+
+														<div class="app-main flex-column flex-row-fluid" id="kt_app_main">
+						<!--begin::Content wrapper-->
+						<div class="d-flex flex-column flex-column-fluid">
+							<!--begin::Toolbar-->
+							<div id="kt_app_toolbar" class="app-toolbar py-4 py-lg-8">
+								<!--begin::Toolbar container-->
+								<div id="kt_app_toolbar_container" class="app-container container-xxl d-flex flex-stack flex-wrap">
+									<!--begin::Toolbar wrapper-->
+							
+									<!--end::Toolbar wrapper-->
+								</div>
+								<!--end::Toolbar container-->
+							</div>
+							<!--end::Toolbar-->
+							<!--begin::Content-->
+							<div id="kt_app_content" class="app-content flex-column-fluid">
+								<!--begin::Content container-->
+								<div id="kt_app_content_container" class="app-container container-xxl">
+									<!--begin::Card-->
+									<div class="card">
+										<!--begin::Card header-->
+										<div class="card-header border-0 pt-6">
+											<!--begin::Card title-->
+											<div class="card-title">
+												<!--begin::Search-->
+												<div class="d-flex align-items-center position-relative my-1">
+													<i class="ki-outline ki-magnifier fs-3 position-absolute ms-5"></i>
+													<input type="text" data-kt-user-table-filter="search" class="form-control form-control-solid w-250px ps-13" placeholder="Search user" />
+												</div>
+												<!--end::Search-->
+											</div>
+											<!--begin::Card title-->
+											<!--begin::Card toolbar-->
+											<div class="card-toolbar">
+												<!--begin::Toolbar-->
+												<div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
+													<!--begin::Filter-->
+													<button type="button" class="btn btn-light-primary me-3" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">
+													<i class="ki-outline ki-filter fs-2"></i>Filter</button>
+													<!--begin::Menu 1-->
+													<div class="menu menu-sub menu-sub-dropdown w-300px w-md-325px" data-kt-menu="true">
+														<!--begin::Header-->
+														<div class="px-7 py-5">
+															<div class="fs-5 text-dark fw-bold">Filter Options</div>
+														</div>
+														<!--end::Header-->
+														<!--begin::Separator-->
+														<div class="separator border-gray-200"></div>
+														<!--end::Separator-->
+														<!--begin::Content-->
+														<div class="px-7 py-5" data-kt-user-table-filter="form">
+															<!--begin::Input group-->
+															<div class="mb-10">
+																<label class="form-label fs-6 fw-semibold">Role:</label>
+																<select class="form-select form-select-solid fw-bold" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-kt-user-table-filter="role" data-hide-search="true">
+																	<option></option>
+																	<option value="Administrator">Administrator</option>
+																	<option value="Analyst">Analyst</option>
+																	<option value="Developer">Developer</option>
+																	<option value="Support">Support</option>
+																	<option value="Trial">Trial</option>
+																</select>
+															</div>
+															<!--end::Input group-->
+															<!--begin::Input group-->
+															<!--end::Actions-->
+														</div>
+														<!--end::Content-->
+													</div>
+													<!--end::Menu 1-->
+													<!--end::Filter-->
+													<!--begin::Export-->
+													<!--end::Export-->
+													<!--begin::Add user-->
+													<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_build_team">
+													<i class="ki-outline ki-plus fs-2"></i>Add User</button>
+													<!--end::Add user-->
+												</div>
+												<!--end::Toolbar-->
+												<!--begin::Group actions-->
+												<div class="d-flex justify-content-end align-items-center d-none" data-kt-user-table-toolbar="selected">
+													<div class="fw-bold me-5">
+													<span class="me-2" data-kt-user-table-select="selected_count"></span>Selected</div>
+													<button type="button" class="btn btn-danger" data-kt-user-table-select="delete_selected">Delete Selected</button>
+												</div>
+												<!--end::Group actions-->
+												<!--begin::Modal - Adjust Balance-->
+												<div class="modal fade" id="kt_modal_export_users" tabindex="-1" aria-hidden="true">
+													<!--begin::Modal dialog-->
+													<div class="modal-dialog modal-dialog-centered mw-650px">
+														<!--begin::Modal content-->
+														<div class="modal-content">
+															<!--begin::Modal header-->
+															<div class="modal-header">
+																<!--begin::Modal title-->
+																<h2 class="fw-bold">Export Users</h2>
+																<!--end::Modal title-->
+																<!--begin::Close-->
+																<div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-users-modal-action="close">
+																	<i class="ki-outline ki-cross fs-1"></i>
+																</div>
+																<!--end::Close-->
+															</div>
+															<!--end::Modal header-->
+															<!--begin::Modal body-->
+															<div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
+																<!--begin::Form-->
+																<form id="kt_modal_export_users_form" class="form" action="#">
+																	<!--begin::Input group-->
+																	<div class="fv-row mb-10">
+																		<!--begin::Label-->
+																		<label class="fs-6 fw-semibold form-label mb-2">Select Roles:</label>
+																		<!--end::Label-->
+																		<!--begin::Input-->
+																		<select name="role" data-control="select2" data-placeholder="Select a role" data-hide-search="true" class="form-select form-select-solid fw-bold">
+																			<option></option>
+																			<option value="Administrator">Administrator</option>
+																			<option value="Analyst">Analyst</option>
+																			<option value="Developer">Developer</option>
+																			<option value="Support">Support</option>
+																			<option value="Trial">Trial</option>
+																		</select>
+																		<!--end::Input-->
+																	</div>
+																	<!--end::Input group-->
+																	<!--begin::Input group-->
+																	<div class="fv-row mb-10">
+																		<!--begin::Label-->
+																		<label class="required fs-6 fw-semibold form-label mb-2">Select Export Format:</label>
+																		<!--end::Label-->
+																		<!--begin::Input-->
+																		<select name="format" data-control="select2" data-placeholder="Select a format" data-hide-search="true" class="form-select form-select-solid fw-bold">
+																			<option></option>
+																			<option value="excel">Excel</option>
+																			<option value="pdf">PDF</option>
+																			<option value="cvs">CVS</option>
+																			<option value="zip">ZIP</option>
+																		</select>
+																		<!--end::Input-->
+																	</div>
+																	<!--end::Input group-->
+																	<!--begin::Actions-->
+																	<div class="text-center">
+																		<button type="reset" class="btn btn-light me-3" data-kt-users-modal-action="cancel">Discard</button>
+																		<button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
+																			<span class="indicator-label">Submit</span>
+																			<span class="indicator-progress">Please wait...
+																			<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+																		</button>
+																	</div>
+																	<!--end::Actions-->
+																</form>
+																<!--end::Form-->
+															</div>
+															<!--end::Modal body-->
+														</div>
+														<!--end::Modal content-->
+													</div>
+													<!--end::Modal dialog-->
+												</div>
+												<!--end::Modal - New Card-->
+												<!--begin::Modal - Add task-->
+												<div class="modal fade" id="kt_modal_add_user" tabindex="-1" aria-hidden="true">
+													<!--begin::Modal dialog-->
+													<div class="modal-dialog modal-dialog-centered mw-650px">
+														<!--begin::Modal content-->
+														<div class="modal-content">
+															<!--begin::Modal header-->
+															<div class="modal-header" id="kt_modal_add_user_header">
+																<!--begin::Modal title-->
+																<h2 class="fw-bold">Add User</h2>
+																<!--end::Modal title-->
+																<!--begin::Close-->
+																<div class="btn btn-icon btn-sm btn-active-icon-primary" data-kt-users-modal-action="close">
+																	<i class="ki-outline ki-cross fs-1"></i>
+																</div>
+																<!--end::Close-->
+															</div>
+															<!--end::Modal header-->
+															<!--begin::Modal body-->
+															<div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
+																<!--begin::Form-->
+																<form id="kt_modal_add_user_form" class="form" action="#">
+																	<!--begin::Scroll-->
+																	<div class="d-flex flex-column scroll-y me-n7 pe-7" id="kt_modal_add_user_scroll" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-max-height="auto" data-kt-scroll-dependencies="#kt_modal_add_user_header" data-kt-scroll-wrappers="#kt_modal_add_user_scroll" data-kt-scroll-offset="300px">
+																		<!--begin::Input group-->
+																		<div class="fv-row mb-7">
+																			<!--begin::Label-->
+																			<label class="d-block fw-semibold fs-6 mb-5">Avatar</label>
+																			<!--end::Label-->
+																			<!--begin::Image placeholder-->
+																			<style>.image-input-placeholder { background-image: url('assets/media/svg/files/blank-image.svg'); } [data-bs-theme="dark"] .image-input-placeholder { background-image: url('assets/media/svg/files/blank-image-dark.svg'); }</style>
+																			<!--end::Image placeholder-->
+																			<!--begin::Image input-->
+																			<div class="image-input image-input-outline image-input-placeholder" data-kt-image-input="true">
+																				<!--begin::Preview existing avatar-->
+																				<div class="image-input-wrapper w-125px h-125px" style="background-image: url(assets/media/avatars/300-6.jpg);"></div>
+																				<!--end::Preview existing avatar-->
+																				<!--begin::Label-->
+																				<label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change avatar">
+																					<i class="ki-outline ki-pencil fs-7"></i>
+																					<!--begin::Inputs-->
+																					<input type="file" name="avatar" accept=".png, .jpg, .jpeg" />
+																					<input type="hidden" name="avatar_remove" />
+																					<!--end::Inputs-->
+																				</label>
+																				<!--end::Label-->
+																				<!--begin::Cancel-->
+																				<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" data-kt-image-input-action="cancel" data-bs-toggle="tooltip" title="Cancel avatar">
+																					<i class="ki-outline ki-cross fs-2"></i>
+																				</span>
+																				<!--end::Cancel-->
+																				<!--begin::Remove-->
+																				<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove avatar">
+																					<i class="ki-outline ki-cross fs-2"></i>
+																				</span>
+																				<!--end::Remove-->
+																			</div>
+																			<!--end::Image input-->
+																			<!--begin::Hint-->
+																			<div class="form-text">Allowed file types: png, jpg, jpeg.</div>
+																			<!--end::Hint-->
+																		</div>
+																		<!--end::Input group-->
+																		<!--begin::Input group-->
+																		<div class="fv-row mb-7">
+																			<!--begin::Label-->
+																			<label class="required fw-semibold fs-6 mb-2">Full Name</label>
+																			<!--end::Label-->
+																			<!--begin::Input-->
+																			<input type="text" name="user_name" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="Full name" value="Emma Smith" />
+																			<!--end::Input-->
+																		</div>
+																		<!--end::Input group-->
+																		<!--begin::Input group-->
+																		<div class="fv-row mb-7">
+																			<!--begin::Label-->
+																			<label class="required fw-semibold fs-6 mb-2">Email</label>
+																			<!--end::Label-->
+																			<!--begin::Input-->
+																			<input type="email" name="user_email" class="form-control form-control-solid mb-3 mb-lg-0" placeholder="example@domain.com" value="smith@kpmg.com" />
+																			<!--end::Input-->
+																		</div>
+																		<!--end::Input group-->
+																		<!--begin::Input group-->
+																		<div class="mb-7">
+																			<!--begin::Label-->
+																			<label class="required fw-semibold fs-6 mb-5">Role</label>
+																			<!--end::Label-->
+																			<!--begin::Roles-->
+																			<!--begin::Input row-->
+																			<div class="d-flex fv-row">
+																				<!--begin::Radio-->
+																				<div class="form-check form-check-custom form-check-solid">
+																					<!--begin::Input-->
+																					<input class="form-check-input me-3" name="user_role" type="radio" value="0" id="kt_modal_update_role_option_0" checked='checked' />
+																					<!--end::Input-->
+																					<!--begin::Label-->
+																					<label class="form-check-label" for="kt_modal_update_role_option_0">
+																						<div class="fw-bold text-gray-800">Administrator</div>
+																						<div class="text-gray-600">Best for business owners and company administrators</div>
+																					</label>
+																					<!--end::Label-->
+																				</div>
+																				<!--end::Radio-->
+																			</div>
+																			<!--end::Input row-->
+																			<div class='separator separator-dashed my-5'></div>
+																			<!--begin::Input row-->
+																			<div class="d-flex fv-row">
+																				<!--begin::Radio-->
+																				<div class="form-check form-check-custom form-check-solid">
+																					<!--begin::Input-->
+																					<input class="form-check-input me-3" name="user_role" type="radio" value="1" id="kt_modal_update_role_option_1" />
+																					<!--end::Input-->
+																					<!--begin::Label-->
+																					<label class="form-check-label" for="kt_modal_update_role_option_1">
+																						<div class="fw-bold text-gray-800">Developer</div>
+																						<div class="text-gray-600">Best for developers or people primarily using the API</div>
+																					</label>
+																					<!--end::Label-->
+																				</div>
+																				<!--end::Radio-->
+																			</div>
+																			<!--end::Input row-->
+																			<div class='separator separator-dashed my-5'></div>
+																			<!--begin::Input row-->
+																			<div class="d-flex fv-row">
+																				<!--begin::Radio-->
+																				<div class="form-check form-check-custom form-check-solid">
+																					<!--begin::Input-->
+																					<input class="form-check-input me-3" name="user_role" type="radio" value="2" id="kt_modal_update_role_option_2" />
+																					<!--end::Input-->
+																					<!--begin::Label-->
+																					<label class="form-check-label" for="kt_modal_update_role_option_2">
+																						<div class="fw-bold text-gray-800">Analyst</div>
+																						<div class="text-gray-600">Best for people who need full access to analytics data, but don't need to update business settings</div>
+																					</label>
+																					<!--end::Label-->
+																				</div>
+																				<!--end::Radio-->
+																			</div>
+																			<!--end::Input row-->
+																			<div class='separator separator-dashed my-5'></div>
+																			<!--begin::Input row-->
+																			<div class="d-flex fv-row">
+																				<!--begin::Radio-->
+																				<div class="form-check form-check-custom form-check-solid">
+																					<!--begin::Input-->
+																					<input class="form-check-input me-3" name="user_role" type="radio" value="3" id="kt_modal_update_role_option_3" />
+																					<!--end::Input-->
+																					<!--begin::Label-->
+																					<label class="form-check-label" for="kt_modal_update_role_option_3">
+																						<div class="fw-bold text-gray-800">Support</div>
+																						<div class="text-gray-600">Best for employees who regularly refund payments and respond to disputes</div>
+																					</label>
+																					<!--end::Label-->
+																				</div>
+																				<!--end::Radio-->
+																			</div>
+																			<!--end::Input row-->
+																			<div class='separator separator-dashed my-5'></div>
+																			<!--begin::Input row-->
+																			<div class="d-flex fv-row">
+																				<!--begin::Radio-->
+																				<div class="form-check form-check-custom form-check-solid">
+																					<!--begin::Input-->
+																					<input class="form-check-input me-3" name="user_role" type="radio" value="4" id="kt_modal_update_role_option_4" />
+																					<!--end::Input-->
+																					<!--begin::Label-->
+																					<label class="form-check-label" for="kt_modal_update_role_option_4">
+																						<div class="fw-bold text-gray-800">Trial</div>
+																						<div class="text-gray-600">Best for people who need to preview content data, but don't need to make any updates</div>
+																					</label>
+																					<!--end::Label-->
+																				</div>
+																				<!--end::Radio-->
+																			</div>
+																			<!--end::Input row-->
+																			<!--end::Roles-->
+																		</div>
+																		<!--end::Input group-->
+																	</div>
+																	<!--end::Scroll-->
+																	<!--begin::Actions-->
+																	<div class="text-center pt-15">
+																		<button type="reset" class="btn btn-light me-3" data-kt-users-modal-action="cancel">Discard</button>
+																		<button type="submit" class="btn btn-primary" data-kt-users-modal-action="submit">
+																			<span class="indicator-label">Submit</span>
+																			<span class="indicator-progress">Please wait...
+																			<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+																		</button>
+																	</div>
+																	<!--end::Actions-->
+																</form>
+																<!--end::Form-->
+															</div>
+															<!--end::Modal body-->
+														</div>
+														<!--end::Modal content-->
+													</div>
+													<!--end::Modal dialog-->
+												</div>
+												<!--end::Modal - Add task-->
+											</div>
+											<!--end::Card toolbar-->
+										</div>
+										<!--end::Card header-->
+										<!--begin::Card body-->
+										<div class="card-body py-4">
+											<!--begin::Table-->
+											<table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
+												<thead>
+													<tr class="text-start text-muted fw-bold fs-7 text-uppercase gs-0">
+														<th class="w-10px pe-2">
+															<div class="form-check form-check-sm form-check-custom form-check-solid me-3">
+																<input class="form-check-input" type="checkbox" data-kt-check="true" data-kt-check-target="#kt_table_users .form-check-input" value="1" />
+															</div>
+														</th>
+														<th class="min-w-125px">User</th>
+														<th class="min-w-125px">Role</th>
+														<th class="min-w-125px">Last login</th>
+														<th class="min-w-125px">Two-step</th>
+														<th class="min-w-125px">Joined Date</th>
+														<th class="text-end min-w-100px">Actions</th>
+													</tr>
+												</thead>
+										<tbody class="text-gray-600 fw-semibold">
+											<% @team_members.each do |member| %>
+												<tr>
+												<td>
+													<div class="form-check form-check-sm form-check-custom form-check-solid">
+													<input class="form-check-input" type="checkbox" value="1" />
+													</div>
+												</td>
+												<td class="d-flex align-items-center">
+													<!--begin:: Avatar -->
+													<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
+													<a href="../../demo33/dist/apps/user-management/users/view.html">
+														<div class="symbol-label">
+														<img src="assets/media/avatars/300-6.jpg" alt="Emma Smith" class="w-100" />
+														</div>
+													</a>
+													</div>
+													<!--end::Avatar-->
+													<!--begin::User details-->
+													<div class="d-flex flex-column">
+													<a href="../../demo33/dist/apps/user-management/users/view.html" class="text-gray-800 text-hover-primary mb-1"><%= member.name %></a>
+													<span><%= member.email %></span>
+													</div>
+													<!--end::User details-->
+												</td>
+												<td>Administrator</td>
+												<td>
+													<div class="badge badge-light fw-bold">Yesterday</div>
+												</td>
+												<td></td>
+												<td><%= member.created_at %></td>
+												<td class="text-end">
+													<a href="#" class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
+													<i class="ki-outline ki-down fs-5 ms-1"></i>
+													</a>
+													<!--begin::Menu-->
+													<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-125px py-4" data-kt-menu="true">
+													<!--begin::Menu item-->
+													<!--end::Menu item-->
+													<!--begin::Menu item-->
+													<div class="menu-item px-3">
+														<a href="<%= remove_member_from_team_project_path(@project, user_id: member.id, role: "contract-party") %>" class="menu-link px-3" data-kt-users-table-filter="delete_row">Delete</a>
+													</div>
+													<!--end::Menu item-->
+													</div>
+													<!--end::Menu-->
+												</td>
+												</tr>
+											<% end %>
+											</tbody>
+
+											</table>
+											<!--end::Table-->
+										</div>
+										<!--end::Card body-->
+									</div>
+									<!--end::Card-->
+								</div>
+								<!--end::Content container-->
+							</div>
+							<!--end::Content-->
+						</div>
+						<!--end::Content wrapper-->
+						<!--begin::Footer-->
+						<!--end::Footer-->
+					</div>
+
+
+
 										<% if false %>
 										<div class="card-header align-items-center py-5 gap-5">
 											<!--begin::Actions-->
@@ -328,505 +783,10 @@
 										</div>
 										<% end %>
 										<div class="card-body">
-											<% if false %>
-												<!--begin::Title-->
-												<div class="d-flex flex-wrap gap-2 justify-content-between mb-8">
-													<div class="d-flex align-items-center flex-wrap gap-2">
-														<!--begin::Heading-->
-														<h2 class="fw-semibold me-3 my-1">SUBSET LTD. Services Agreement</h2>
-														<!--begin::Heading-->
-														<!--begin::Badges-->
-														<span class="badge badge-light-primary my-1 me-2">Active Requests</span>
-														<span class="badge badge-light-danger my-1">Clause Delete</span>
-														<!--end::Badges-->
-													</div>
-
-													<div class="d-flex">
-														<!--begin::Sort-->
-														<a href="#" class="btn btn-sm btn-icon btn-light btn-active-light-primary me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Sort">
-															<i class="ki-outline ki-arrow-up-down fs-2 m-0"></i>
-														</a>
-														<!--end::Sort-->
-														<!--begin::Print-->
-														<a href="#" class="btn btn-sm btn-icon btn-light btn-active-light-primary me-2" data-bs-toggle="tooltip" data-bs-placement="top" title="Print">
-															<i class="ki-outline ki-printer fs-2"></i>
-														</a>
-														<!--end::Print-->
-													</div>
-												</div>
-												<!--end::Title-->
-											<% end %>
-											<% if false %>
-											<!--begin::Form-->
-											<form id="kt_inbox_reply_form" class="rounded border mb-10">
-												<!--begin::Body-->
-												<div class="d-block">
-													<!--begin::To-->
-													<div>
-														<!--begin::Label-->
-														<div class="text-dark fw-bold w-75px">Parties:</div>
-														<!--end::Label-->
-														<!--begin::Input-->
-														<input type="text" class="form-control border-0" name="compose_to" value="e.smith@kpmg.com.au, max@kt.com, sean@dellito.com" data-kt-inbox-form="tagify" />
-														<!--end::Input-->
-														<% if true %>
-														<!--begin::CC & BCC buttons-->
-														<div class="ms-auto w-75px text-end">
-															<span class="text-muted fs-bold cursor-pointer text-hover-primary me-2" data-kt-inbox-form="cc_button"></span>
-															<span class="text-muted fs-bold cursor-pointer text-hover-primary" data-kt-inbox-form="bcc_button"></span>
-														</div>
-														<!--end::CC & BCC buttons-->
-														<% end %>
-													</div>
-													<!--end::To-->
-													<!--begin::CC-->
-													<div class="d-none align-items-center border-bottom ps-8 pe-5 min-h-50px" data-kt-inbox-form="cc">
-														<!--begin::Label-->
-														<div class="text-dark fw-bold w-75px">Overview:</div>
-														<!--end::Label-->
-														<!--begin::Input-->
-														<input type="text" class="form-control border-0" name="compose_cc" value="" data-kt-inbox-form="tagify" />
-														<!--end::Input-->
-														<!--begin::Close-->
-														<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="cc_close">
-															<i class="ki-outline ki-cross fs-5"></i>
-														</span>
-														<!--end::Close-->
-													</div>
-													<!--end::CC-->
-													<!--begin::BCC-->
-													<div class="d-none align-items-center border-bottom inbox-to-bcc ps-8 pe-5 min-h-50px" data-kt-inbox-form="bcc">
-														<!--begin::Label-->
-														<div class="text-dark fw-bold w-75px">Bcc:</div>
-														<!--end::Label-->
-														<!--begin::Input-->
-														<input type="text" class="form-control border-0" name="compose_bcc" value="" data-kt-inbox-form="tagify" />
-														<!--end::Input-->
-														<!--begin::Close-->
-														<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="bcc_close">
-															<i class="ki-outline ki-cross fs-5"></i>
-														</span>
-														<!--end::Close-->
-													</div>
-													<!--end::BCC-->
-													<!--begin::Subject-->
-													<div class="border-bottom">
-														<input class="form-control border-0 px-8 min-h-45px" name="compose_subject" placeholder="This document servers to define the services to be provided and consumed between the parties outlined in the table below." />
-													</div>
-													<!--end::Subject-->
-													<% if false %>
-													<!--begin::Message-->
-													<div id="kt_inbox_form_editor" class="border-0 h-250px px-3"></div>
-													<!--end::Message-->
-													<!--begin::Attachments-->
-													<div class="dropzone dropzone-queue px-8 py-4" id="kt_inbox_reply_attachments" data-kt-inbox-form="dropzone">
-														<div class="dropzone-items">
-															<div class="dropzone-item" style="display:none">
-																<!--begin::Dropzone filename-->
-																<div class="dropzone-file">
-																	<div class="dropzone-filename" title="some_image_file_name.jpg">
-																		<span data-dz-name="">some_image_file_name.jpg</span>
-																		<strong>(
-																		<span data-dz-size="">340kb</span>)</strong>
-																	</div>
-																	<div class="dropzone-error" data-dz-errormessage=""></div>
-																</div>
-																<!--end::Dropzone filename-->
-																<!--begin::Dropzone progress-->
-																<div class="dropzone-progress">
-																	<div class="progress">
-																		<div class="progress-bar bg-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-dz-uploadprogress=""></div>
-																	</div>
-																</div>
-																<!--end::Dropzone progress-->
-																<!--begin::Dropzone toolbar-->
-																<div class="dropzone-toolbar">
-																	<span class="dropzone-delete" data-dz-remove="">
-																		<i class="ki-outline ki-cross fs-6"></i>
-																	</span>
-																</div>
-																<!--end::Dropzone toolbar-->
-															</div>
-														</div>
-													</div>
-													<!--end::Attachments-->
-													<% end %>
-												</div>
-												<!--end::Body-->
-												<% if true %>
-												<!--begin::Footer-->
-												<div style="display: none !important;" class="d-flex flex-stack flex-wrap gap-2 py-5 ps-8 pe-5 border-top">
-													<!--begin::Actions-->
-													<div class="d-flex align-items-center me-3">
-														<!--begin::Send-->
-														<div class="btn-group me-4">
-															<!--begin::Submit-->
-															<span class="btn btn-primary fs-bold px-6" data-kt-inbox-form="send">
-																<span class="indicator-label">Send</span>
-																<span class="indicator-progress">Please wait...
-																<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-															</span>
-															<!--end::Submit-->
-															<!--begin::Send options-->
-															<span class="btn btn-primary btn-icon fs-bold" role="button">
-																<span class="btn btn-icon" data-kt-menu-trigger="click" data-kt-menu-placement="top-start">
-																	<i class="ki-outline ki-down fs-2 m-0"></i>
-																</span>
-																<!--begin::Menu-->
-																<div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-600 menu-state-bg-light-primary fw-semibold fs-7 w-150px py-4" data-kt-menu="true">
-																	<!--begin::Menu item-->
-																	<div class="menu-item px-3">
-																		<a href="#" class="menu-link px-3">Save & alert</a>
-																	</div>
-																	<!--end::Menu item-->
-																	<!--begin::Menu item-->
-																	<div class="menu-item px-3">
-																		<a href="#" class="menu-link px-3">Save & request review</a>
-																	</div>
-																	<!--end::Menu item-->
-																	<!--begin::Menu item-->
-																	<div class="menu-item px-3">
-																		<a href="#" class="menu-link px-3">Cancel</a>
-																	</div>
-																	<!--end::Menu item-->
-																</div>
-																<!--end::Menu-->
-															</span>
-															<!--end::Send options-->
-														</div>
-														<!--end::Send-->
-														<!--begin::Upload attachement-->
-														<span class="btn btn-icon btn-sm btn-clean btn-active-light-primary me-2" id="kt_inbox_reply_attachments_select" data-kt-inbox-form="dropzone_upload">
-															<i class="ki-outline ki-paper-clip fs-2 m-0"></i>
-														</span>
-														<!--end::Upload attachement-->
-														<!--begin::Pin-->
-														<span class="btn btn-icon btn-sm btn-clean btn-active-light-primary">
-															<i class="ki-outline ki-geolocation fs-2 m-0"></i>
-														</span>
-														<!--end::Pin-->
-													</div>
-													<!--end::Actions-->
-													<!--begin::Toolbar-->
-													<div class="d-flex align-items-center">
-														<!--begin::More actions-->
-														<span class="btn btn-icon btn-sm btn-clean btn-active-light-primary me-2" data-toggle="tooltip" title="More actions">
-															<i class="ki-outline ki-setting-2 fs-2"></i>
-														</span>
-														<!--end::More actions-->
-														<!--begin::Dismiss reply-->
-														<span class="btn btn-icon btn-sm btn-clean btn-active-light-primary" data-inbox="dismiss" data-toggle="tooltip" title="Dismiss reply">
-															<i class="ki-outline ki-trash fs-2"></i>
-														</span>
-														<!--end::Dismiss reply-->
-													</div>
-													<!--end::Toolbar-->
-												</div>
-												<!--end::Footer-->
-												<% end %>
-											</form>
-											<!--end::Form-->
-											<% end %>
-
-											<% @project.clauses.order(id: :desc).each do |clause|%>
-												<div class="card ">
-													<div class="card-header card-header-stretch">
-														<h3 class="card-title"><%= clause.title %></h3>
-														<div class="card-toolbar">
-															<ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
-																<li class="nav-item">
-																	<a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7_<%= clause.id %>">View</a>
-																</li>
-																<% if policy(@project).show? %>
-																	<li class="nav-item">
-																		<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8_<%= clause.id %>" >Edit</a>
-																	</li>
-																<% end %>
-																<% if policy(@project).index? %>
-																	<li class="nav-item">
-																		<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9_<%= clause.id %>" >Suggest</a>
-																	</li>
-																<% end %>
-																<% if policy(@project).show? %>
-																	<li class="nav-item">
-																		<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_10_<%= clause.id %>" >Suggestions</a>
-																		<span class="menu-link active mt-2">
-																		
-																			<span class="badge badge-light-success"><%= clause.suggests.where(accepted: nil).count %></span>
-																		</span>
-																	</li>
-																<% end %>
-															</ul>
-														</div>
-													</div>
-													<div class="card-body">
-														<div class="tab-content" id="myTabContent">
-															<div class="tab-pane fade show active d-flex flex-column" id="kt_tab_pane_7_<%= clause.id %>" role="tabpanel">
-																<div class="flex-grow-1">
-																	<p><%= clause.content %></p>
-																</div>
-															</div>
+											<!-- ADD PANEL HERE -->
 
 
-															<div class="tab-pane fade" id="kt_tab_pane_8_<%= clause.id %>" role="tabpanel">
-															<!--begin::Input group-->
-																<div class="mb-0">
-																	<%= form_for(clause, url: clause_path(clause, project_id: @project.id), method: :patch) do |f| %>
-																	<%= f.text_area :content, class: "form-control", rows: 6, placeholder: "Share Your Knowledge" %>
-																	<!-- Add a hidden field to send the textarea value as a parameter -->
-																	<%= f.hidden_field :textarea_value, value: clause.content %>
-																	<!--begin::Submit-->
-																	<%= f.submit "Edit Clause", class: "btn btn-primary mt-n20 mb-20 position-relative float-end me-7" %>
-																	<!--end::Submit-->
-																	<% end %>
-																</div>
-															<!--end::Input group-->
-															</div>
-															<div class="tab-pane fade" id="kt_tab_pane_9_<%= clause.id %>" role="tabpanel">
-															<%= form_for([clause, Suggest.new], url: clause_suggests_path(clause), method: :post) do |f| %>
-															
-																<!--begin::Row-->
-																<div class="row mb-7">
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<%= f.label :suggest_type, "Suggestion Type", class: "fs-6 fw-semibold mb-2" %>
-																	<%= f.select :suggest_type, options_for_select([['Clause Details', 1], ['Clause Name', 2]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true' %>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-md-3 fv-row mb-3">
-																	<%= f.label :user_id, "Notify", class: "fs-6 fw-semibold mb-2" %>
-																	<%= f.select :user_id, options_for_select([['Everyone', -1]] + @project.users.pluck(:first_name, :id)), {}, { class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true', 'data-placeholder' => 'Assign to' } %>
-																</div>
-																<%= f.hidden_field :project_id, value: @project.id %>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<%= f.label :status, "Status", class: "fs-6 fw-semibold mb-2" %>
-																	<%= f.select :status, options_for_select([['Open', 1], ['Pending', 2], ['Resolved', 3], ['Closed', 4]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-placeholder' => 'Status', 'data-hide-search' => 'true' %>
-																</div>
-																<!--end::Col-->
-																<!--begin::Col-->
-																<div class="col-sm-3 fv-row mb-3">
-																	<%= f.label :priority, "Priority", class: "fs-6 fw-semibold mb-2" %>
-																	<%= f.select :priority, options_for_select([['Low', 1], ['Medium', 2], ['High', 3], ['Urgent', 4]], selected: 1), {}, class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-placeholder' => 'Open', 'data-hide-search' => 'true' %>
-																</div>
-																<!--end::Col-->
-																</div>
-																<!--end::Row-->
-																<!--begin::Input group-->
-																<div class="mb-0">
-																<%= f.text_area :comment, class: 'form-control form-control-solid placeholder-gray-600 fw-bold fs-4 ps-9 pt-7', rows: 6, placeholder: 'Add Suggestion' %>
-																<!--begin::Submit-->
-																<%= f.submit 'Send', class: 'btn btn-primary mt-n20 mb-20 position-relative float-end me-7' %>
-																<!--end::Submit-->
-																</div>
-																<!--end::Input group-->
-
-															<% end %>
-															</div>
-
-
-															
-
-														
-
-
-
-
-															<div class="tab-pane fade" id="kt_tab_pane_10_<%= clause.id %>" role="tabpanel">
-																<% clause.suggests.order(id: :desc).each do |suggest| %>
-																	<div class="card card-bordered w-100">
-																		<!--begin::Body-->
-																		<div class="card-body">
-																			<!--begin::Wrapper-->
-																			<div class="w-100 d-flex flex-stack mb-8">
-																				<!--begin::Container-->
-																				<div class="d-flex align-items-center f">
-																					<!--begin::Author-->
-																					<div class="symbol symbol-50px me-5">
-																						<div class="symbol-label fs-1 fw-bold bg-light-success text-success">S</div>
-																					</div>
-																					<!--end::Author-->
-																					<!--begin::Info-->
-																					<div class="d-flex flex-column fw-semibold fs-5 text-gray-600 text-dark">
-																						<!--begin::Text-->
-																						<div class="d-flex align-items-center flex-column">
-																							<!--begin::Username-->
-																							<div style="align-self: flex-start;" class=>
-																								<a href="../../demo33/dist/pages/user-profile/overview.html" class="text-gray-800 fw-bold text-hover-primary fs-5 me-3 mb-2"><%= suggest.sType %></a>
-																									<span class="badge badge-light-danger"><%= "Rejected" if suggest.accepted == false %></span>
-																									<span class="badge badge-light-success"><%= "Accepted" if suggest.accepted == true %></span>
-																							</div>
-																							<div class="d-flex">					
-																								<span class="fw-semibold text-muted me-6">Notify:
-																								<a href="#" class="text-muted text-hover-primary">Everyone</a></span>
-																								<!--end::Label-->
-																								<!--begin::Label-->
-																								<span class="fw-semibold text-muted me-6">Status:
-																								<a href="#" class="text-muted text-hover-primary"><%= suggest.suggest_status %></a></span>
-																								<!--end::Label-->
-																								<!--begin::Label-->
-																								<span class="fw-semibold text-muted">Priority:
-																								<span class="fw-bold text-gray-600 me-1"><%= suggest.suggest_prority %></span></span>
-																								<!--end::Label-->
-																								<!--end::Username-->
-																								<span class="m-0"></span>
-																							</div>
-																						</div>
-																						<!--end::Text-->
-																						<!--begin::Date-->
-																						<!--end::Date-->
-																					</div>
-																					<!--end::Info-->
-																				</div>
-																				<!--end::Container-->
-																				<!--begin::Actions-->
-																				<div class="m-0">
-																					<% if suggest.accepted.nil? %>
-																						<%= button_to 'Accept', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "accepted"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
-																						<%= button_to 'Reject', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "rejected"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
-																					<% end %>
-																				</div>
-																				<!--end::Actions-->
-																			</div>
-																			<!--end::Wrapper-->
-																			<!--begin::Desc-->
-																			<p class="fw-normal fs-5 text-gray-700 m-0"><%= suggest.comment %></p>
-																			<!--end::Desc-->
-																		</div>
-																		<!--end::Body-->
-																	</div>
-																	<br>
-																<% end %>
-															</div>
-															
-														</div>
-													</div>
-												</div>
-
-												<div class="separator my-6"></div>
-											<% end %>
-
-											<!--begin::Form-->
-											<% if policy(@project).show? %>
-												<form id="kt_inbox_reply_form" class="rounded border mt-20">
-													<!--begin::Body-->
-													<div class="d-block">
-														<!--begin::To-->
-														<div>															
-															<!--end::Input-->
-															<!--begin::CC & BCC buttons-->
-															<div class="ms-auto w-75px text-end">
-																<span class="text-muted fs-bold cursor-pointer text-hover-primary me-2" data-kt-inbox-form="cc_button"></span>
-																<span class="text-muted fs-bold cursor-pointer text-hover-primary" data-kt-inbox-form="bcc_button"></span>
-															</div>
-															<!--end::CC & BCC buttons-->
-														</div>
-														<!--end::To-->
-														<!--begin::CC-->
-														<div class="d-none align-items-center border-bottom ps-8 pe-5 min-h-50px" data-kt-inbox-form="cc">
-															<!--begin::Label-->
-															<div class="text-dark fw-bold w-75px">Cc:</div>
-															<!--end::Label-->
-															<!--begin::Input-->
-															<input type="text" class="form-control border-0" name="compose_cc" value="" data-kt-inbox-form="tagify" />
-															<!--end::Input-->
-															<!--begin::Close-->
-															<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="cc_close">
-																<i class="ki-outline ki-cross fs-5"></i>
-															</span>
-															<!--end::Close-->
-														</div>
-														<!--end::CC-->
-														<!--begin::BCC-->
-														<div class="d-none align-items-center border-bottom inbox-to-bcc ps-8 pe-5 min-h-50px" data-kt-inbox-form="bcc">
-															<!--begin::Label-->
-															<div class="text-dark fw-bold w-75px">Bcc:</div>
-															<!--end::Label-->
-															<!--begin::Input-->
-															<input type="text" class="form-control border-0" name="compose_bcc" value="" data-kt-inbox-form="tagify" />
-															<!--end::Input-->
-															<!--begin::Close-->
-															<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="bcc_close">
-																<i class="ki-outline ki-cross fs-5"></i>
-															</span>
-															<!--end::Close-->
-														</div>
-														<!--end::BCC-->
-														<!--begin::Subject-->
-														<div class="border-bottom">
-															<input class="form-control border-0 px-8 min-h-45px" id="clauseName" name="compose_subject" placeholder="Clause Name" />
-														</div>
-														<!--end::Subject-->
-														<!--begin::Message-->
-														<div id="kt_inbox_form_editor" class="border-0 h-250px px-3"></div>
-														<!--end::Message-->
-														<!--begin::Attachments-->
-														<div class="dropzone dropzone-queue px-8 py-4" id="kt_inbox_reply_attachments" data-kt-inbox-form="dropzone">
-															<div class="dropzone-items">
-																<div class="dropzone-item" style="display:none">
-																	<!--begin::Dropzone filename-->
-																	<div class="dropzone-file">
-																		<div class="dropzone-filename" title="some_image_file_name.jpg">
-																			<span data-dz-name="">some_image_file_name.jpg</span>
-																			<strong>(
-																			<span data-dz-size="">340kb</span>)</strong>
-																		</div>
-																		<div class="dropzone-error" data-dz-errormessage=""></div>
-																	</div>
-																	<!--end::Dropzone filename-->
-																	<!--begin::Dropzone progress-->
-																	<div class="dropzone-progress">
-																		<div class="progress">
-																			<div class="progress-bar bg-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-dz-uploadprogress=""></div>
-																		</div>
-																	</div>
-																	<!--end::Dropzone progress-->
-																	<!--begin::Dropzone toolbar-->
-																	<div class="dropzone-toolbar">
-																		<span class="dropzone-delete" data-dz-remove="">
-																			<i class="ki-outline ki-cross fs-6"></i>
-																		</span>
-																	</div>
-																	<!--end::Dropzone toolbar-->
-																</div>
-															</div>
-														</div>
-														<!--end::Attachments-->
-													</div>
-													<!--end::Body-->
-													<!--begin::Footer-->
-													<div class="d-flex flex-stack flex-wrap gap-2 py-5 ps-8 pe-5 border-top">
-														<!--begin::Actions-->
-														<div class="d-flex align-items-center me-3">
-															<!--begin::Send-->
-															<div class="btn-group me-4">
-																<!--begin::Submit-->
-																<span class="btn btn-primary fs-bold px-6" data-kt-inbox-form="send">
-																	<span class="indicator-label">Submit</span>
-																	<span class="indicator-progress">Please wait...
-																	<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-																</span>
-																<!--end::Submit-->
-																<!--begin::Send options-->
-															
-																<!--end::Send options-->
-															</div>							
-														</div>
-														<!--end::Actions-->
-														<!--begin::Toolbar-->
-														<div class="d-flex align-items-center">
-															<!--begin::Dismiss reply-->
-															
-															<!--end::Dismiss reply-->
-														</div>
-														<!--end::Toolbar-->
-													</div>
-													<!--end::Footer-->
-												</form>
-											<% end %>
-											<!--end::Form-->
+											<!-- END PANEL HERE -->
 										</div>
 									</div>
 									<!--end::Card-->
@@ -4991,259 +4951,166 @@
 	</div>
 	<!--end::Modal dialog-->
 </div>
-		<div class="modal fade" id="kt_modal_create_app" tabindex="-1" aria-hidden="true">
-			<!--begin::Modal dialog-->
-			<div class="modal-dialog modal-dialog-centered mw-900px">
-				<!--begin::Modal content-->
-				<div class="modal-content">
-					<!--begin::Modal header-->
-					<div class="modal-header">
-						<!--begin::Modal title-->
-						<h2>Create Project</h2>
-						<!--end::Modal title-->
-						<!--begin::Close-->
-						<div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
-							<i class="ki-outline ki-cross fs-1"></i>
-						</div>
-						<!--end::Close-->
-					</div>
-					<!--end::Modal header-->
-					<!--begin::Modal body-->
-					<div class="modal-body py-lg-10 px-lg-10">
-						<!--begin::Stepper-->
-											<div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
-											<!--begin::Aside-->
-											<div class="d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px">
-												<!--begin::Nav-->
-												<div class="stepper-nav ps-lg-10">
-													<!--begin::Step 1-->
-													<div class="stepper-item current" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">1</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/details" %>" >
-																	<h3 class="stepper-title">Settings</h3>
-																	<div class="stepper-desc">Add Project Details</div>
-																</a>
+		
+<div class="modal fade" id="kt_modal_build_team" tabindex="-1" aria-hidden="true">
+   <!--begin::Modal dialog-->
+   <div class="modal-dialog modal-dialog-centered mw-900px">
+      <!--begin::Modal content-->
+      <div class="modal-content">
+         <!--begin::Modal header-->
+         <div class="modal-header">
+            <!--begin::Modal title-->
+            <h2>Build a Team</h2>
+            <!--end::Modal title-->
+            <!--begin::Close-->
+            <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+               <i class="ki-outline ki-cross fs-1"></i>
+            </div>
+            <!--end::Close-->
+         </div>
+         <!--end::Modal header-->
+         <!--begin::Modal body-->
+         <div class="modal-body py-lg-10 px-lg-10">
+            <!--begin::Stepper-->
+            <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
+               <!--begin::Aside-->
+               <!--begin::Aside-->
+               <!--begin::Content-->
+               <div class="flex-row-fluid py-lg-5 px-lg-15">
+                  <!--begin::Form-->
+                  <form class="form" novalidate="novalidate" id="kt_modal_create_app_form">
+                     <!--begin::Step 1-->
+                     <div data-kt-stepper-element="content">
+                        <div class="w-100">
+                           <!--begin::Input group-->
+                           <div class="fv-row mb-10">
+                              <!--begin::Label-->
+                              <label class="d-flex align-items-center fs-5 fw-semibold mb-2">
+                              <span class="required">Project Name</span>
+                              <span class="ms-1" data-bs-toggle="tooltip" title="Specify your unique app name">
+                              <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                              </span>
+                              </label>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+                              <input type="text" class="form-control form-control-lg form-control-solid" name="name" placeholder="" value="" />
+                              <!--end::Input-->
+                           </div>
+                           <!--end::Input group-->
+                           <!--begin::Input group-->
+                           <div class="fv-row">
+                              <!--begin::Label-->
+                              <label class="d-flex align-items-center fs-5 fw-semibold mb-4">
+                              <span class="required">Branding</span>
+                              <span class="ms-1" data-bs-toggle="tooltip" title="Select your app category">
+                              <i class="ki-outline ki-information-5 text-gray-500 fs-6"></i>
+                              </span>
+                              </label>
+                              <!--end::Label-->
+                              <!--begin:Options-->
+                              <div class="fv-row mb-10">
+                                 <!--begin::Dropzone-->
+                                 <div class="dropzone" id="kt_modal_create_campaign_files_upload">
+                                    <!--begin::Message-->
+                                    <div class="dz-message needsclick">
+                                       <!--begin::Icon-->
+                                       <i class="ki-outline ki-file-up fs-3hx text-primary"></i>
+                                       <!--end::Icon-->
+                                       <!--begin::Info-->
+                                       <div class="ms-4">
+                                          <h3 class="dfs-3 fw-bold text-gray-900 mb-1">Drop files here or click to upload.</h3>
+                                          <span class="fw-semibold fs-4 text-muted">Supports SVG / PNG / JPG / JPEG</span>
+                                       </div>
+                                       <!--end::Info-->
+                                    </div>
+                                 </div>
+                                 <!--end::Dropzone-->
+                              </div>
+                              <!--end:Options-->
+                           </div>
+                           <!--end::Input group-->
+                        </div>
+                     </div>
+                     <!--end::Step 1-->
+                     <!--begin::Step 2-->
+                     <div class="current" data-kt-stepper-element="content">
+                        <!--begin::Wrapper-->
+                        <div class="w-100">
+                           <!--begin::Heading-->
+                           <div class="pb-12">
+                              <!--begin::Title-->
+                              <!--end::Title-->
+                              <!--begin::Description-->
+                              <!--end::Description-->
+                           </div>
+                           <!--end::Heading-->
+                           <!--begin::Input group-->
+                           <div class="mb-8">
+                              <!--begin::Label-->
+                              <label class="fs-6 fw-semibold mb-2">Invite Teammates</label>
+                              <!--end::Label-->
+                              <!--begin::Input-->
+							  <input type="text" id="compose_to" class="form-control border-0" name="compose_to" data-kt-inbox-form="tagify" placeholder="Add team members" data-custom-attribute="project_member"/>
 
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 1-->
-													<!--begin::Step 2-->
-													<div class="stepper-item" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">2</span>
-															</div>
-															<!--begin::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/team" %>" >
-																<h3 class="stepper-title">Collaborators</h3>
-																<div class="stepper-desc">Invite your team</div>
-																</a>
-															</div>
-															<!--begin::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 2-->
-													<!--begin::Step 3-->
-													
-													<!--end::Step 3-->
-													<!--begin::Step 4-->
-													<div class="stepper-item" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">3</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/contract" %>" >
-																	<h3 class="stepper-title">Details</h3>
-																	<div class="stepper-desc">Add & Edit Clauses</div>
-																</a>
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 3-->
-													<!--begin::Step 5-->
-													<div class="stepper-item mark-completed" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">4</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<h3 class="stepper-title">Review</h3>
-																<div class="stepper-desc">Review and Submit</div>
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-													</div>
-													<!--end::Step 5-->
-												</div>
-												<!--end::Nav-->
-											</div>
-											<!--begin::Aside-->
-											</div>
-											<!--begin::Button-->
-											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;" href="<%= team_project_path(@project) %>">Next</a>
-										</div>
-											<div class="d-flex justify-content-center justify-content-xl-start flex-row-auto w-100 w-xl-300px">
-												<!--begin::Nav-->
-												<div class="stepper-nav ps-lg-10">
-													<!--begin::Step 1-->
-													<div class="stepper-item" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">1</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/details" %>" >
-																	<h3 class="stepper-title">Settings</h3>
-																	<div class="stepper-desc">Add Project Details</div>
-																</a>
+                              <!--end::Input-->
+                           </div>
+                           <!--end::Input group-->
+                           <!--begin::Input group-->
+                           <div class="mb-8">
+                              <!--begin::Label-->
+                              <div class="fs-6 fw-semibold mb-2">Team Members</div>
+                              <!--end::Label-->
+                              <!--begin::Users-->
+                              <div class="mh-300px scroll-y me-n7 pe-7" id="team-members-list">
+                                 <!-- Team members will be dynamically generated here -->
+                                 <div class="fs-7 text-muted" id="team-members-text">No members are associated with the project</div>
+                              </div>
+                              <!--end::Users-->
+                           </div>
+                        </div>
+                        <!--end::Wrapper-->
+                     </div>
+                     <!--begin::Actions-->
+                     <div class="d-flex flex-stack pt-10">
+                        <div>
+							<%= link_to add_member_to_project_projectject_path(@project), class: "btn btn-lg btn-primary", id: "add_members", data: { compose_to_js_function: true } do %>
+								Submit
+								<i class="ki-outline ki-arrow-right fs-3 ms-1 me-0"></i>
+							<% end %>
+                        </div>
+                        <!--end::Wrapper-->
+                     </div>
+                     <!--end::Actions-->
+                  </form>
+                  <!--end::Form-->
+               </div>
+               <!--end::Content-->
+            </div>
+            <!--end::Stepper-->
+         </div>
+         <!--end::Modal body-->
+      </div>
+      <!--end::Modal content-->
+   </div>
+   <!--end::Modal dialog-->
+</div>
 
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 1-->
-													<!--begin::Step 2-->
-													<div class="stepper-item" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">2</span>
-															</div>
-															<!--begin::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/team" %>" >
-																<h3 class="stepper-title">Collaborators</h3>
-																<div class="stepper-desc">Invite your team</div>
-																</a>
-															</div>
-															<!--begin::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 2-->
-													<!--begin::Step 3-->
-													
-													<!--end::Step 3-->
-													<!--begin::Step 4-->
-													<div class="stepper-item current" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">3</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<a href="<%= "/projects/#{@project.id}/contract" %>" >
-																	<h3 class="stepper-title">Details</h3>
-																	<div class="stepper-desc">Add & Edit Clauses</div>
-																</a>
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-														<!--begin::Line-->
-														<div class="stepper-line h-40px"></div>
-														<!--end::Line-->
-													</div>
-													<!--end::Step 3-->
-													<!--begin::Step 5-->
-													<div class="stepper-item mark-completed" data-kt-stepper-element="nav">
-														<!--begin::Wrapper-->
-														<div class="stepper-wrapper">
-															<!--begin::Icon-->
-															<div class="stepper-icon w-40px h-40px">
-																<i class="ki-outline ki-check stepper-check fs-2"></i>
-																<span class="stepper-number">4</span>
-															</div>
-															<!--end::Icon-->
-															<!--begin::Label-->
-															<div class="stepper-label">
-																<h3 class="stepper-title">Review</h3>
-																<div class="stepper-desc">Review and Submit</div>
-															</div>
-															<!--end::Label-->
-														</div>
-														<!--end::Wrapper-->
-													</div>
-													<!--end::Step 5-->
-												</div>
-												<!--end::Nav-->
-											</div>
-											<!--begin::Aside-->
-											</div>
-											<!--begin::Button-->
-											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;" href="<%= team_project_path(@project) %>">Next</a>
-										</div>
-						<!--end::Stepper-->
-					</div>
-					<!--end::Modal body-->
-				</div>
-				<!--end::Modal content-->
-			</div>
-			<!--end::Modal dialog-->
-		</div>
-<!--end::Modal - Invite Friend-->
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <!--end::Modals-->
 <!--begin::Javascript-->
 <script>var hostUrl = "assets/";</script>
@@ -5269,6 +5136,7 @@
 <script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
 <!--end::Vendors Javascript-->
 <!--begin::Custom Javascript(used for this page only)-->
+<script src="assets/js/custom/utilities/modals/create-app.js"></script>
 <script src="assets/js/custom/apps/projects/list/list.js"></script>
 <script src="assets/js/widgets.bundle.js"></script>
 <script src="assets/js/custom/widgets.js"></script>
@@ -5277,5 +5145,93 @@
 <script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
 <script src="assets/js/custom/utilities/modals/users-search.js"></script>
 <script src="assets/js/custom/utilities/modals/new-address.js"></script>
+		<script>var hostUrl = "assets/";</script>
+		<!--begin::Global Javascript Bundle(mandatory for all pages)-->
+		<script src="assets/plugins/global/plugins.bundle.js"></script>
+		<script src="assets/js/scripts.bundle.js"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+		<!--end::Vendors Javascript-->
+		<!--begin::Custom Javascript(used for this page only)-->
+		<script src="assets/js/custom/apps/user-management/users/list/table.js"></script>
+		<script src="assets/js/custom/apps/user-management/users/list/export-users.js"></script>
+		<script src="assets/js/custom/apps/user-management/users/list/add.js"></script>
+		<script src="assets/js/widgets.bundle.js"></script>
+		<script src="assets/js/custom/widgets.js"></script>
+		<script src="assets/js/custom/apps/chat/chat.js"></script>
+		<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
+		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
+		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+				<script src="assets/plugins/global/plugins.bundle.js"></script>
+		<script src="assets/js/scripts.bundle.js"></script>
+		<!--end::Global Javascript Bundle-->
+		<!--begin::Vendors Javascript(used for this page only)-->
+		<script src="assets/plugins/custom/datatables/datatables.bundle.js"></script>
+		<!--end::Vendors Javascript-->
+		<!--begin::Custom Javascript(used for this page only)-->
+		<script src="assets/js/widgets.bundle.js"></script>
+		<script src="assets/js/custom/widgets.js"></script>
+		<script src="assets/js/custom/apps/chat/chat.js"></script>
+		<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
+		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
+
+		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+				<script>
+			var projectId = <%= @project.id %>
+
+		document.addEventListener('DOMContentLoaded', function() {
+			const addButton = document.getElementById('add_members');
+			
+			if (addButton) {
+				addButton.addEventListener('click', function(e) {
+					e.preventDefault();
+
+					const usersRoleList = Array.from(document.querySelectorAll("#roleSelect"), element => {
+						const selectedOption = element.options[element.selectedIndex];
+						return selectedOption.textContent;
+					});
+
+					const inputField = document.getElementById('compose_to');
+					let inputValue = JSON.parse(inputField.value);
+					inputValue = inputValue.map(item => item.value);
+
+					const combinedData = inputValue.map((value, i) => ({
+						user_id: value,
+						user_role: usersRoleList[i]
+					}));
+
+					if (combinedData.length > 0) {
+						const dataToSend = JSON.stringify(combinedData);
+						const link = this.href;
+						// Use the fetch API to make a POST request
+						fetch(link, {
+							method: 'POST',
+							body: dataToSend,
+							headers: {
+								'Content-Type': 'application/json'
+							}
+						})
+						.then(response => {
+							window.location.replace(`/projects/${projectId}/team`)
+						})
+						.then(data => {
+							
+							// Handle the response data here
+							console.log(data);
+						})
+						.catch(error => {
+							// Handle any errors here
+							console.error(error);
+						});
+					}
+				});
+			}
+		});
+
+		</script>
+
+
+
 <!--end::Custom Javascript-->
 <!--end::Javascript-->

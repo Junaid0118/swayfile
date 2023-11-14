@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_11_01_155055) do
+ActiveRecord::Schema.define(version: 2023_11_14_144549) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -89,6 +89,15 @@ ActiveRecord::Schema.define(version: 2023_11_01_155055) do
   create_table "file_managers", force: :cascade do |t|
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "folder_invitees", force: :cascade do |t|
+    t.bigint "folder_id", null: false
+    t.bigint "user_id", null: false
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["folder_id"], name: "index_folder_invitees_on_folder_id"
+    t.index ["user_id"], name: "index_folder_invitees_on_user_id"
   end
 
   create_table "folders", force: :cascade do |t|
@@ -183,6 +192,9 @@ ActiveRecord::Schema.define(version: 2023_11_01_155055) do
     t.string "state", default: ""
     t.string "postal_code", default: ""
     t.datetime "last_login"
+    t.boolean "subscription_update", default: false
+    t.boolean "project_update", default: false
+    t.boolean "pending_actions", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
@@ -194,6 +206,8 @@ ActiveRecord::Schema.define(version: 2023_11_01_155055) do
   add_foreign_key "contracts", "projects"
   add_foreign_key "documents", "projects"
   add_foreign_key "documents", "users"
+  add_foreign_key "folder_invitees", "folders"
+  add_foreign_key "folder_invitees", "users"
   add_foreign_key "folders", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "projects", "folders"

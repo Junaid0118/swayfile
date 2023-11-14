@@ -199,11 +199,7 @@ var KTAppInboxCompose = function () {
         var quill = new Quill('#kt_inbox_form_editor', {
             modules: {
                 toolbar: [
-                    [{
-                        header: [1, 2, false]
-                    }],
-                    ['bold', 'italic', 'underline'],
-                    ['image', 'code-block']
+                  
                 ]
             },
             placeholder: 'Type your clause details here...',

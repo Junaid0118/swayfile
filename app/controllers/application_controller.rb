@@ -8,7 +8,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   before_action :set_avatars, only: %i[empty_folder folders file_manager settings]
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
-  before_action :authenticate_user!, only: [:file_manager, :folders, :profile]
+  before_action :authenticate_user!, only: [:file_manager, :folders, :profile, :settings]
   before_action :set_notifications, unless: :devise_controller?
   before_action :set_user, only: [:file_manager, :folders]
 
@@ -32,6 +32,8 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def folders
+    cookies.delete(:project_id)
+    cookies.delete(:folder_id)
     @folders = @folder.subfolders
     @projects = @folder.projects
     render layout: "file_manager"
@@ -39,10 +41,12 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
 
   def file_manager
     project = Project.find_by(id: cookies.signed[:project_id])
+    folder = Folder.find_by(id: cookies.signed[:folder_id])
     return redirect_to send_invite_project_path(project) if project
+    return redirect_to "/folders?slug=#{folder.slug}" if folder
     
-    @folders = @current_user.folders.where(parent_folder_id: nil)
-    @projects = Project.joins('LEFT JOIN teams AS contract_teams ON projects.id = contract_teams.project_id').joins('LEFT JOIN teams AS signatory_teams ON projects.id = signatory_teams.project_id').where('projects.created_by_id = :user_id OR contract_teams.user_id = :user_id OR signatory_teams.user_id = :user_id', user_id: @current_user.id).order(id: :desc).uniq
+    @folders = (@current_user.folders.where(parent_folder_id: nil) + @current_user.invitees_folders).uniq
+    @projects = Project.joins('LEFT JOIN teams AS contract_teams ON projects.id = contract_teams.project_id').joins('LEFT JOIN teams AS signatory_teams ON projects.id = signatory_teams.project_id').where('projects.created_by_id = :user_id OR contract_teams.user_id = :user_id OR signatory_teams.user_id = :user_id', user_id: @current_user.id).order(id: :desc).where(folder_id: nil).uniq
     render layout: "file_manager"
   end
 

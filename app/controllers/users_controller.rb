@@ -1,6 +1,24 @@
 # frozen_string_literal: true
 
 class UsersController < ApplicationController
+  def update_pending_action
+    user = User.find(params[:user_id])
+    user.update(pending_actions: params[:pending_action])
+    head :ok
+  end
+
+  def update_project_update
+    user = User.find(params[:user_id])
+    user.update(project_update: params[:project_update])
+    head :ok
+  end
+
+  def update_subscription_update
+    user = User.find(params[:user_id])
+    user.update(subscription_update: params[:subscription_update])
+    head :ok
+  end
+
   def update
     @record = User.find(params[:id])
     if params.key?(:password)
@@ -23,7 +41,6 @@ class UsersController < ApplicationController
         @record[key] = value
       end
     end
-    
     if @record.save
       render json: @record, status: :ok
     else

@@ -7,6 +7,10 @@ class Folder < ApplicationRecord
   belongs_to :user
   has_many :projects, dependent: :nullify
 
+  has_many :folder_invitees
+  has_many :invitees, through: :folder_invitees, class_name: 'User', source: :user
+
+
   before_save :generate_slug
 
   def full_path_array

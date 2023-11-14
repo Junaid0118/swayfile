@@ -15,6 +15,7 @@ module Users
     def destroy
       cookies.delete(:user_id)
       cookies.delete(:project_id)
+      cookies.delete(:folder_id)
       super
     end
   end
