@@ -281,11 +281,10 @@
 
 																<div class="mb-10">
 																<label class="form-label fs-6 fw-semibold">Party:</label>
-																<select class="form-select form-select-solid fw-bold" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-kt-user-table-filter="role" data-hide-search="true">
-																	<option></option>
-																	<option value="Owner">Team</option>
-																	<option value="Guest">Signatory</option>
-																	
+																<select class="form-select form-select-solid fw-bold" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-kt-user-table-filter="role" data-hide-search="true" id="team-role-options">
+																	<option value="contract-party">Team</option>
+																	<option value="signatory-party">Signatory</option>
+																
 																</select>
 															</div>
 															<!--end::Input group-->
@@ -5330,6 +5329,36 @@
                     data: { role: selectedRole },
                     success: function (data) {
 						window.location.replace(`/projects/${projectId}/team?filter=${selectedRole}`)
+                        // Handle the API response
+ 	                    },
+                    error: function (error) {
+                        // Handle errors
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+
+			$('#team-role-options').change(function () {
+				debugger;
+            // Get the selected value
+            var selectedRole = $(this).val();
+			
+
+            // Check if a role is selected
+            if (selectedRole) {
+                // Make an API call with the selected role
+                // Replace with your project ID
+                var apiUrl = '/projects/' + projectId + '/team';
+
+                // Make an AJAX request
+                $.ajax({
+                    url: apiUrl,
+                    type: 'GET',
+                    data: { team_role: selectedRole },
+                    success: function (data) {
+						window.location.replace(`/projects/${projectId}/team?selectedTeam=${selectedRole}`)
                         // Handle the API response
  	                    },
                     error: function (error) {

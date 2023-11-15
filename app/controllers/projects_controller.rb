@@ -47,8 +47,8 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def team
     if params.key?(:role) || params.key?(:filter)
       @team_members = @project.members(params[:role] || params[:filter]).uniq
-    elsif params.key?(:user_role)
-      # Handle user_role case if needed
+    elsif params.key?(:team_role) || params.key?(:selectedTeam)
+      @team_members = @project.users.where(teams: { role: params[:team_role] || params[:selectedTeam] })
     else
       @team_members = @project.users.uniq
     end
