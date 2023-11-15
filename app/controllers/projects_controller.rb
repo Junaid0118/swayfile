@@ -4,7 +4,7 @@
 class ProjectsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :set_project,
                 only: %i[details team signatories contract review show add_member_to_project add_signatory_to_project
-                         remove_member_from_team update move_to_folder discussions contract]
+                         remove_member_from_team update move_to_folder discussions contract update_party]
   before_action :set_avatars
   before_action :set_user, only: %i[contract team signatories discussions send_invite]
   before_action :authenticate_user!, only: %i[team signatories contract discussions]
@@ -12,6 +12,19 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def index
     render layout: 'projects'
   end
+
+  def update_role
+    team =  @project.teams.find_by(user_id: params[:memberId])
+    team.update(user_role: params[:role])
+    head :ok
+  end
+
+  def update_party
+    team =  @project.teams.find_by(user_id: params[:memberId])
+    team.update(role: params[:role])
+    head :ok
+  end
+
 
   def send_invite
     @project = Project.find(params[:id])
@@ -32,7 +45,19 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def show; end
 
   def team
-    @team_members = @project.contract_party_users.uniq
+    if params.key?(:role) || params.key?(:filter)
+      @team_members = @project.members(params[:role] || params[:filter]).uniq
+    elsif params.key?(:user_role)
+      # Handle user_role case if needed
+    else
+      @team_members = @project.users.uniq
+    end
+
+    
+    respond_to do |format|
+      format.html
+      format.json { render json: @team_members }
+    end
   end
 
   def signatories
@@ -64,25 +89,30 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     project = build_project
     project.folder_id = params[:folder_id] if params.key?(:folder_id)
     @project = project.save
-    if @project
-      Notification.create!(notification_type: 'New Project', user_id: User.first.id,
-        text: "Project #{project.name} created", date: DateTime.now)  
-        return render json: project, status: :created
-    else
-      return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity
-    end
+    return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity unless @project
+
+    Notification.create!(notification_type: 'New Project', user_id: User.first.id,
+                         text: "Project #{project.name} created", date: DateTime.now)
+    render json: project, status: :created
   end
 
   def add_member_to_project
-    member_attributes = params['_json'].map do |member|
-      {
-        user_id: member['user_id'],
-        role: 'contract_party',
-        user_role: member['user_role']
-      }
+    params['_json'].each do |email|
+      user = User.find_by_email(email)
+      if user
+        member_attribute =
+          {
+            user_id: user.id,
+            role: 'contract_party',
+            user_role: 'Guest'
+          }
+        @project.teams.create!(member_attribute)
+      else
+        # Send invitation email to user
+      end
     end
-    @project.teams.create!(member_attributes)
-    render json: { 'data' => "/projects/#{@project}/signatories" }, status: 200
+
+    render json: { 'data' => "/projects/#{@project}/team" }, status: 200
   end
 
   def add_signatory_to_project

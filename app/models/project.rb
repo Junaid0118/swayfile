@@ -35,6 +35,11 @@ class Project < ApplicationRecord
     users.where(teams: { role: Team.roles[:contract_party] })
   end
 
+  def members(user_role)
+    users.where(teams: { user_role: user_role })
+  end
+
+
   def signatory_party_users
     users.where(teams: { role: Team.roles[:signatory_party] })
   end

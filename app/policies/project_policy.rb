@@ -45,6 +45,10 @@ class ProjectPolicy < ApplicationPolicy
     true
   end
 
+  def update_role?
+    true
+  end
+
   def remove_member_from_team?
     user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
   end
@@ -55,6 +59,10 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def update?
+    true
+  end
+
+  def update_party?
     true
   end
 

@@ -199,13 +199,15 @@
 											</div>
 											<!--begin::Button-->
 											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;" href="<%= team_project_path(@project) %>">Next</a>
+											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;" href="<%= contract_project_path(@project) %>">Next</a>
 										</div>						
 								
 								</div>
 								<!--end::Sidebar-->
 								<% end %>
 								<!--begin::Content-->
+
+								
 								<div class="flex-lg-row-fluid ms-lg-7 ms-xl-10">
 									<!--begin::Card-->
 									<div class="card">
@@ -230,6 +232,8 @@
 								<div id="kt_app_content_container" class="app-container container-xxl">
 									<!--begin::Card-->
 									<div class="card">
+									
+									
 										<!--begin::Card header-->
 										<div class="card-header border-0 pt-6">
 											<!--begin::Card title-->
@@ -244,6 +248,7 @@
 											<!--begin::Card title-->
 											<!--begin::Card toolbar-->
 											<div class="card-toolbar">
+											
 												<!--begin::Toolbar-->
 												<div class="d-flex justify-content-end" data-kt-user-table-toolbar="base">
 													<!--begin::Filter-->
@@ -260,17 +265,27 @@
 														<div class="separator border-gray-200"></div>
 														<!--end::Separator-->
 														<!--begin::Content-->
+														
 														<div class="px-7 py-5" data-kt-user-table-filter="form">
 															<!--begin::Input group-->
 															<div class="mb-10">
 																<label class="form-label fs-6 fw-semibold">Role:</label>
+																<select class="form-select form-select-solid fw-bold" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-kt-user-table-filter="role" data-hide-search="true" id="roleSelection">
+																	<option></option>
+																	<option value="Owner">Owner</option>
+																	<option value="Guest">Guest</option>
+																	<option value="Can Edit">Can Edit</option>
+																	
+																</select>
+															</div>
+
+																<div class="mb-10">
+																<label class="form-label fs-6 fw-semibold">Party:</label>
 																<select class="form-select form-select-solid fw-bold" data-kt-select2="true" data-placeholder="Select option" data-allow-clear="true" data-kt-user-table-filter="role" data-hide-search="true">
 																	<option></option>
-																	<option value="Administrator">Administrator</option>
-																	<option value="Analyst">Analyst</option>
-																	<option value="Developer">Developer</option>
-																	<option value="Support">Support</option>
-																	<option value="Trial">Trial</option>
+																	<option value="Owner">Team</option>
+																	<option value="Guest">Signatory</option>
+																	
 																</select>
 															</div>
 															<!--end::Input group-->
@@ -283,10 +298,7 @@
 													<!--end::Filter-->
 													<!--begin::Export-->
 													<!--end::Export-->
-													<!--begin::Add user-->
-													<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_build_team">
-													<i class="ki-outline ki-plus fs-2"></i>Add User</button>
-													<!--end::Add user-->
+													
 												</div>
 												<!--end::Toolbar-->
 												<!--begin::Group actions-->
@@ -579,7 +591,31 @@
 										</div>
 										<!--end::Card header-->
 										<!--begin::Card body-->
+										
+										
 										<div class="card-body py-4">
+										<div class="mb-8">
+										   <div style="display: flex; justify-content: space-between;">
+												<div class="mb-8">
+													<!--begin::Label-->
+													<label class="fs-6 fw-semibold mb-2">Invite Teammates</label>
+													<!--end::Label-->
+													<!--begin::Input-->
+													<input type="text" id="compose_to" class="form-control border-0" data-kt-inbox-form="tagify" placeholder="Add team members" data-custom-attribute="project_member"/>
+													<!--end::Input-->
+												</div>
+												<div>
+													<%= link_to add_member_to_project_project_path(@project), class: "btn btn-lg btn-primary", id: "add_members", data: { compose_to_js_function: true } do %>
+														Submit
+														<i class="ki-outline ki-arrow-right fs-3 ms-1 me-0"></i>
+													<% end %>
+												</div>
+											</div>
+
+                       
+
+										 <div class="stepper stepper-pills stepper-column d-flex flex-column flex-xl-row flex-row-fluid" id="kt_modal_create_app_stepper">
+
 											<!--begin::Table-->
 											<table class="table align-middle table-row-dashed fs-6 gy-5" id="kt_table_users">
 												<thead>
@@ -590,11 +626,9 @@
 															</div>
 														</th>
 														<th class="min-w-125px">User</th>
+														<th class="min-w-125px">Party</th>
 														<th class="min-w-125px">Role</th>
-														<th class="min-w-125px">Last login</th>
-														<th class="min-w-125px">Two-step</th>
-														<th class="min-w-125px">Joined Date</th>
-														<th class="text-end min-w-100px">Actions</th>
+														<th class="min-w-100px">Actions</th>
 													</tr>
 												</thead>
 										<tbody class="text-gray-600 fw-semibold">
@@ -622,13 +656,25 @@
 													</div>
 													<!--end::User details-->
 												</td>
-												<td>Administrator</td>
 												<td>
-													<div class="badge badge-light fw-bold">Yesterday</div>
+												<div class="w-100px">
+													<select class="form-select form-select-solid form-select-sm team-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>">		
+														<option value="contract-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).role == "contract-party" %>>Team</option>
+														<option value="signatory-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).role == "signatory_party" %>>Signatory</option>
+													</select>
+												</div>
 												</td>
-												<td></td>
-												<td><%= member.created_at %></td>
-												<td class="text-end">
+												<td>
+													<div class=" w-100px">
+														<select class="form-select form-select-solid form-select-sm user-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>">
+															<option value="Guest" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Guest" %>>Guest</option>
+															<option value="Owner" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Owner" %>>Owner</option>
+															<option value="Can Edit" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Can Edit" %>>Can Edit</option>
+														</select>
+
+													</div>
+												</td>
+												<td class="">
 													<a href="#" class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
 													<i class="ki-outline ki-down fs-5 ms-1"></i>
 													</a>
@@ -5187,22 +5233,13 @@
 				addButton.addEventListener('click', function(e) {
 					e.preventDefault();
 
-					const usersRoleList = Array.from(document.querySelectorAll("#roleSelect"), element => {
-						const selectedOption = element.options[element.selectedIndex];
-						return selectedOption.textContent;
-					});
-
 					const inputField = document.getElementById('compose_to');
 					let inputValue = JSON.parse(inputField.value);
 					inputValue = inputValue.map(item => item.value);
 
-					const combinedData = inputValue.map((value, i) => ({
-						user_id: value,
-						user_role: usersRoleList[i]
-					}));
 
-					if (combinedData.length > 0) {
-						const dataToSend = JSON.stringify(combinedData);
+					if (inputValue.length > 0) {
+						const dataToSend = JSON.stringify(inputValue);
 						const link = this.href;
 						// Use the fetch API to make a POST request
 						fetch(link, {
@@ -5231,6 +5268,112 @@
 
 		</script>
 
+		<script>
+			var projectId = <%= @project.id %> 
+			var input = document.getElementById('compose_to');
+			var tagify = new Tagify(input, {
+				enforceWhitelist: false,
+				dropdown: {
+					classname: 'tagify-dropdown',
+					enabled: 0
+				}
+			});
+
+			$(document).ready(function() {
+				// Add event listeners for each select element
+				$('.team-role-select').on('change', function() {
+				// Get the selected option
+				var selectedOption = $(this).find('option:selected');
+
+				// Get the member id from the data attribute
+				var memberId = $(this).data('member-id');
+
+				// Get the selected value
+				var selectedValue = selectedOption.val();
+
+				var apiUrl = '/projects/' + projectId + '/update_party'
+
+				$.ajax({
+                    url: apiUrl,
+                    type: 'POST',
+                    data: { role: selectedValue, memberId: memberId },
+                    success: function (data) {
+                        window.location.reload();
+ 	                    },
+                    error: function (error) {
+                        // Handle errors
+                        console.error('Error:', error);
+                    }
+                });
+
+				// Now you can use memberId and selectedValue as needed
+				console.log('Member ID:', memberId);
+				console.log('Selected Value:', selectedValue);
+				});
+			});
+
+			$('#roleSelection').change(function () {
+            // Get the selected value
+            var selectedRole = $(this).val();
+			
+
+            // Check if a role is selected
+            if (selectedRole) {
+                // Make an API call with the selected role
+                // Replace with your project ID
+                var apiUrl = '/projects/' + projectId + '/team';
+
+                // Make an AJAX request
+                $.ajax({
+                    url: apiUrl,
+                    type: 'GET',
+                    data: { role: selectedRole },
+                    success: function (data) {
+						window.location.replace(`/projects/${projectId}/team?filter=${selectedRole}`)
+                        // Handle the API response
+ 	                    },
+                    error: function (error) {
+                        // Handle errors
+                        console.error('Error:', error);
+                    }
+                });
+            }
+        });
+
+			$(document).ready(function() {
+				// Add event listeners for each select element
+				$('.user-role-select').on('change', function() {
+				// Get the selected option
+				var selectedOption = $(this).find('option:selected');
+
+				// Get the member id from the data attribute
+				var memberId = $(this).data('member-id');
+
+				// Get the selected value
+				var selectedValue = selectedOption.val();
+
+				var apiUrl = '/projects/' + projectId + '/update_role'
+
+				$.ajax({
+                    url: apiUrl,
+                    type: 'POST',
+                    data: { role: selectedValue, memberId: memberId },
+                    success: function (data) {
+                        window.location.reload();
+ 	                    },
+                    error: function (error) {
+                        // Handle errors
+                        console.error('Error:', error);
+                    }
+                });
+
+				// Now you can use memberId and selectedValue as needed
+				console.log('Member ID:', memberId);
+				console.log('Selected Value:', selectedValue);
+				});
+			});
+
+		</script>
 
 
 <!--end::Custom Javascript-->

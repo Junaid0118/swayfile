@@ -46,6 +46,8 @@ Rails.application.routes.draw do
       post 'add_signatory_to_project'
       get 'remove_member_from_team'
       put 'move_to_folder' 
+      post 'update_party'
+      post 'update_role'
     end
   end
 
@@ -72,6 +74,7 @@ Rails.application.routes.draw do
       post 'add_signatory_to_project'
       get 'remove_member_from_team'
       put 'move_to_folder' 
+      post 'update_party'
     end
   end
 
