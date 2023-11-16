@@ -13,7 +13,7 @@
 				<% end %>
 				>
 					<!--begin::Navbar link-->
-					<a href="/projects/<%= project.id %>/details" class="btn btn-icon">		
+					<a href="/contracts/<%= project.id %>/details" class="btn btn-icon">		
 						<div class="symbol">
 							<div class="symbol-label fs-1 fw-bold bg-light-success text-success"><%= project.name[0].upcase %></div>
 						</div>
@@ -133,7 +133,7 @@
 
             // Loop through the project links
             projectLinks.forEach(function(link) {
-                var projectId = link.getAttribute('href').match(/\/projects\/(\d+)/)[1]; // Extract the project ID from the href
+                var projectId = link.getAttribute('href').match(/\/contracts\/(\d+)/)[1]; // Extract the project ID from the href
 
                 // Check if the project ID matches the current URL's ID
                 if (projectId && currentURL.endsWith('/' + projectId)) {

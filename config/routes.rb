@@ -23,7 +23,7 @@ Rails.application.routes.draw do
   resources :notifcations, only: :index
   resources :users, only: :update
 
-  resources :projects do
+  resources :projects, path: 'contracts' do
     resources :documents, only: :show
     member do
       resources :comments, only: :create, shallow: true
@@ -48,33 +48,6 @@ Rails.application.routes.draw do
       put 'move_to_folder' 
       post 'update_party'
       post 'update_role'
-    end
-  end
-
-  resources :contracts do
-    resources :documents, only: :show
-    member do
-      resources :comments, only: :create, shallow: true
-      resources :clauses,  only: [:create, :update], shallow: true do
-        resources :suggests
-      end
-
-      get 'team'
-      get 'settings'
-      get 'discussions'
-
-      get 'details'
-      get 'team'
-      get 'signatories'
-      get 'contract'
-      get 'review'
-      get 'send_invite'
-
-      post 'add_member_to_project'
-      post 'add_signatory_to_project'
-      get 'remove_member_from_team'
-      put 'move_to_folder' 
-      post 'update_party'
     end
   end
 

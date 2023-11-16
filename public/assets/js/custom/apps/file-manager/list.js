@@ -992,7 +992,7 @@ var KTFileManagerList = (function () {
             let moveToFolder = $('input[name="move_to_folder"]:checked').val();
             let projectId = document.getElementById('selectedProjectID').value;
             $.ajax({
-              url: `/projects/${projectId}/move_to_folder?parent_folder_id=${moveToFolder}`,
+              url: `/contracts/${projectId}/move_to_folder?parent_folder_id=${moveToFolder}`,
               type: "PUT",
               processData: false, // Prevent jQuery from processing the data
               contentType: false, // Prevent jQuery from setting the content type

@@ -7731,7 +7731,7 @@
 
 	// helpers
 	(function ($) {
-		// from http://kiro.me/projects/fuse.html
+		// from http://kiro.me/contracts/fuse.html
 		$.vakata.search = function(pattern, txt, options) {
 			options = options || {};
 			options = $.extend({}, $.vakata.search.defaults, options);

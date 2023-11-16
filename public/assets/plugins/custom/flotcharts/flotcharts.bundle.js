@@ -17,7 +17,7 @@ can just fix the size of their placeholders.
 
 /* Inline dependency:
  * jQuery resize event - v1.1 - 3/14/2010
- * http://benalman.com/projects/jquery-resize-plugin/
+ * http://benalman.com/contracts/jquery-resize-plugin/
  *
  * Copyright (c) 2010 "Cowboy" Ben Alman
  * Dual licensed under the MIT and GPL licenses.

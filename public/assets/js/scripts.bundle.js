@@ -7714,7 +7714,7 @@ var KTLayoutSearch = (function () {
           var titleDiv = document.createElement("div");
           titleDiv.className = "d-flex flex-column";
           titleDiv.innerHTML =
-          '<a href="/projects/' + item[1] + '" class="fs-6 text-gray-800 text-hover-primary fw-semibold">' +
+          '<a href="/contracts/' + item[1] + '" class="fs-6 text-gray-800 text-hover-primary fw-semibold">' +
           item[0] +
           '</a><span class="fs-7 text-muted fw-semibold">#' +
           item[1] +
@@ -7725,7 +7725,7 @@ var KTLayoutSearch = (function () {
           fragment.appendChild(titleDiv);
 
           fragment.addEventListener("click", function () {
-            window.location.href = "/projects/" + item[1];
+            window.location.href = "/contracts/" + item[1];
           });
     
 

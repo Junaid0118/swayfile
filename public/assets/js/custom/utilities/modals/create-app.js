@@ -140,7 +140,7 @@ var KTCreateApp = function () {
 		// 			console.log("here:" ,window.location.pathname)
 		
 		// 			$.ajax({
-		// 				url: '/projects',
+		// 				url: '/contracts',
 		// 				type: 'POST',
 		// 				data: formData, // Use the FormData object as the data
 		// 				processData: false, // Prevent jQuery from processing the data

@@ -91,8 +91,8 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     @project = project.save
     return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity unless @project
 
-    Notification.create!(notification_type: 'New Project', user_id: User.first.id,
-                         text: "Project #{project.name} created", date: DateTime.now)
+    Notification.create!(notification_type: 'New Contract', user_id: User.first.id,
+                         text: "Contract #{project.name} created", date: DateTime.now)
     render json: project, status: :created
   end
 
