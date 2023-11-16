@@ -16,7 +16,7 @@ class ClausesController < ApplicationController
 
   def update
     @clause.update(content: params[:clause][:content])
-    redirect_to " /contracts/#{params[:project_id]}/contract"
+    redirect_to "/contracts/#{params[:project_id]}/contract"
   end
 
   private
