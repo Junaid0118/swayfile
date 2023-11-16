@@ -5,7 +5,7 @@ class SuggestsController < ApplicationController
   def create
     @suggest = @clause.suggests.build(clause_params)
     @suggest.save!
-    redirect_to "/projects/#{params[:suggest][:project_id]}/contract"
+    redirect_to " /contracts/#{params[:suggest][:project_id]}/contract"
   end
 
   def update
@@ -21,7 +21,7 @@ class SuggestsController < ApplicationController
             @suggest.update(accepted: true)
         end
     end
-    redirect_to "/projects/#{params[:project_id]}/contract"
+    redirect_to " /contracts/#{params[:project_id]}/contract"
   end
 
   private

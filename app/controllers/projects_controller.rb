@@ -112,7 +112,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
       end
     end
 
-    render json: { 'data' => "/projects/#{@project}/team" }, status: 200
+    render json: { 'data' => " /contracts/#{@project}/team" }, status: 200
   end
 
   def add_signatory_to_project
@@ -124,16 +124,16 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
       }
     end
     @project.teams.create!(member_attributes)
-    render json: { 'data' => "/projects/#{@project}/signatories" }, status: 200
+    render json: { 'data' => " /contracts/#{@project}/signatories" }, status: 200
   end
 
   def remove_member_from_team
     @team = @project.teams.find_by(user_id: params[:user_id], role: params[:role])
     @team.destroy
     if params[:role] == 'contract-party'
-      redirect_to "/projects/#{@project.id}/team"
+      redirect_to " /contracts/#{@project.id}/team"
     else
-      redirect_to "/projects/#{@project.id}/signatories"
+      redirect_to " /contracts/#{@project.id}/signatories"
     end
   end
 

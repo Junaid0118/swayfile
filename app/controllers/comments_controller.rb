@@ -4,7 +4,7 @@ class CommentsController < ApplicationController
     def create
         @comment = @project.comments.build(user_id: @current_user.id, content: params[:comment][:message], parent_comment_id: params[:comment][:parent_comment_id])
         @comment.save!
-        redirect_to "/projects/#{@project.id}/discussions"
+        redirect_to " /contracts/#{@project.id}/discussions"
     end
 
     private
