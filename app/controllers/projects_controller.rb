@@ -4,7 +4,7 @@
 class ProjectsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :set_project,
                 only: %i[details team signatories contract review show add_member_to_project add_signatory_to_project
-                         remove_member_from_team update move_to_folder discussions contract update_party]
+                         remove_member_from_team update move_to_folder discussions contract update_party update_role]
   before_action :set_avatars
   before_action :set_user, only: %i[contract team signatories discussions send_invite]
   before_action :authenticate_user!, only: %i[team signatories contract discussions]
