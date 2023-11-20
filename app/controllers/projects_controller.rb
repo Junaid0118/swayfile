@@ -31,12 +31,17 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     cookies.signed[:project_id] = @project.id
     if user_signed_in?
       @project.teams.create!(role: 'signatory_party', user_id: current_user.id, user_role: 'Guest')
-      @project.pending_users.delete(email) if @project.pending_users.include?(current_user.email)
+      @project.pending_users.delete(current_user.email) if @project.pending_users.include?(current_user.email)
       @project.save
       redirect_to details_project_path(@project)
     else
       redirect_to new_user_session_path
     end
+  end
+
+  def details
+    cookies.delete(:project_id)
+    cookies.delete(:folder_id)
   end
 
   def search_projects
