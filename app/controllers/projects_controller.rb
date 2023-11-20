@@ -14,7 +14,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   end
 
   def update_role
-    team =  @project.teams.find_by(user_id: params[:memberId])
+    team = @project.teams.find_by(user_id: params[:memberId])
     team.update(user_role: params[:role])
     head :ok
   end
@@ -31,6 +31,8 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     cookies.signed[:project_id] = @project.id
     if user_signed_in?
       @project.teams.create!(role: 'signatory_party', user_id: current_user.id, user_role: 'Guest')
+      @project.pending_users.delete(email) if @project.pending_users.include?(current_user.email)
+      @project.save
       redirect_to details_project_path(@project)
     else
       redirect_to new_user_session_path
