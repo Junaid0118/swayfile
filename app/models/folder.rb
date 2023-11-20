@@ -7,8 +7,8 @@ class Folder < ApplicationRecord
   belongs_to :user
   has_many :projects, dependent: :nullify
 
-  has_many :folder_invitees
-  has_many :invitees, through: :folder_invitees, class_name: 'User', source: :user
+  has_many :folder_invitees, dependent: :destroy
+  has_many :invitees, through: :folder_invitees, class_name: 'User', source: :user, dependent: :destroy
 
 
   before_save :generate_slug

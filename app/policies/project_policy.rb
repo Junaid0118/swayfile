@@ -55,7 +55,7 @@ class ProjectPolicy < ApplicationPolicy
 
 
   def move_to_folder?
-    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+    true
   end
 
   def update?

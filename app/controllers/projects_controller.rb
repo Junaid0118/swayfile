@@ -70,7 +70,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   end
 
   def move_to_folder
-    @project.update(folder_id: params[:parent_folder_id])
+    @project.update_columns(folder_id: params[:parent_folder_id])
     render json: @project, status: :ok
   end
 
