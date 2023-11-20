@@ -109,6 +109,8 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
         @project.teams.create!(member_attribute)
       else
         # Send invitation email to user
+        @project.pending_users << email
+        @project.save
       end
     end
 

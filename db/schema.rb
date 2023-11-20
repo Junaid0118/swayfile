@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_11_14_144549) do
+ActiveRecord::Schema.define(version: 2023_11_20_142127) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -132,6 +132,7 @@ ActiveRecord::Schema.define(version: 2023_11_14_144549) do
     t.string "status"
     t.bigint "folder_id"
     t.bigint "created_by_id"
+    t.text "pending_users", default: [], array: true
     t.index ["created_by_id"], name: "index_projects_on_created_by_id"
     t.index ["folder_id"], name: "index_projects_on_folder_id"
   end
