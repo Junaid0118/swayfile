@@ -29,6 +29,9 @@ Rails.application.routes.draw do
       resources :comments, only: :create, shallow: true
       resources :clauses,  only: [:create, :update], shallow: true do
         resources :suggests
+        member do
+          get :approve_clause
+        end
       end
 
       get 'team'

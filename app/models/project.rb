@@ -43,4 +43,14 @@ class Project < ApplicationRecord
   def signatory_party_users
     users.where(teams: { role: Team.roles[:signatory_party] })
   end
+
+  def owners
+    owner_ids = users.where(teams: { user_role: "Owner" }).pluck(:id)
+    User.where(id: owner_ids + [self.created_by_id])
+  end
+  
+
+  def approval_ratio
+    teams.where(user_role: "Owner").size + 1
+  end
 end

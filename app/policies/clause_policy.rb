@@ -13,4 +13,8 @@ class ClausePolicy < ApplicationPolicy
   def update?
     true
   end
+
+  def approve_clause?
+    true
+  end
 end
