@@ -569,8 +569,10 @@
 															<div class="tab-pane fade show active d-flex flex-column" id="kt_tab_pane_7_<%= clause.id %>" role="tabpanel">
 																<div class="flex-grow-1">
 																	<p><%= clause.content %></p>
-																	<% unless clause.approved_by.include?(@current_user.id) %>
-																		<%= link_to "Approve Clause", approve_clause_clause_path(clause.id, project_id: @project.id), class: "btn btn-primary float-end me-7" %>
+																	<% if @project.owners.pluck(:id).include?(@current_user.id) %>
+																		<% unless clause.approved_by.include?(@current_user.id) %>
+																			<%= link_to "Approve Clause", approve_clause_clause_path(clause.id, project_id: @project.id), class: "btn btn-primary float-end me-7" %>
+																		<% end %>
 																	<% end %>
 																	<div class="d-flex align-items-center">
 																		<h5 class="pt-5 me-3">
@@ -579,17 +581,11 @@
 
 																		<div class="symbol-group symbol-hover my-1 d-flex flex-row pt-3">
 																			<% @project.owners.each do |user|%>
-<div class="symbol symbol-35px symbol-circle 
-    <%= clause.approved_by.include?(user.id) ? 'border border-success border-2' : 'border border-warning border-2' %>"
-    data-bs-toggle="tooltip" data-bs-original-title="<%= user.name %>" data-kt-initialized="1">
-    <span class="symbol-label bg-primary text-inverse-primary fw-bold"><%= user.name.split('').first.upcase %></span>
-</div>
-
-
-
-
-
-
+																				<div class="symbol symbol-35px symbol-circle 
+																					<%= clause.approved_by.include?(user.id) ? 'border border-success border-2' : 'border border-warning border-2' %>"
+																					data-bs-toggle="tooltip" data-bs-original-title="<%= user.name %>" data-kt-initialized="1">
+																					<span class="symbol-label bg-primary text-inverse-primary fw-bold"><%= user.name.split('').first.upcase %></span>
+																				</div>
 																			<% end %>
 																		</div>
 																	</div>
