@@ -580,11 +580,14 @@
 																		</h5>
 
 																		<div class="symbol-group symbol-hover my-1 d-flex flex-row pt-3">
+																		
 																			<% @project.owners.each do |user|%>
-																				<div class="symbol symbol-35px symbol-circle 
-																					<%= clause.approved_by.include?(user.id) ? 'border border-success border-2' : 'border border-warning border-2' %>"
-																					data-bs-toggle="tooltip" data-bs-original-title="<%= user.name %>" data-kt-initialized="1">
-																					<span class="symbol-label bg-primary text-inverse-primary fw-bold"><%= user.name.split('').first.upcase %></span>
+																				<div class="symbol symbol-35px symbol-circle <%= clause.approved_by.include?(user.id) ? 'border border-success border-2' : 'border border-warning border-2' %>" data-bs-toggle="tooltip" aria-label="<%= user.name %>" data-bs-original-title="<%= user.name %>" data-kt-initialized="1">
+																					<% if user.avatar.attached? %>
+																						<%= image_tag user.avatar, alt: "user" %>
+																					<% else %>
+																						<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+																					<% end %>
 																				</div>
 																			<% end %>
 																		</div>
@@ -624,9 +627,10 @@
 																<!--end::Col-->
 																<!--begin::Col-->
 																<div class="col-md-3 fv-row mb-3">
-																	<%= f.label :user_id, "Notify", class: "fs-6 fw-semibold mb-2" %>
-																	<%= f.select :user_id, options_for_select([['Everyone', -1]] + @project.users.pluck(:first_name, :id)), {}, { class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true', 'data-placeholder' => 'Assign to' } %>
+																	<%= f.label :notify, "Notify", class: "fs-6 fw-semibold mb-2" %>
+																	<%= f.select :notify, options_for_select([['Everyone', -1]] + @project.users.pluck(:first_name, :id)), {}, { class: 'form-select form-select-solid', 'data-control' => 'select2', 'data-hide-search' => 'true', 'data-placeholder' => 'Assign to' } %>
 																</div>
+																<%= f.hidden_field :user_id, value: @current_user.id %>
 																<%= f.hidden_field :project_id, value: @project.id %>
 																<!--end::Col-->
 																<!--begin::Col-->
@@ -674,7 +678,13 @@
 																				<div class="d-flex align-items-center f">
 																					<!--begin::Author-->
 																					<div class="symbol symbol-50px me-5">
-																						<div class="symbol-label fs-1 fw-bold bg-light-success text-success">S</div>
+																						<div class="symbol symbol-50px me-5">
+																							<% if User.find(suggest.user_id).avatar.attached? %>
+																								<%= image_tag User.find(suggest.user_id).avatar, alt: "user" %>
+																							<% else %>
+																								<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+																							<% end %>
+																				</div>
 																					</div>
 																					<!--end::Author-->
 																					<!--begin::Info-->

@@ -7,6 +7,26 @@ class UsersController < ApplicationController
     head :ok
   end
 
+  def remove_avatar
+    current_user = User.find(params[:user_id])
+    current_user.avatar.purge # Removes the attached avatar from Active Storage
+    render json: { message: 'Avatar removed successfully' }
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
+  def attach_avatar
+    # Logic to handle attaching the avatar to the user
+    # You might use params[:avatar] to access the uploaded file
+    # Then save it to the user or handle it based on your application's needs
+    user = User.find(params[:user_id])
+    user.avatar.attach(params[:avatar])
+    
+    render json: { message: 'Avatar attached successfully' }
+  rescue StandardError => e
+    render json: { error: e.message }, status: :unprocessable_entity
+  end
+
   def update_project_update
     user = User.find(params[:user_id])
     user.update(project_update: params[:project_update])

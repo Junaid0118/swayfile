@@ -95,7 +95,11 @@ License: For each use you must have a valid license purchased only from above li
 																		<!--begin::Image input-->
 																		<div class="image-input image-input-outline image-input-placeholder" data-kt-image-input="true">
 																			<!--begin::Preview existing avatar-->
-																			<div class="image-input-wrapper w-125px h-125px" style="background-image: url(assets/media/avatars/300-6.jpg"></div>
+																			<% if @current_user.avatar.attached? %>
+																				<div class="image-input-wrapper w-125px h-125px" style="background-image: url('<%= url_for(@current_user.avatar) %>');"></div>
+																			<% else %>
+																				<div class="image-input-wrapper w-125px h-125px" style="background-image: url('assets/media/svg/avatars/004-boy-1.svg');"></div>
+																			<% end %>
 																			<!--end::Preview existing avatar-->
 																			<!--begin::Edit-->
 																			<label class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" data-kt-image-input-action="change" data-bs-toggle="tooltip" title="Change avatar">
@@ -112,7 +116,7 @@ License: For each use you must have a valid license purchased only from above li
 																			</span>
 																			<!--end::Cancel-->
 																			<!--begin::Remove-->
-																			<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow" data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove avatar">
+																			<span class="btn btn-icon btn-circle btn-active-color-primary w-25px h-25px bg-body shadow remove-avatar" data-kt-image-input-action="remove" data-bs-toggle="tooltip" title="Remove avatar">
 																				<i class="ki-outline ki-cross fs-2"></i>
 																			</span>
 																			<!--end::Remove-->
@@ -7393,6 +7397,53 @@ License: For each use you must have a valid license purchased only from above li
 		<script src="assets/js/custom/utilities/modals/upgrade-plan.js"></script>
 		<script src="assets/js/custom/utilities/modals/create-campaign.js"></script>
 		<script src="assets/js/custom/utilities/modals/users-search.js"></script>
+		<script>
+			$('input[name="avatar"]').change(function() {
+			const file = this.files[0];
+			const formData = new FormData();
+			formData.append('avatar', file);
+			formData.append('user_id', '<%= @current_user.id %>')
+
+			$.ajax({
+				url: '/users/attach_avatar',
+				method: 'POST',
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function(response) {
+				// Handle success response from the API
+				console.log(response);
+				// You might update the UI to reflect the successful attachment
+				},
+				error: function(xhr, status, error) {
+				// Handle error response from the API
+				console.error(xhr.responseText);
+				// Display an error message or handle it accordingly
+				}
+			});
+			});
+
+			$('.remove-avatar').click(function() {
+				const formData = new FormData();
+				formData.append('user_id', '<%= @current_user.id %>')
+			// Make an AJAX request to remove the avatar
+			$.ajax({
+				url: '/users/remove_avatar',
+				method: 'POST',
+				data: formData,
+				processData: false,
+				contentType: false,
+				success: function(response) {
+				console.log(response);
+				
+				},
+				error: function(xhr, status, error) {
+				console.error(xhr.responseText);
+				}
+			});
+			});
+
+		</script>
 
 		<script>
 		$(document).ready(function () {

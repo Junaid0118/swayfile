@@ -18,7 +18,7 @@ class User < ApplicationRecord
 
   has_many :folder_invitees
   has_many :invitees_folders, through: :folder_invitees, source: :folder
-
+  
 
   def name
     "#{first_name} #{last_name}"

@@ -33,7 +33,7 @@
 							<ul class="breadcrumb breadcrumb-separatorless fw-semibold fs-7 my-0">
 								<!--begin::Item-->
 								<li class="breadcrumb-item text-muted">
-									<a href="../../demo33/dist/index.html" class="text-muted text-hover-primary">Home</a>
+									<a href="/" class="text-muted text-hover-primary">Home</a>
 								</li>
 								<!--end::Item-->
 								<!--begin::Item-->
@@ -1209,7 +1209,13 @@
 																	<div class="d-flex align-items-center f">
 																		<!--begin::Author-->
 																		<div class="symbol symbol-50px me-5">
-																			<div class="symbol-label fs-1 fw-bold bg-light-success text-success"><%= comment.user.name.split('').first.upcase %></div>
+																			<div class="symbol symbol-50px me-5">
+																		<% if comment.user.avatar.attached? %>
+																			<%= image_tag comment.user.avatar, alt: "user" %>
+																		<% else %>
+																			<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+																		<% end %>
+																				</div>
 																		</div>
 																		
 																			
@@ -1274,7 +1280,13 @@
 																		<div class="d-flex align-items-center f">
 																			<!--begin::Author-->
 																			<div class="symbol symbol-50px me-5">
-																				<div class="symbol-label fs-1 fw-bold bg-light-success text-success"><%= reply.user.name.split('').first.upcase %></div>
+																			<div class="symbol symbol-50px me-5">
+																		<% if reply.user.avatar.attached? %>
+																			<%= image_tag comment.user.avatar, alt: "user" %>
+																		<% else %>
+																			<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+																		<% end %>
+																				</div>
 																			</div>
 																			<!--end::Author-->
 																			<!--begin::Info-->

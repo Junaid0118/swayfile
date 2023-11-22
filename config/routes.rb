@@ -15,6 +15,8 @@ Rails.application.routes.draw do
   post '/update_user_pending_action', to: 'users#update_pending_action'
   post '/update_user_project_update', to: 'users#update_project_update'
   post '/update_subscription_update', to: 'users#update_subscription_update'
+  post '/users/attach_avatar', to: 'users#attach_avatar'
+  post '/users/remove_avatar', to: 'users#remove_avatar'
 
 
   get '/unauthorized', to: 'errors#unauthorized', as: :unauthorized
