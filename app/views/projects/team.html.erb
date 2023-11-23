@@ -638,18 +638,18 @@
 													<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
 													<a href="../../demo33/dist/apps/user-management/users/view.html">
 														<div class="symbol-label">
-															<% if member.avatar.attached? %>
-																<img src="assets/media/avatars/300-2.jpg" class="w-100" alt="user"  />
-															<% else %>
-																<img src="assets/media/svg/avatars/004-boy-1.svg" class="w-100" alt="Default Avatar">
-															<% end %>
+														<% if member.avatar.attached? %>
+															<%= image_tag member.avatar, alt: "user" %>
+														<% else %>
+															<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+														<% end %>
 														</div>
 													</a>
 													</div>
 													<!--end::Avatar-->
 													<!--begin::User details-->
 													<div class="d-flex flex-column">
-													<a href="../../demo33/dist/apps/user-management/users/view.html" class="text-gray-800 text-hover-primary mb-1"><%= member.name %></a>
+													<a href="#" class="text-gray-800 text-hover-primary mb-1"><%= member.name %></a>
 													<span><%= member.email %></span>
 													</div>
 													<!--end::User details-->
@@ -702,36 +702,25 @@
 													<!--begin:: Avatar -->
 													<div class="symbol symbol-circle symbol-50px overflow-hidden me-3">
 													<a href="../../demo33/dist/apps/user-management/users/view.html">
-														<div class="symbol-label">
-														<img src="assets/media/avatars/300-6.jpg" alt="Emma Smith" class="w-100" />
+														<div class="symbol-label">				
+															<img src="assets/media/svg/avatars/004-boy-1.svg" alt="Default Avatar">
+													
 														</div>
 													</a>
 													</div>
 													<!--end::Avatar-->
 													<!--begin::User details-->
 													<div class="d-flex flex-column">
-													<a href="../../demo33/dist/apps/user-management/users/view.html" class="text-gray-800 text-hover-primary mb-1"><%=  %></a>
+													<a href="" class="text-gray-800 text-hover-primary mb-1"><%=  %></a>
 													<span><%= email %></span>
 													</div>
 													<!--end::User details-->
 												</td>
 												<td>
-												<div class="w-100px">
-													<select class="form-select form-select-solid form-select-sm team-role-select" data-control="select2" data-hide-search="true">		
-														<option value="contract-party" >Team</option>
-														<option value="signatory-party" >Signatory</option>
-													</select>
-												</div>
+												
 												</td>
 												<td>
-													<div class=" w-100px">
-														<select class="form-select form-select-solid form-select-sm user-role-select" data-control="select2" data-hide-search="true">
-															<option value="Guest">Guest</option>
-															<option value="Owner" >Owner</option>
-															<option value="Can Edit" >Can Edit</option>
-														</select>
-
-													</div>
+					
 												</td>
 												<td class="">
 													<a href="#" class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
@@ -742,10 +731,11 @@
 													<!--begin::Menu item-->
 													<!--end::Menu item-->
 													<!--begin::Menu item-->
-													
+													<div class="menu-item px-3">
+														<a href="<%= remove_pending_user_project_path(@project, email: email) %>" class="menu-link px-3" data-kt-users-table-filter="delete_row">Delete</a>
+													</div>
 													<!--end::Menu item-->
 													</div>
-													<!--end::Menu-->
 												</td>
 												</tr>
 											<% end %>

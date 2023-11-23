@@ -46,7 +46,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
     return redirect_to "/folders?slug=#{folder.slug}" if folder
     
     @folders = (@current_user.folders.where(parent_folder_id: nil) + @current_user.invitees_folders).uniq
-    @projects = Project.joins('LEFT JOIN teams AS contract_teams ON projects.id = contract_teams.project_id').joins('LEFT JOIN teams AS signatory_teams ON projects.id = signatory_teams.project_id').where('projects.created_by_id = :user_id OR contract_teams.user_id = :user_id OR signatory_teams.user_id = :user_id', user_id: @current_user.id).order(id: :desc).where(folder_id: nil).uniq
+    @projects = Project.where(created_by_id: @current_user.id).where(folder_id: nil).uniq + @current_user.projects
     render layout: "file_manager"
   end
 

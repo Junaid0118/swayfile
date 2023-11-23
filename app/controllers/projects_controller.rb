@@ -13,6 +13,13 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     render layout: 'projects'
   end
 
+  def remove_pending_user
+    project = Project.find(params[:id])
+    project.pending_users.delete(params[:email]) if project.pending_users.include?(params[:email])
+    project.save
+    redirect_to team_project_path(project)
+  end
+
   def update_role
     team = @project.teams.find_by(user_id: params[:memberId])
     team.update(user_role: params[:role])

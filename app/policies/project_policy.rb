@@ -10,7 +10,7 @@ class ProjectPolicy < ApplicationPolicy
 
   def show?
     team = record.teams.find_by(user_id: user.id)
-    user == record.created_by || team.user_role == "Admin" 
+    user == record.created_by || team.user_role == "Owner" 
   end
 
   def signatories?
@@ -68,6 +68,6 @@ class ProjectPolicy < ApplicationPolicy
 
   def index?
     team = record.teams.find_by(user_id: user.id)
-    user == record.created_by || team.user_role == "Admin" || team.user_role == "Can Edit"
+    user == record.created_by || team.user_role == "Owner" || team.user_role == "Can Edit"
   end
 end

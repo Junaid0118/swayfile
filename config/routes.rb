@@ -53,6 +53,7 @@ Rails.application.routes.draw do
       put 'move_to_folder' 
       post 'update_party'
       post 'update_role'
+      get 'remove_pending_user'
     end
   end
 
