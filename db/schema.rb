@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_11_20_142127) do
+ActiveRecord::Schema.define(version: 2023_11_27_094351) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -43,6 +43,18 @@ ActiveRecord::Schema.define(version: 2023_11_20_142127) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "clause_histories", force: :cascade do |t|
+    t.bigint "clause_id", null: false
+    t.string "action"
+    t.string "before_value"
+    t.string "after_value"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.bigint "user_id", null: false
+    t.index ["clause_id"], name: "index_clause_histories_on_clause_id"
+    t.index ["user_id"], name: "index_clause_histories_on_user_id"
+  end
+
   create_table "clauses", force: :cascade do |t|
     t.text "content"
     t.string "title"
@@ -50,6 +62,7 @@ ActiveRecord::Schema.define(version: 2023_11_20_142127) do
     t.bigint "project_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.integer "approved_by", default: [], array: true
     t.index ["project_id"], name: "index_clauses_on_project_id"
     t.index ["user_id"], name: "index_clauses_on_user_id"
   end
@@ -202,6 +215,8 @@ ActiveRecord::Schema.define(version: 2023_11_20_142127) do
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
+  add_foreign_key "clause_histories", "clauses"
+  add_foreign_key "clause_histories", "users"
   add_foreign_key "comments", "projects"
   add_foreign_key "comments", "users"
   add_foreign_key "contracts", "projects"

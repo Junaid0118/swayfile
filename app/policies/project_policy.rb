@@ -50,7 +50,7 @@ class ProjectPolicy < ApplicationPolicy
   end
 
   def remove_member_from_team?
-    user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
+    true
   end
 
 

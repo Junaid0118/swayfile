@@ -22,16 +22,32 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
 
   def update_role
     team = @project.teams.find_by(user_id: params[:memberId])
+    before_value = @project.owners.pluck(:first_name)
+    before_role = team.user_role
+  
     team.update(user_role: params[:role])
+    after_role = params[:role]
+  
+    if (before_role != 'Owner' && after_role == 'Owner') || (before_role == 'Owner' && after_role != 'Owner')
+      @project.clauses.each do |clause|
+        clause.clause_histories.create(
+          action: 'CLAUSE APPROVERS CHANGE',
+          before_value: before_value.join(', '),
+          after_value: @project.owners.pluck(:first_name).join(', '),
+          user_id: params[:user_id]
+        )
+      end
+    end
+  
     head :ok
   end
+  
 
   def update_party
-    team =  @project.teams.find_by(user_id: params[:memberId])
+    team = @project.teams.find_by(user_id: params[:memberId])
     team.update(role: params[:role])
     head :ok
   end
-
 
   def send_invite
     @project = Project.find(params[:id])
@@ -59,15 +75,14 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   def show; end
 
   def team
-    if params.key?(:role) || params.key?(:filter)
-      @team_members = @project.members(params[:role] || params[:filter]).uniq
-    elsif params.key?(:team_role) || params.key?(:selectedTeam)
-      @team_members = @project.users.where(teams: { role: params[:team_role] || params[:selectedTeam] })
-    else
-      @team_members = @project.users.uniq
-    end
+    @team_members = if params.key?(:role) || params.key?(:filter)
+                      @project.members(params[:role] || params[:filter]).uniq
+                    elsif params.key?(:team_role) || params.key?(:selectedTeam)
+                      @project.users.where(teams: { role: params[:team_role] || params[:selectedTeam] })
+                    else
+                      @project.users.uniq
+                    end
 
-    
     respond_to do |format|
       format.html
       format.json { render json: @team_members }
@@ -111,8 +126,10 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   end
 
   def add_member_to_project
+
     params['_json'].each do |email|
       user = User.find_by_email(email)
+      return render json: {}, status: 200 if @project.created_by_id == user.id
       if user
         member_attribute =
           {
@@ -128,7 +145,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
       end
     end
 
-    render json: { 'data' => " /contracts/#{@project}/team" }, status: 200
+    render json: { 'data' => "/contracts/#{@project}/team" }, status: 200
   end
 
   def add_signatory_to_project
@@ -140,16 +157,16 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
       }
     end
     @project.teams.create!(member_attributes)
-    render json: { 'data' => " /contracts/#{@project}/signatories" }, status: 200
+    render json: { 'data' => "/contracts/#{@project}/signatories" }, status: 200
   end
 
   def remove_member_from_team
     @team = @project.teams.find_by(user_id: params[:user_id], role: params[:role])
     @team.destroy
     if params[:role] == 'contract-party'
-      redirect_to " /contracts/#{@project.id}/team"
+      redirect_to "/contracts/#{@project.id}/team"
     else
-      redirect_to " /contracts/#{@project.id}/signatories"
+      redirect_to "/contracts/#{@project.id}/signatories"
     end
   end
 

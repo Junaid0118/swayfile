@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  clause: one
+  action: MyString
+  before_value: MyString
+  after_value: MyString
+
+two:
+  clause: two
+  action: MyString
+  before_value: MyString
+  after_value: MyString

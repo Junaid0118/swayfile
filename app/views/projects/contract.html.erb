@@ -559,6 +559,12 @@
 																			</span>
 																		</li>
 																	<% end %>
+																	<li class="nav-item">
+																		<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_11_<%= clause.id %>" >
+																			<i class="fa fa-history" aria-hidden="true"></i>
+																		</a>
+																	</li>
+																	
 																<% end %>
 															</ul>
 														</div>
@@ -576,7 +582,7 @@
 																	<% end %>
 																	<div class="d-flex align-items-center">
 																		<h5 class="pt-5 me-3">
-																			<%= clause.approved_by.size.to_s + "/" + @project.approval_ratio.to_s %> Approved
+																			<%= clause.approved_by.size.to_s + "/" + @project.owners.size.to_s %> Approved
 																		</h5>
 
 																		<div class="symbol-group symbol-hover my-1 d-flex flex-row pt-3">
@@ -739,6 +745,74 @@
 																	<br>
 																<% end %>
 															</div>
+
+															<div class="tab-pane fade" id="kt_tab_pane_11_<%= clause.id %>" role="tabpanel">
+																<% clause.clause_histories.order(id: :desc).each do |history| %>
+																<div class="card card-bordered w-100">
+																		<!--begin::Body-->
+																		<div class="card-body">
+																			<!--begin::Wrapper-->
+																			<div class="w-100 d-flex flex-stack mb-8">
+																				<!--begin::Container-->
+																				<div class="d-flex align-items-center f">
+																					<!--begin::Author-->
+																					<div class="symbol symbol-50px me-5">
+																						<div class="symbol symbol-50px me-5">
+																							
+																				</div>
+																					</div>
+																					<!--end::Author-->
+																					<!--begin::Info-->
+																					<div class="d-flex flex-column fw-semibold fs-5 text-gray-600 text-dark">
+																						<!--begin::Text-->
+																						<div class="d-flex align-items-center flex-column">
+																							<!--begin::Username-->
+																							<div style="align-self: flex-start;" class=>
+																								<a href="#" class="text-gray-800 fw-bold text-hover-primary fs-5 me-3 mb-2"><%= history.action %></a>
+																									
+																							</div>
+																							<div class="d-flex">					
+																									<span class="fw-semibold text-muted me-6">Timestamp:
+																									<a href="#" class="text-muted text-hover-primary"><%= history.created_at.strftime("%d/%m/%Y - %H:%M:%S") %></a></span>
+																									<!--end::Label-->
+																									<!--begin::Label-->
+																									<span class="fw-semibold text-muted me-6">User:
+																									<a href="#" class="text-muted text-hover-primary"><%= history.user.name %></a></span>
+																									<!--end::Label-->
+																									<!--end::Label-->
+																									<!--end::Username-->
+																									<span class="m-0"></span>
+																								</div>
+																						</div>
+																						<!--end::Text-->
+																						<!--begin::Date-->
+																						<!--end::Date-->
+																					</div>
+																					<!--end::Info-->
+																				</div>
+																				<!--end::Container-->
+																				<!--begin::Actions-->
+																				
+																				<!--end::Actions-->
+																			</div>
+																			<!--end::Wrapper-->
+																			<!--begin::Desc-->
+																			<p class="fw-normal fs-5 text-gray-700 pl-5" style="padding-left: 35px;">
+																			<span class="badge badge-light-success"><%= history.after_value %></span>
+																			<br><br>
+																			<span class="badge badge-light-danger"><s><%= history.before_value %></s></span>
+																			
+																			
+																			</p>
+																			<!--end::Desc-->
+																		</div>
+																		<!--end::Body-->
+																	</div>
+																	<br>
+																	<% end %>
+															</div>
+
+															
 															
 														</div>
 													</div>

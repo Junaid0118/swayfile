@@ -15,6 +15,7 @@ class User < ApplicationRecord
   has_many :projects, through: :teams
 
   has_many :clauses, dependent: :destroy
+  has_many :clause_histories, dependent: :destroy
 
   has_many :folder_invitees
   has_many :invitees_folders, through: :folder_invitees, source: :folder

@@ -5439,7 +5439,7 @@
 				$.ajax({
                     url: apiUrl,
                     type: 'POST',
-                    data: { role: selectedValue, memberId: memberId },
+                    data: { role: selectedValue, memberId: memberId, user_id: <%= @current_user.id%> },
                     success: function (data) {
                         window.location.reload();
  	                    },
