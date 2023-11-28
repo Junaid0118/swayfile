@@ -186,8 +186,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -620,9 +622,10 @@
 											<tr>
 												<td colspan="3"><input type="text" id="compose_to" class="form-control border-0" data-kt-inbox-form="tagify" placeholder="Add team members" data-custom-attribute="project_member"/><td>
 												<td>
-												
-												<%= link_to add_member_to_project_project_path(@project), class: "btn btn-light btn-active-light-primary btn-flex btn-center btn-sm px-9", id: "add_members", data: { compose_to_js_function: true } do %>
-													Submit
+												<% if @project.status == false || @project.status == 'false'%>
+													<%= link_to add_member_to_project_project_path(@project), class: "btn btn-light btn-active-light-primary btn-flex btn-center btn-sm px-9", id: "add_members", data: { compose_to_js_function: true } do %>
+														Submit
+													<% end %>
 												<% end %>
 												</td>
 											</tr>
@@ -656,15 +659,16 @@
 												</td>
 												<td>
 												<div class="w-100px">
-													<select class="form-select form-select-solid form-select-sm team-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>">		
-														<option value="contract-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).role == "contract-party" %>>Team</option>
-														<option value="signatory-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).role == "signatory_party" %>>Signatory</option>
+													<select class="form-select form-select-solid form-select-sm team-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>" <%= 'disabled="disabled"' if @project.status == true || @project.status == 'true' %>>
+														<option value="contract-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id)&.role == "contract-party" %>>Team</option>
+														<option value="signatory-party" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id)&.role == "signatory_party" %>>Signatory</option>
 													</select>
+
 												</div>
 												</td>
 												<td>
 													<div class=" w-100px">
-														<select class="form-select form-select-solid form-select-sm user-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>">
+														<select class="form-select form-select-solid form-select-sm user-role-select" data-control="select2" data-hide-search="true" data-member-id="<%= member.id %>" <%= 'disabled="disabled"' if @project.status == true || @project.status == 'true' %>>
 															<option value="Guest" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Guest" %>>Guest</option>
 															<option value="Owner" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Owner" %>>Owner</option>
 															<option value="Can Edit" <%= 'selected="selected"' if @project.teams.find_by(user_id: member.id).user_role == "Can Edit" %>>Can Edit</option>
@@ -673,7 +677,8 @@
 													</div>
 												</td>
 												<td class="">
-													<a href="#" class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end">Actions
+												<% if @project.status == false || @project.status == 'false'%>
+													<a href="#" class="btn btn-light btn-active-light-primary btn-flex btn-center btn-sm" data-kt-menu-trigger="click" data-kt-menu-placement="bottom-end" >Actions
 													<i class="ki-outline ki-down fs-5 ms-1"></i>
 													</a>
 													<!--begin::Menu-->
@@ -687,6 +692,7 @@
 													<!--end::Menu item-->
 													</div>
 													<!--end::Menu-->
+												<% end%>
 												</td>
 												</tr>
 											<% end %>

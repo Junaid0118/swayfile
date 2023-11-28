@@ -185,8 +185,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -199,8 +201,7 @@
 											<!--begin::Aside-->
 											</div>
 											<!--begin::Button-->
-											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Approve Clause</a>
+												<a href="<%= "/contracts/#{@project.id}/review" %>" class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Next</a>
 										</div>
 
 
@@ -541,14 +542,18 @@
 																</li>
 																<% unless clause.approved_by.include?(@current_user.id) %>
 																	<% if policy(@project).show? %>
-																		<li class="nav-item">
-																			<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8_<%= clause.id %>" >Edit</a>
-																		</li>
+																		<% if @project.status == false || @project.status == 'false'%>
+																			<li class="nav-item">
+																				<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8_<%= clause.id %>" >Edit</a>
+																			</li>
+																		<% end %>
 																	<% end %>
 																	<% if policy(@project).index? %>
-																		<li class="nav-item">
-																			<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9_<%= clause.id %>" >Suggest</a>
-																		</li>
+																		<% if @project.status == false || @project.status == 'false'%>
+																			<li class="nav-item">
+																				<a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_9_<%= clause.id %>" >Suggest</a>
+																			</li>
+																		<% end %>
 																	<% end %>
 																	<% if policy(@project).show? %>
 																		<li class="nav-item">
@@ -577,7 +582,9 @@
 																	<p><%= clause.content %></p>
 																	<% if @project.owners.pluck(:id).include?(@current_user.id) %>
 																		<% unless clause.approved_by.include?(@current_user.id) %>
-																			<%= link_to "Approve Clause", approve_clause_clause_path(clause.id, project_id: @project.id), class: "btn btn-primary float-end me-7" %>
+																			<% if @project.status == false || @project.status == 'false'%>
+																				<%= link_to "Approve Clause", approve_clause_clause_path(clause.id, project_id: @project.id), class: "btn btn-primary float-end me-7" %>
+																			<% end %>
 																		<% end %>
 																	<% end %>
 																	<div class="d-flex align-items-center">
@@ -730,8 +737,10 @@
 																				<!--begin::Actions-->
 																				<div class="m-0">
 																					<% if suggest.accepted.nil? %>
-																						<%= button_to 'Accept', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "accepted"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
-																						<%= button_to 'Reject', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "rejected"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
+																						<% if @project.status == false || @project.status == 'false'%>
+																							<%= button_to 'Accept', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "accepted"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
+																							<%= button_to 'Reject', suggest_path(suggest, clause_id: clause.id, project_id: @project.id, category: "rejected"), method: :patch, class: 'btn btn-color-gray-400 btn-active-color-primary p-0 fw-bold replyButton' %>
+																						<% end %>
 																					<% end %>
 																				</div>
 																				<!--end::Actions-->
@@ -823,122 +832,125 @@
 											<% end %>
 
 											<!--begin::Form-->
-											<% if policy(@project).show? %>
-												<form id="kt_inbox_reply_form" class="rounded border mt-20">
-													<!--begin::Body-->
-													<div class="d-block">
-														<!--begin::To-->
-														<div>															
-															<!--end::Input-->
-															<!--begin::CC & BCC buttons-->
-															<div class="ms-auto w-75px text-end">
-																<span class="text-muted fs-bold cursor-pointer text-hover-primary me-2" data-kt-inbox-form="cc_button"></span>
-																<span class="text-muted fs-bold cursor-pointer text-hover-primary" data-kt-inbox-form="bcc_button"></span>
+											<% if @project.status == false || @project.status == 'false'%>
+												<% if policy(@project).show? %>
+
+													<form id="kt_inbox_reply_form" class="rounded border mt-20">
+														<!--begin::Body-->
+														<div class="d-block">
+															<!--begin::To-->
+															<div>															
+																<!--end::Input-->
+																<!--begin::CC & BCC buttons-->
+																<div class="ms-auto w-75px text-end">
+																	<span class="text-muted fs-bold cursor-pointer text-hover-primary me-2" data-kt-inbox-form="cc_button"></span>
+																	<span class="text-muted fs-bold cursor-pointer text-hover-primary" data-kt-inbox-form="bcc_button"></span>
+																</div>
+																<!--end::CC & BCC buttons-->
 															</div>
-															<!--end::CC & BCC buttons-->
-														</div>
-														<!--end::To-->
-														<!--begin::CC-->
-														<div class="d-none align-items-center border-bottom ps-8 pe-5 min-h-50px" data-kt-inbox-form="cc">
-															<!--begin::Label-->
-															<div class="text-dark fw-bold w-75px">Cc:</div>
-															<!--end::Label-->
-															<!--begin::Input-->
-															<input type="text" class="form-control border-0" name="compose_cc" value="" data-kt-inbox-form="tagify" />
-															<!--end::Input-->
-															<!--begin::Close-->
-															<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="cc_close">
-																<i class="ki-outline ki-cross fs-5"></i>
-															</span>
-															<!--end::Close-->
-														</div>
-														<!--end::CC-->
-														<!--begin::BCC-->
-														<div class="d-none align-items-center border-bottom inbox-to-bcc ps-8 pe-5 min-h-50px" data-kt-inbox-form="bcc">
-															<!--begin::Label-->
-															<div class="text-dark fw-bold w-75px">Bcc:</div>
-															<!--end::Label-->
-															<!--begin::Input-->
-															<input type="text" class="form-control border-0" name="compose_bcc" value="" data-kt-inbox-form="tagify" />
-															<!--end::Input-->
-															<!--begin::Close-->
-															<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="bcc_close">
-																<i class="ki-outline ki-cross fs-5"></i>
-															</span>
-															<!--end::Close-->
-														</div>
-														<!--end::BCC-->
-														<!--begin::Subject-->
-														<div class="border-bottom">
-															<input class="form-control border-0 px-8 min-h-45px" id="clauseName" name="compose_subject" placeholder="Clause Name" />
-														</div>
-														<!--end::Subject-->
-														<!--begin::Message-->
-														<div id="kt_inbox_form_editor" class="border-0 h-250px px-3"></div>
-														<!--end::Message-->
-														<!--begin::Attachments-->
-														<div class="dropzone dropzone-queue px-8 py-4" id="kt_inbox_reply_attachments" data-kt-inbox-form="dropzone">
-															<div class="dropzone-items">
-																<div class="dropzone-item" style="display:none">
-																	<!--begin::Dropzone filename-->
-																	<div class="dropzone-file">
-																		<div class="dropzone-filename" title="some_image_file_name.jpg">
-																			<span data-dz-name="">some_image_file_name.jpg</span>
-																			<strong>(
-																			<span data-dz-size="">340kb</span>)</strong>
+															<!--end::To-->
+															<!--begin::CC-->
+															<div class="d-none align-items-center border-bottom ps-8 pe-5 min-h-50px" data-kt-inbox-form="cc">
+																<!--begin::Label-->
+																<div class="text-dark fw-bold w-75px">Cc:</div>
+																<!--end::Label-->
+																<!--begin::Input-->
+																<input type="text" class="form-control border-0" name="compose_cc" value="" data-kt-inbox-form="tagify" />
+																<!--end::Input-->
+																<!--begin::Close-->
+																<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="cc_close">
+																	<i class="ki-outline ki-cross fs-5"></i>
+																</span>
+																<!--end::Close-->
+															</div>
+															<!--end::CC-->
+															<!--begin::BCC-->
+															<div class="d-none align-items-center border-bottom inbox-to-bcc ps-8 pe-5 min-h-50px" data-kt-inbox-form="bcc">
+																<!--begin::Label-->
+																<div class="text-dark fw-bold w-75px">Bcc:</div>
+																<!--end::Label-->
+																<!--begin::Input-->
+																<input type="text" class="form-control border-0" name="compose_bcc" value="" data-kt-inbox-form="tagify" />
+																<!--end::Input-->
+																<!--begin::Close-->
+																<span class="btn btn-clean btn-xs btn-icon" data-kt-inbox-form="bcc_close">
+																	<i class="ki-outline ki-cross fs-5"></i>
+																</span>
+																<!--end::Close-->
+															</div>
+															<!--end::BCC-->
+															<!--begin::Subject-->
+															<div class="border-bottom">
+																<input class="form-control border-0 px-8 min-h-45px" id="clauseName" name="compose_subject" placeholder="Clause Name" />
+															</div>
+															<!--end::Subject-->
+															<!--begin::Message-->
+															<div id="kt_inbox_form_editor" class="border-0 h-250px px-3"></div>
+															<!--end::Message-->
+															<!--begin::Attachments-->
+															<div class="dropzone dropzone-queue px-8 py-4" id="kt_inbox_reply_attachments" data-kt-inbox-form="dropzone">
+																<div class="dropzone-items">
+																	<div class="dropzone-item" style="display:none">
+																		<!--begin::Dropzone filename-->
+																		<div class="dropzone-file">
+																			<div class="dropzone-filename" title="some_image_file_name.jpg">
+																				<span data-dz-name="">some_image_file_name.jpg</span>
+																				<strong>(
+																				<span data-dz-size="">340kb</span>)</strong>
+																			</div>
+																			<div class="dropzone-error" data-dz-errormessage=""></div>
 																		</div>
-																		<div class="dropzone-error" data-dz-errormessage=""></div>
-																	</div>
-																	<!--end::Dropzone filename-->
-																	<!--begin::Dropzone progress-->
-																	<div class="dropzone-progress">
-																		<div class="progress">
-																			<div class="progress-bar bg-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-dz-uploadprogress=""></div>
+																		<!--end::Dropzone filename-->
+																		<!--begin::Dropzone progress-->
+																		<div class="dropzone-progress">
+																			<div class="progress">
+																				<div class="progress-bar bg-primary" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" data-dz-uploadprogress=""></div>
+																			</div>
 																		</div>
+																		<!--end::Dropzone progress-->
+																		<!--begin::Dropzone toolbar-->
+																		<div class="dropzone-toolbar">
+																			<span class="dropzone-delete" data-dz-remove="">
+																				<i class="ki-outline ki-cross fs-6"></i>
+																			</span>
+																		</div>
+																		<!--end::Dropzone toolbar-->
 																	</div>
-																	<!--end::Dropzone progress-->
-																	<!--begin::Dropzone toolbar-->
-																	<div class="dropzone-toolbar">
-																		<span class="dropzone-delete" data-dz-remove="">
-																			<i class="ki-outline ki-cross fs-6"></i>
-																		</span>
-																	</div>
-																	<!--end::Dropzone toolbar-->
 																</div>
 															</div>
+															<!--end::Attachments-->
 														</div>
-														<!--end::Attachments-->
-													</div>
-													<!--end::Body-->
-													<!--begin::Footer-->
-													<div class="d-flex flex-stack flex-wrap gap-2 py-5 ps-8 pe-5 border-top">
-														<!--begin::Actions-->
-														<div class="d-flex align-items-center me-3">
-															<!--begin::Send-->
-															<div class="btn-group me-4">
-																<!--begin::Submit-->
-																<span class="btn btn-primary fs-bold px-6" data-kt-inbox-form="send">
-																	<span class="indicator-label">Submit</span>
-																	<span class="indicator-progress">Please wait...
-																	<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
-																</span>
-																<!--end::Submit-->
-																<!--begin::Send options-->
-															
-																<!--end::Send options-->
-															</div>							
+														<!--end::Body-->
+														<!--begin::Footer-->
+														<div class="d-flex flex-stack flex-wrap gap-2 py-5 ps-8 pe-5 border-top">
+															<!--begin::Actions-->
+															<div class="d-flex align-items-center me-3">
+																<!--begin::Send-->
+																<div class="btn-group me-4">
+																	<!--begin::Submit-->
+																	<span class="btn btn-primary fs-bold px-6" data-kt-inbox-form="send">
+																		<span class="indicator-label">Submit</span>
+																		<span class="indicator-progress">Please wait...
+																		<span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+																	</span>
+																	<!--end::Submit-->
+																	<!--begin::Send options-->
+																
+																	<!--end::Send options-->
+																</div>							
+															</div>
+															<!--end::Actions-->
+															<!--begin::Toolbar-->
+															<div class="d-flex align-items-center">
+																<!--begin::Dismiss reply-->
+																
+																<!--end::Dismiss reply-->
+															</div>
+															<!--end::Toolbar-->
 														</div>
-														<!--end::Actions-->
-														<!--begin::Toolbar-->
-														<div class="d-flex align-items-center">
-															<!--begin::Dismiss reply-->
-															
-															<!--end::Dismiss reply-->
-														</div>
-														<!--end::Toolbar-->
-													</div>
-													<!--end::Footer-->
-												</form>
+														<!--end::Footer-->
+													</form>
+												<% end %>
 											<% end %>
 											<!--end::Form-->
 										</div>
@@ -5221,8 +5233,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -5332,8 +5346,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>

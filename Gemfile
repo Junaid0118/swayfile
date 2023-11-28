@@ -19,6 +19,8 @@ gem 'cloudinary'
 gem 'jquery-rails'
 gem "font-ionicons-rails"
 gem "font-awesome-rails"
+gem 'pdfkit'
+gem 'wkhtmltopdf-binary'
 
 # Bundle edge Rails instead: gem 'rails', github: 'rails/rails', branch: 'main'
 gem 'rails', '~> 6.1.3', '>= 6.1.3.1'

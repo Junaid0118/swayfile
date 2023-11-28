@@ -54,6 +54,7 @@ Rails.application.routes.draw do
       post 'update_party'
       post 'update_role'
       get 'remove_pending_user'
+      get 'close_contract'
     end
   end
 

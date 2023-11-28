@@ -184,8 +184,11 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
+														
 															</div>
 															<!--end::Label-->
 														</div>
@@ -282,10 +285,12 @@
 											</div>
 											<!--end::Card body-->
 											<!--begin::Card footer-->
-											<div class="d-flex justify-content-end py-4 px-9">
-												<button type="reset" class="btn btn-light btn-active-light-primary me-2">Discard</button>
-												<button type="submit" class="btn btn-primary" id="kt_project_settings_submit">Save Changes</button>
-											</div>
+											<% if @project.status == false || @project.status == 'false'%>
+												<div class="d-flex justify-content-end py-4 px-9">
+													<button type="reset" class="btn btn-light btn-active-light-primary me-2">Discard</button>
+													<button type="submit" class="btn btn-primary" id="kt_project_settings_submit">Save Changes</button>
+												</div>
+											<% end%>
 											<!--end::Card footer-->
 										</form>
 										

@@ -15,7 +15,10 @@ class ProjectPolicy < ApplicationPolicy
 
   def review?
     true
-    
+  end
+
+  def close_contract?
+    user == record.created_by
   end
 
   def signatories?

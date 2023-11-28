@@ -4,7 +4,7 @@
 class ProjectsController < ApplicationController # rubocop:disable Metrics/ClassLength
   before_action :set_project,
                 only: %i[details team signatories contract review show add_member_to_project add_signatory_to_project
-                         remove_member_from_team update move_to_folder discussions contract update_party update_role]
+                         remove_member_from_team update move_to_folder discussions contract update_party update_role close_contract]
   before_action :set_avatars
   before_action :set_user, only: %i[contract team signatories discussions send_invite]
   before_action :authenticate_user!, only: %i[team signatories contract discussions]
@@ -13,7 +13,24 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     render layout: 'projects'
   end
 
+  def close_contract
+    @project.update_columns(status: params[:status])
+    redirect_to review_project_path(@project)
+  end
+
   def review
+    contract = Project.find(params[:id])
+    clauses = contract.clauses
+
+    html_content = "<h1>#{contract.name}</h1><br>"
+
+    clauses.each do |clause|
+      html_content += "<h2>#{clause.title}</h2>"
+      html_content += "<p>#{clause.content}</p>"
+    end
+
+    pdf = PDFKit.new(html_content)
+    @pdf = pdf.to_pdf
   end
 
   def remove_pending_user

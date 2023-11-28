@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Project < ApplicationRecord
+  before_create :set_status_false
+
   has_one_attached :avatar
 
   belongs_to :folder, optional: true
@@ -52,5 +54,11 @@ class Project < ApplicationRecord
 
   def approval_ratio
     teams.where(user_role: "Owner").size + 1
+  end
+
+  private
+
+  def set_status_false
+    self.status = "false"
   end
 end

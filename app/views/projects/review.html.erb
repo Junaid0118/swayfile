@@ -185,8 +185,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -199,8 +201,9 @@
 											<!--begin::Aside-->
 											</div>
 											<!--begin::Button-->
-											
-											<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Approve Clause</a>
+											<% if @project.status == false || @project.status == 'false'%>
+												<a class="btn btn-success fw-bold w-75" style="margin-top: 30px; margin-left: 12.5%;">Approve Clause</a>
+											<% end %>
 										</div>
 
 
@@ -210,6 +213,52 @@
 								<!--end::Sidebar-->
 								<% end %>
 								<!--begin::Content-->
+								<!--begin::Content-->
+<div class="flex-lg-row-fluid ms-lg-7 ms-xl-10">
+   <!--begin::Card-->
+   <div class="card">
+      <!-- begin::Body-->
+      <div class="card-body py-20">
+         <!-- begin::Wrapper-->
+         <div class="mw-lg-950px mx-auto w-100">
+            <!-- begin::Header-->
+           <embed src="data:application/pdf;base64, <%= Base64.strict_encode64(@pdf) %>" type="application/pdf" width="100%" height="600px" title="<%= @project.name %>">
+
+            <!--end::Header-->
+            <!-- begin::Footer-->
+            <div class="d-flex flex-stack flex-wrap mt-lg-20 pt-13">
+               <!-- begin::Actions-->
+               <div class="my-1 me-5">
+                  <!-- begin::Pint-->
+				  <%= button_tag 'Print Contract', class: 'btn btn-success my-1 me-12', id: 'print-contract' %>
+
+                  <!-- end::Pint-->
+                  <!-- begin::Download-->
+				  <%= link_to 'Download', "data:application/pdf;base64,#{Base64.strict_encode64(@pdf)}", download: 'contract.pdf', class: 'btn btn-light-success my-1' %>
+                  <!-- end::Download-->
+               </div>
+               <!-- end::Actions-->
+               <!-- begin::Action-->
+				<% if @current_user.id == @project.created_by_id %>
+					<% if @project.status == true || @project.status == 'true' %>
+						<%= link_to 'Open Contract', close_contract_project_path(@project, status: false), class: 'btn btn-primary my-1', method: :patch %>
+					<% elsif @project.status == false || @project.status == 'false' %>
+						<%= link_to 'Close Contract', close_contract_project_path(@project, status: true), class: 'btn btn-primary my-1', method: :patch %>
+					<% end %>
+				<% end %>
+
+
+               <!-- end::Action-->
+            </div>
+            <!-- end::Footer-->
+         </div>
+         <!-- end::Wrapper-->
+      </div>
+      <!-- end::Body-->
+   </div>
+   <!--end::Card-->
+</div>
+<!--end::Content-->
 								
 								
 								<!--end::Content-->
@@ -4488,8 +4537,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -4599,8 +4650,10 @@
 															<!--end::Icon-->
 															<!--begin::Label-->
 															<div class="stepper-label">
+																<a href="<%= "/contracts/#{@project.id}/review" %>" >
 																<h3 class="stepper-title">Review</h3>
 																<div class="stepper-desc">Review and Submit</div>
+															</a>
 															</div>
 															<!--end::Label-->
 														</div>
@@ -4666,6 +4719,14 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    var printButton = document.getElementById('print-contract');
+    printButton.addEventListener('click', function() {
+      window.print();
+    });
+  });
 </script>
 <!--end::Custom Javascript-->
 <!--end::Javascript-->
