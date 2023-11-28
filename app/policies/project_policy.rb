@@ -13,6 +13,11 @@ class ProjectPolicy < ApplicationPolicy
     user == record.created_by || team.user_role == "Owner" 
   end
 
+  def review?
+    true
+    
+  end
+
   def signatories?
     user == record.created_by || user.in?(record.signatory_party_users) || user.in?(record.contract_party_users)
   end

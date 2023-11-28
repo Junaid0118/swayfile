@@ -13,6 +13,9 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     render layout: 'projects'
   end
 
+  def review
+  end
+
   def remove_pending_user
     project = Project.find(params[:id])
     project.pending_users.delete(params[:email]) if project.pending_users.include?(params[:email])
@@ -120,7 +123,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
     @project = project.save
     return render json: { errors: project.errors.full_messages }, status: :unprocessable_entity unless @project
 
-    Notification.create!(notification_type: 'New Contract', user_id: User.first.id,
+    Notification.create!(notification_type: 'New Contract', user_id: params[:user_id],
                          text: "Contract #{project.name} created", date: DateTime.now)
     render json: project, status: :created
   end

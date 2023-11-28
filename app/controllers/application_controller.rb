@@ -9,7 +9,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   before_action :set_folder, only: :folders
   before_action :set_folders, only: :folders
   before_action :authenticate_user!, only: [:file_manager, :folders, :profile, :settings]
-  before_action :set_notifications, unless: :devise_controller?
+  before_action :set_notifications, if: -> { request.format.html? && !devise_controller? }
   before_action :set_user, only: [:file_manager, :folders]
 
   def after_sign_in_path_for(resource)
@@ -94,7 +94,12 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def set_notifications
-    @notifications = Notification.all.order(id: :desc)
+    @current_user = User.find(cookies.signed[:user_id])
+    if @current_user
+      @notifications = @current_user.notifications.order(id: :desc)
+    else
+      @notifications = []
+    end
   end
 
   def set_user
