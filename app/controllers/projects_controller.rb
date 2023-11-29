@@ -146,11 +146,10 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
   end
 
   def add_member_to_project
-
     params['_json'].each do |email|
       user = User.find_by_email(email)
-      return render json: {}, status: 200 if @project.created_by_id == user.id
       if user
+        return render json: {}, status: 200 if @project.created_by_id == user.id
         member_attribute =
           {
             user_id: user.id,
@@ -159,6 +158,7 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
           }
         @project.teams.create!(member_attribute)
       else
+        byebug
         # Send invitation email to user
         @project.pending_users << email
         @project.save

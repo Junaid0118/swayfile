@@ -51,6 +51,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def settings
+    @projects = Project.where(created_by_id: @current_user.id).where(folder_id: nil).uniq + @current_user.projects
     render layout: "file_manager"
   end
 

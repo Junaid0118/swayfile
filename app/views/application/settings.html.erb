@@ -91,8 +91,8 @@
 												<a href="/">SwayFile</a>
 												<span class="mx-3">|</span>
 												<a href="#">File Manager</a>
-												<span class="mx-3">|</span>10 Projects
-												<span class="mx-3">|</span>75 Documents</div>
+												<span class="mx-3">|</span><%= @current_user.folders.where(parent_folder_id: nil).size%> Folders
+												<span class="mx-3">|</span><%= @projects.size %> Contracts</div>
 											</div>
 											<!--end::Title-->
 										</div>
