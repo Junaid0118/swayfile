@@ -11,18 +11,19 @@ Rails.application.configure do
   # Do not eager load code on boot.
   config.eager_load = false
   config.autoloader = :classic
+  host = 'localhost:3000'
+config.action_mailer.default_url_options = { :host => 'localhost:3000', protocol: 'http' }
 
   config.action_mailer.delivery_method = :smtp
   config.action_mailer.smtp_settings = {
-    address: 'smtp.example.com', 
-    port: 587,                   
-    user_name: 'your_username',
-    password: 'your_password',   
-    authentication: 'login',     
-    enable_starttls_auto: true   
+    address: 'smtp.gmail.com',
+    port: 587,
+    domain: 'localhost:3000',
+    user_name: 'swayfile@gmail.com',
+    password: 'knyv jffg ncxy rkhi', 
+    authentication: :plain,
+    enable_starttls_auto: true
   }
-
-
 
   # Show full error reports.
   config.consider_all_requests_local = true
@@ -47,7 +48,7 @@ Rails.application.configure do
   config.active_storage.service = :cloudinary
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.perform_caching = false
 

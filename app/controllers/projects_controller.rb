@@ -158,8 +158,9 @@ class ProjectsController < ApplicationController # rubocop:disable Metrics/Class
           }
         @project.teams.create!(member_attribute)
       else
-        byebug
-        # Send invitation email to user
+        url = root_url.chomp('/') + send_invite_project_path(project)
+        UserMailer.invitation(email, url)
+        # Send invitation email to 
         @project.pending_users << email
         @project.save
       end
