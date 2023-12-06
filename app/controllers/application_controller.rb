@@ -95,7 +95,7 @@ class ApplicationController < ActionController::Base # rubocop:disable Style/Doc
   end
 
   def set_notifications
-    @current_user = User.find(cookies.signed[:user_id])
+    @current_user = User.find_by(id: cookies.signed[:user_id])
     if @current_user
       @notifications = @current_user.notifications.order(id: :desc)
     else
